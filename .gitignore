@@ -1,0 +1,23 @@
+# Dipendenze e artefatti di build
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.vite/
+.eslintcache
+
+# =============================================================================
+# Variabili d'ambiente
+# =============================================================================
+# ⚠️ I file .env contengono chiavi (es. VITE_LOG_SERVICE_API_KEY): non vanno
+# mai versionati. Resta tracciato solo .env.example, che documenta le variabili
+# senza valorizzarle.
+.env
+.env.*
+!.env.example
+
+# Editor e sistema operativo
+.DS_Store
+Thumbs.db
+*.log
+*.local
