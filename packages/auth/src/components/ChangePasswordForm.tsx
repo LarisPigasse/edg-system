@@ -46,9 +46,11 @@ interface FormErrors {
 interface ChangePasswordFormProps {
   /** Callback chiamato dopo cambio password riuscito */
   onSuccess?: () => void;
+  /** Callback chiamato quando l'utente annulla l'operazione */
+  onCancel?: () => void;
 }
 
-export const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess }) => {
+export const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSuccess, onCancel }) => {
   // Hook per cambio password
   const { changePassword, changePasswordLoading, changePasswordError, clearChangePasswordError } = useAuth();
 
@@ -258,17 +260,29 @@ export const ChangePasswordForm: React.FC<ChangePasswordFormProps> = ({ onSucces
         autoComplete='new-password'
       />
 
-      {/* Pulsante Submit */}
-      <Button
-        type='submit'
-        variant='primary'
-        size='lg'
-        fullWidth
-        isLoading={changePasswordLoading}
-        loadingText='Cambio in corso...'
-      >
-        Cambia password
-      </Button>
+      {/* Pulsanti Annulla / Submit */}
+      <div className='flex gap-3'>
+        <Button
+          type='button'
+          variant='outline'
+          size='lg'
+          className='flex-1'
+          onClick={onCancel}
+          disabled={changePasswordLoading}
+        >
+          Annulla
+        </Button>
+        <Button
+          type='submit'
+          variant='primary'
+          size='lg'
+          className='flex-1'
+          isLoading={changePasswordLoading}
+          loadingText='Cambio in corso...'
+        >
+          Cambia password
+        </Button>
+      </div>
     </form>
   );
 };

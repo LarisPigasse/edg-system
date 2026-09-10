@@ -9,8 +9,8 @@
 
 import React, { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
-import { Logo } from '@edg/ui';
+import { ArrowLeft, CheckCircle, AlertCircle } from '@edg/ui';
+import { Logo, PageBackground } from '@edg/ui';
 import { PasswordInput } from '@edg/ui';
 import { Button } from '@edg/ui';
 import { authApi } from '../api';
@@ -125,55 +125,52 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (pageState === 'error' && !token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-secondary p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-6">
-              <Logo className="text-4xl" />
+      <>
+        <PageBackground />
+        <div className='relative min-h-screen flex items-center justify-center p-4'>
+        <div className='w-full max-w-md'>
+          <div className='text-center mb-8'>
+            <div className='flex justify-center mb-6'>
+              <Logo className='text-4xl' />
             </div>
           </div>
 
-          <div className="bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+          <div className='bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 text-center'>
+            <div className='flex justify-center mb-4'>
+              <div className='w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center'>
+                <AlertCircle className='w-8 h-8 text-red-600 dark:text-red-400' />
               </div>
             </div>
 
-            <h1 className="text-xl font-semibold text-text-primary mb-2">
-              Link non valido
-            </h1>
+            <h1 className='text-xl font-semibold text-text-primary mb-2'>Link non valido</h1>
 
-            <p className="text-text-secondary mb-6">
-              Il link per reimpostare la password non è valido o è scaduto.
-              Richiedi un nuovo link di reset.
+            <p className='text-text-secondary mb-6'>
+              Il link per reimpostare la password non è valido o è scaduto. Richiedi un nuovo link di reset.
             </p>
 
-            <div className="space-y-3">
-              <Link
-                to={routes.forgotPassword}
-                className="block w-full"
-              >
-                <Button variant="primary" fullWidth>
+            <div className='space-y-3'>
+              <Link to={routes.forgotPassword} className='block w-full'>
+                <Button variant='primary' fullWidth>
                   Richiedi nuovo link
                 </Button>
               </Link>
 
               <Link
                 to={routes.login}
-                className="inline-flex items-center justify-center gap-2 text-text-link hover:text-text-link-hover transition-colors"
+                className='inline-flex items-center justify-center gap-2 text-text-link hover:text-text-link-hover transition-colors'
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className='w-4 h-4' />
                 Torna al login
               </Link>
             </div>
           </div>
 
-          <p className="mt-8 text-center text-xs text-text-tertiary">
+          <p className='mt-8 text-center text-xs text-text-tertiary'>
             © {new Date().getFullYear()} Express Delivery Group. Tutti i diritti riservati.
           </p>
         </div>
       </div>
+      </>
     );
   }
 
@@ -183,40 +180,40 @@ export const ResetPasswordPage: React.FC = () => {
 
   if (pageState === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-secondary p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-6">
-              <Logo className="text-4xl" />
+      <>
+        <PageBackground />
+        <div className='relative min-h-screen flex items-center justify-center p-4'>
+        <div className='w-full max-w-md'>
+          <div className='text-center mb-8'>
+            <div className='flex justify-center mb-6'>
+              <Logo className='text-4xl' />
             </div>
           </div>
 
-          <div className="bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <div className='bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 text-center'>
+            <div className='flex justify-center mb-4'>
+              <div className='w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center'>
+                <CheckCircle className='w-8 h-8 text-green-600 dark:text-green-400' />
               </div>
             </div>
 
-            <h1 className="text-xl font-semibold text-text-primary mb-2">
-              Password reimpostata!
-            </h1>
+            <h1 className='text-xl font-semibold text-text-primary mb-2'>Password reimpostata!</h1>
 
-            <p className="text-text-secondary mb-6">
-              La tua password è stata reimpostata con successo.
-              Ora puoi accedere con la nuova password.
+            <p className='text-text-secondary mb-6'>
+              La tua password è stata reimpostata con successo. Ora puoi accedere con la nuova password.
             </p>
 
-            <Button variant="primary" fullWidth onClick={handleGoToLogin}>
+            <Button variant='primary' fullWidth onClick={handleGoToLogin}>
               Vai al login
             </Button>
           </div>
 
-          <p className="mt-8 text-center text-xs text-text-tertiary">
+          <p className='mt-8 text-center text-xs text-text-tertiary'>
             © {new Date().getFullYear()} Express Delivery Group. Tutti i diritti riservati.
           </p>
         </div>
       </div>
+      </>
     );
   }
 
@@ -225,86 +222,78 @@ export const ResetPasswordPage: React.FC = () => {
   // ============================================================================
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-secondary p-4">
-      <div className="w-full max-w-md">
+    <>
+      <PageBackground />
+      <div className='relative min-h-screen flex items-center justify-center p-4'>
+      <div className='w-full max-w-md'>
         {/* Header con logo */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <Logo className="text-4xl" />
+        <div className='text-center mb-8'>
+          <div className='flex justify-center mb-6'>
+            <Logo className='text-4xl' />
           </div>
 
-          <h1 className="text-2xl font-semibold text-text-primary">
-            Reimposta password
-          </h1>
-          <p className="mt-2 text-sm text-text-secondary">
-            Inserisci la tua nuova password
-          </p>
+          <h1 className='text-4xl font-semibold text-text-title'>Reimposta password</h1>
+          <p className='mt-2 text-sm text-text-secondary'>Inserisci la tua nuova password</p>
         </div>
 
         {/* Card form */}
-        <div className="bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className='bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8'>
+          <form onSubmit={handleSubmit} className='space-y-6'>
             {/* Errore API */}
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <div className='p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
+                <p className='text-sm text-red-600 dark:text-red-400'>{error}</p>
               </div>
             )}
 
             {/* Campo Nuova Password */}
             <PasswordInput
-              label="Nuova password"
+              label='Nuova password'
               value={formData.password}
               onChange={handleChange('password')}
               error={formErrors.password}
               required
               disabled={loading}
-              autoComplete="new-password"
+              autoComplete='new-password'
               autoFocus
             />
 
             {/* Campo Conferma Password */}
             <PasswordInput
-              label="Conferma password"
+              label='Conferma password'
               value={formData.confirmPassword}
               onChange={handleChange('confirmPassword')}
               error={formErrors.confirmPassword}
               required
               disabled={loading}
-              autoComplete="new-password"
+              autoComplete='new-password'
             />
 
             {/* Pulsante Submit */}
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              fullWidth
-              isLoading={loading}
-              loadingText="Salvataggio..."
-            >
+            <Button type='submit' variant='primary' size='lg' fullWidth isLoading={loading} loadingText='Salvataggio...'>
               Reimposta password
             </Button>
           </form>
 
           {/* Link torna al login */}
-          <div className="mt-6 text-center">
+          <div className='mt-6 text-center'>
             <Link
               to={routes.login}
-              className="inline-flex items-center gap-2 text-sm text-text-link hover:text-text-link-hover transition-colors"
+              className='inline-flex items-center gap-2 text-sm text-text-link hover:text-text-link-hover transition-colors'
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className='w-4 h-4' />
               Torna al login
             </Link>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-xs text-text-tertiary">
+        <p className='mt-8 text-center text-xs text-text-tertiary'>
           © {new Date().getFullYear()} Express Delivery Group. Tutti i diritti riservati.
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

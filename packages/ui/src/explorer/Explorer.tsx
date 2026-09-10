@@ -81,6 +81,10 @@ import { badgeData } from '../components/ui/badge/Badge.data';
 import BadgeShowcase from '../components/ui/badge/Badge.showcase';
 import { confirmModalData } from '../components/ui/confirm-modal/ConfirmModal.data';
 import ConfirmModalShowcase from '../components/ui/confirm-modal/ConfirmModal.showcase';
+import { detailModalData } from '../components/ui/detail-modal/DetailModal.data';
+import DetailModalShowcase from '../components/ui/detail-modal/DetailModal.showcase';
+import { technicalDetailsModalData } from '../components/ui/technical-details-modal/TechnicalDetailsModal.data';
+import TechnicalDetailsModalShowcase from '../components/ui/technical-details-modal/TechnicalDetailsModal.showcase';
 import { infoCardData } from '../components/ui/info-card/InfoCard.data';
 import { InfoCardShowcase } from '../components/ui/info-card/InfoCard.showcase';
 import { modalData } from '../components/ui/modal/Modal.data';
@@ -129,6 +133,14 @@ const RESTRUCTURED_COMPONENTS: Record<string, RestructuredComponent> = {
   confirmModal: {
     data: confirmModalData,
     showcase: ConfirmModalShowcase,
+  },
+  detailModal: {
+    data: detailModalData,
+    showcase: DetailModalShowcase,
+  },
+  technicalDetailsModal: {
+    data: technicalDetailsModalData,
+    showcase: TechnicalDetailsModalShowcase,
   },
   datePicker: {
     data: datePickerData,

@@ -25,7 +25,7 @@ import { useEdgConfig } from '@edg/ui';
 // ============================================================================
 
 export const ChangePasswordPage: React.FC = () => {
-  const { routes, layout } = useEdgConfig();
+  const { routes } = useEdgConfig();
   const navigate = useNavigate();
   const { isAuthenticated, initializing, logout } = useAuth();
 
@@ -79,22 +79,42 @@ export const ChangePasswordPage: React.FC = () => {
   }
 
   return (
-    <div className='relative  p-4'>
-      {/* Overlay grigio che copre l'immagine di sfondo */}
-      <div
-        className={`fixed inset-0 ${layout.innerPageBgColor} ${layout.innerPageBgOpacity} ${layout.innerPageBgZIndex}`}
-      />
+    <div className='relative p-4'>
+      {/* Il velo sullo sfondo lo disegna già MainLayout (pagina non-home): niente da ripetere qui. */}
 
       {/* Container principale */}
       <div className='max-w-2xl mx-auto'>
         {/* Titolo e descrizione - CENTRATO */}
         <div className='mb-8 text-center'>
-          <h1 className='text-3xl font-bold text-text-primary mb-2'>Cambia password</h1>
+          <h1 className='text-4xl font-bold text-text-title mb-2'>Cambia password</h1>
           <p className='text-text-secondary'>Inserisci la password attuale e scegli una nuova password sicura.</p>
         </div>
 
         {/* Card form - PIÙ LARGA */}
-        <div className='bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 w-full max-w-2xl mx-auto'>
+        <div className='relative bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 w-full max-w-2xl mx-auto'>
+          {/* Pulsante chiusura */}
+          <button
+            type='button'
+            onClick={() => navigate(routes.home)}
+            aria-label='Chiudi'
+            className='absolute right-4 top-4 rounded-md p-1.5 text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-action-primary'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='20'
+              height='20'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            >
+              <line x1='18' y1='6' x2='6' y2='18' />
+              <line x1='6' y1='6' x2='18' y2='18' />
+            </svg>
+          </button>
+
           {/* Info sicurezza */}
           <div className='mb-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'>
             <p className='text-sm text-blue-900 dark:text-blue-300'>
@@ -103,7 +123,7 @@ export const ChangePasswordPage: React.FC = () => {
           </div>
 
           {/* Form */}
-          <ChangePasswordForm onSuccess={handleChangePasswordSuccess} />
+          <ChangePasswordForm onSuccess={handleChangePasswordSuccess} onCancel={() => navigate(routes.home)} />
 
           {/* info password */}
           {/* <div className='mb-4 mt-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800'>

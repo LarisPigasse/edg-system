@@ -1,7 +1,16 @@
 /**
  * CenteredPage Component
  *
- * Container for pages that need vertical centering (login, 404, etc.)
+ * Container per pagine STANDALONE, renderizzate fuori da MainLayout e che
+ * quindi occupano davvero l'intero schermo (login, forgot-password, ecc.):
+ * il min-h-screen interno presuppone che non ci siano già un Header e un
+ * Footer sopra e sotto, altrimenti l'altezza totale supera i 100vh e compare
+ * una scrollbar verticale indesiderata.
+ *
+ * Per una pagina di contenuto dentro MainLayout (una route qualsiasi che
+ * vive nel layout con Header/Footer) NON usare questo componente: usare
+ * invece il pattern di NotFound.tsx — un div con `min-h-[50vh]` invece di
+ * `min-h-screen`, che si adatta allo spazio già disponibile nel layout.
  *
  * Features:
  * - Full viewport height with centered content

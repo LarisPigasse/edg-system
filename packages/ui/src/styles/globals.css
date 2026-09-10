@@ -21,10 +21,11 @@
   --text-contrast: #ffffff; /* Bianco per testi su sfondi scuri */
   --text-link: #6e56cf; /* Viola medio per link */
   --text-link-hover: #8e4ec6; /* Tomato medio */
-  --text-info: #0284c7; /* Sky-600 in Tailwind */
+  --text-info: #0ea5e9; /* Sky-500 in Tailwind */
   --text-error: #ef4444; /* red-500 in Tailwind */
   --text-menu: #7e6e63; /* testo menu base */
   --text-menu-active: #7c3aed; /* violet-600 in Tailwind */
+  --text-title: #7c3aed; /* Viola speciale per titoli */
 
   /* Bordi e linee */
   --border-default: #e5e7eb; /* Grigio chiaro */
@@ -32,8 +33,8 @@
   --border-strong: #d1d5db; /* Grigio */
   --border-contrast: #bcb7f7; /* viola chiaro */
   --underline-default: #e4e6e8; /* Grigio chiaro */
-  --underline-primary: #6e56cf; /* Viola medio*/
-  --underline-focus: #a2a4a8; /* Grigio scuro */
+  --underline-primary: #c3c5c8; /* Grigio tenue — campo valorizzato, senza focus */
+  --underline-focus: #6e56cf; /* Viola medio */
   --underline-error: #ef4444; /* red-500 in Tailwind */
 
   /* Ombre */
@@ -137,6 +138,7 @@
   --text-error: #ef4444; /* red-500 in Tailwind */
   --text-menu: #ae9e93; /* testo menu base */
   --text-menu-active: #a855f7; /* purple-500 in Tailwind */
+  --text-title: #8e51ff; /* Viola speciale per titoli */
 
   /* Bordi e linee */
   --border-default: #374151; /* Grigio medio-scuro */

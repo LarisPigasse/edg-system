@@ -1,7 +1,7 @@
 // src/core/components/ui/select/Select.tsx
 import React, { useState } from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown } from '../../../utils/icons';
 import { cn } from '../../../utils';
 
 export interface SelectOption {
@@ -68,7 +68,10 @@ export const Select = React.forwardRef<any, SelectProps>(
             <SelectPrimitive.Trigger
               ref={ref}
               className={cn(
-                'relative w-full h-12 pt-6 pb-2 px-0 bg-transparent text-left',
+                // Stessa geometria di Input.tsx (min-h-[56px] + pt-5 pb-2): è quel
+                // riquadro a determinare dove cade la sottolineatura — altezze
+                // diverse tra i due componenti producevano una linea disallineata.
+                'relative w-full min-h-[56px] pt-5 pb-2 px-0 bg-transparent text-left',
                 'focus:outline-none',
                 disabled && 'cursor-not-allowed opacity-50'
               )}
@@ -79,7 +82,7 @@ export const Select = React.forwardRef<any, SelectProps>(
               <label
                 className={cn(
                   'absolute left-0 pointer-events-none select-none transition-all duration-200 ease-out',
-                  isFloating ? 'top-1 font-medium' : 'top-1/2 -translate-y-1/2 text-base text-text-placeholder',
+                  isFloating ? 'top-0 text-sm font-medium' : 'top-1/2 -translate-y-1/2 text-sm text-text-placeholder',
                   (isFocused || open) && !hasError ? 'text-text-primary' : 'text-text-label',
                   hasError && 'text-text-error'
                 )}

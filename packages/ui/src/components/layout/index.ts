@@ -6,6 +6,7 @@ export { default as TitledSurface } from './custom/TitledSurface';
 export { default as CenteredPage } from './custom/CenteredPage';
 export { default as CenteredSection } from './custom/CenteredSection';
 export { default as MainLayout } from './custom/MainLayout';
+export { default as PageBackground } from './custom/PageBackground';
 
 // Card
 export { default as Card } from './card/Card';

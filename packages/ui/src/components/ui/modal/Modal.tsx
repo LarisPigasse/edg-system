@@ -1,11 +1,11 @@
 // src/core/components/ui/Modal.tsx
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { iconMap } from '../../../utils';
 
 import { cn } from '../../../utils/';
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
 
 interface ModalProps {
   /** Stato aperto/chiuso del modal */
@@ -30,6 +30,8 @@ interface ModalProps {
   className?: string;
   /** Classi CSS aggiuntive per l'overlay */
   overlayClassName?: string;
+  /** Classi CSS aggiuntive per il titolo — sostituiscono lo stile di default (es. per un colore di risalto come text-text-title) */
+  titleClassName?: string;
 }
 
 /**
@@ -48,14 +50,15 @@ const Modal: React.FC<ModalProps> = ({
   footer,
   className,
   overlayClassName,
+  titleClassName,
 }) => {
   // 📏 Size variants per il modal
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-xl',
     xl: 'max-w-2xl',
-    '2xl': 'max-w-4xl',
+    xxl: 'max-w-4xl',
     full: 'max-w-[95vw] max-h-[95vh]',
   };
   // 🎨 Classes per overlay/backdrop - USA IL NOSTRO THEME SYSTEM
@@ -118,11 +121,11 @@ const Modal: React.FC<ModalProps> = ({
         >
           {/* Header */}
           {(title || !hideCloseButton) && (
-            <div className='bg-bg-modal flex items-center justify-between p-6 border-b border-border-default flex-shrink-0'>
+            <div className='bg-bg-modal flex items-center justify-between p-6 border-b border-border-default shrink-0'>
               <div className='flex-1 min-w-0'>
                 {title && (
                   <Dialog.Title asChild>
-                    <h2 className='text-text-primary text-lg font-semibold'>{title}</h2>
+                    <h2 className={titleClassName ?? 'text-text-primary text-lg font-semibold'}>{title}</h2>
                   </Dialog.Title>
                 )}
                 {description && (
@@ -137,10 +140,10 @@ const Modal: React.FC<ModalProps> = ({
                 <Dialog.Close asChild>
                   <button
                     onClick={onClose}
-                    className='ml-4 p-2 rounded-lg hover:bg-bg-hover transition-colors flex-shrink-0'
+                    className='ml-4 p-2 rounded-lg hover:bg-bg-hover transition-colors shrink-0'
                     aria-label='Chiudi modal'
                   >
-                    <X className='w-5 h-5 text-text-secondary' />
+                    <iconMap.close className='w-5 h-5 text-text-secondary' />
                   </button>
                 </Dialog.Close>
               )}
@@ -148,10 +151,10 @@ const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Content */}
-          <div className='bg-bg-modal flex-1 overflow-y-auto'>{children}</div>
+          <div className='bg-bg-modal flex-1 overflow-y-auto p-6'>{children}</div>
 
           {/* Footer */}
-          {footer && <div className='bg-bg-modal border-t border-border-default p-6 flex-shrink-0'>{footer}</div>}
+          {footer && <div className='bg-bg-modal border-t border-border-default p-6 shrink-0'>{footer}</div>}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

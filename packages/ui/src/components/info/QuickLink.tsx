@@ -13,7 +13,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, ArrowRight } from 'lucide-react';
+import { ExternalLink, ArrowRight } from '../../utils/icons';
 
 import { Badge } from '../ui';
 import { iconMap } from '../../utils';

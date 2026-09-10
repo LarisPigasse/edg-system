@@ -1,7 +1,7 @@
 // src/core/components/layout/custom/Header.tsx
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Settings, Bell, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Menu, Settings, Bell, ArrowLeft, ChevronRight } from '../../../utils/icons';
 
 import { UserAvatar, Logo } from '../../info';
 import { useUISettings } from '../../../state/hooks';
@@ -28,13 +28,6 @@ const Header: React.FC<HeaderProps> = ({ userInitials = 'AD', userName = 'Admin 
 
   const isActiveLink = (href: string) => location.pathname === href;
 
-  const isModuleActive = (moduleHref: string, moduleId: string) => {
-    if (moduleId === 'home') {
-      return location.pathname === '/' || location.pathname === moduleHref;
-    }
-    return location.pathname.startsWith(moduleHref);
-  };
-
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -58,7 +51,6 @@ const Header: React.FC<HeaderProps> = ({ userInitials = 'AD', userName = 'Admin 
         </button>
 
         {modules.map((module, index) => {
-          const isActive = isModuleActive(module.href, module.id);
           const isCurrentModule = activeModule?.id === module.id;
           const hasChildren = module.children && module.children.length > 0;
           const showChildren = isCurrentModule && hasChildren;
@@ -95,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ userInitials = 'AD', userName = 'Admin 
                 <Link
                   to={module.href}
                   className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                    isActive ? 'text-text-link' : 'text-text-menu hover:text-text-menu-active'
+                    isCurrentModule ? 'text-text-link' : 'text-text-menu hover:text-text-menu-active'
                   }`}
                 >
                   {module.label}

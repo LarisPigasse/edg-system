@@ -1,5 +1,5 @@
 // packages/ui/src/config/types.ts
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from '../utils/icons';
 import type { ThemedImageKey } from '../hooks/useThemedImage';
 
 /** Identità dell'applicazione ospite: nome, claim, copyright, versione. */
@@ -51,7 +51,10 @@ export interface EdgRoutes {
   forgotPassword: string;
   settings: string;
   changePassword: string;
+  profile: string;
   notFound: string;
+  terms: string;
+  support: string;
 }
 
 /** Parametri di resa del layout. */

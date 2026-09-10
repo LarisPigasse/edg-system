@@ -15,7 +15,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Logo } from '@edg/ui';
+import { Logo, PageBackground } from '@edg/ui';
 import { LoginForm } from '../components';
 import { useAuth } from '../hooks';
 import { useUISettings, useEdgConfig } from '@edg/ui';
@@ -93,8 +93,10 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-bg-secondary p-4'>
-      {/* Card centrale */}
+    <>
+      <PageBackground />
+      <div className='relative min-h-screen flex items-center justify-center p-4'>
+        {/* Card centrale */}
       <div className='w-full max-w-md'>
         {/* Header con logo */}
         <div className='text-center mb-8'>
@@ -104,7 +106,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {/* Titolo */}
-          <h1 className='text-2xl font-semibold text-text-primary'>Accedi al tuo account</h1>
+          <h1 className='text-4xl font-semibold text-text-title'>Accedi al tuo account</h1>
           <p className='mt-2 text-sm text-text-secondary'>Inserisci le tue credenziali per continuare</p>
         </div>
 
@@ -125,7 +127,8 @@ export const LoginPage: React.FC = () => {
           © {new Date().getFullYear()} Express Delivery Group. Tutti i diritti riservati.
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

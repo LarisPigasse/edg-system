@@ -1,6 +1,5 @@
 // src/config/navigation.config.ts
-import { Home } from 'lucide-react';
-import type { EdgModuleConfig } from '@edg/ui';
+import { Home, type EdgModuleConfig } from '@edg/ui';
 
 import { ROUTES } from './routes.config';
 

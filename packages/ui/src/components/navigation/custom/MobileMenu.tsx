@@ -1,7 +1,7 @@
 // src/core/components/navigation/custom/MobileMenu.tsx
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { iconMap } from '../../../utils';
 
 import { useUISettings } from '../../../state/hooks';
 import { useIsMobile } from '../../../hooks';
@@ -67,18 +67,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ className = '' }) => {
     return location.pathname === href;
   };
 
-  // Determina se un modulo è quello attivo
-  const isModuleActive = (module: EdgModuleConfig) => {
-    if (module.id === 'home') {
-      return location.pathname === '/' || location.pathname === module.href;
-    }
-    return location.pathname.startsWith(module.href);
-  };
-
   // Render singolo modulo
   const renderModule = (module: EdgModuleConfig, showChildren: boolean = false) => {
     const Icon = module.icon;
-    const isActive = isModuleActive(module);
 
     return (
       <div key={module.id}>
@@ -101,7 +92,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ className = '' }) => {
         </button>
 
         {/* Children del modulo */}
-        {showChildren && isActive && module.children && module.children.length > 0 && (
+        {showChildren && module.children && module.children.length > 0 && (
           <div className='mt-1 ml-4 pl-4 border-l border-border-default space-y-1'>
             {module.children.map((child: EdgSubMenuItem) => (
               <button
@@ -181,7 +172,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ className = '' }) => {
                 className='p-2 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg transition-colors'
                 aria-label='Chiudi menu'
               >
-                <X className='w-5 h-5' />
+                <iconMap.close className='w-5 h-5' />
               </button>
             </div>
 

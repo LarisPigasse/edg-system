@@ -391,5 +391,9 @@ export const selectAuthError = (state: AuthRootState) => state.auth.error;
 // Ritorna sempre lo stesso array reference se permissions non cambia
 export const selectPermissions = createSelector([selectAccount], account => account?.permissions || []);
 
+// ADR009: moduli attivi del tenant, solo per UX (menu/route visibili)
+export const selectModules = createSelector([selectAccount], account => account?.modules || []);
+export const selectTenantId = (state: AuthRootState) => state.auth.account?.tenantId ?? null;
+
 export const authReducer = authSlice.reducer;
 export default authSlice.reducer;

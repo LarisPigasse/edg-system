@@ -38,6 +38,7 @@ import {
   selectAuthInitializing,
   selectAuthError,
   selectPermissions,
+  selectModules,
 } from '../store';
 import type { LoginRequest, ChangePasswordRequest, AccountType } from '../types';
 
@@ -63,6 +64,7 @@ export function useAuth() {
   const initializing = useSelector(selectAuthInitializing);
   const error = useSelector(selectAuthError);
   const permissions = useSelector(selectPermissions);
+  const modules = useSelector(selectModules);
 
   // ============================================================================
   // AZIONI - Funzioni che modificano lo stato
@@ -232,6 +234,28 @@ export function useAuth() {
   );
 
   // ============================================================================
+  // HELPER MODULI (ADR009) - Solo UX: mostra/nasconde menu e route.
+  // Il controllo di sicurezza reale è il moduleGuard del gateway.
+  // ============================================================================
+
+  /**
+   * Verifica se il tenant dell'utente ha un modulo attivo.
+   *
+   * Supporta il wildcard '*' (tenant di sistema EDG = tutti i moduli).
+   *
+   * @example
+   * hasModule('vehicles')
+   */
+  const hasModule = useCallback(
+    (module: string): boolean => {
+      if (!modules.length) return false;
+      if (modules.includes('*')) return true;
+      return modules.includes(module);
+    },
+    [modules]
+  );
+
+  // ============================================================================
   // HELPER ACCOUNT TYPE - Verifica tipo account
   // ============================================================================
 
@@ -247,6 +271,14 @@ export function useAuth() {
     },
     [account]
   );
+
+  /**
+   * True se l'account connesso ha il ruolo 'root' (l'unico account con modulo
+   * wildcard '*', vedi tenants.seed.ts). Uso tipico: nascondere dettagli
+   * tecnici del dato (id, uuid, chiavi esterne) che non interessano mai un
+   * utente normale, anche se amministratore del proprio tenant.
+   */
+  const isRoot = account?.roleName === 'root';
 
   // ============================================================================
   // HELPER DISPLAY - Informazioni per UI
@@ -309,6 +341,7 @@ export function useAuth() {
     initializing,
     error,
     permissions,
+    modules,
 
     // Stato changePassword (locale)
     changePasswordLoading,
@@ -327,6 +360,10 @@ export function useAuth() {
     hasAllPermissions,
     hasAnyPermission,
     isAccountType,
+    isRoot,
+
+    // Helper moduli (ADR009)
+    hasModule,
 
     // Helper display
     getUserInitials,

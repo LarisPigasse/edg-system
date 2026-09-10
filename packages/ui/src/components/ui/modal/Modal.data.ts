@@ -35,6 +35,11 @@ export const modalData: ComponentData = {
       defaultValue: 'false',
       description: "Nasconde il pulsante di chiusura (X) nell'header.",
     },
+    {
+      name: 'titleClassName',
+      type: 'string',
+      description: "Classi CSS che sostituiscono lo stile di default del titolo (es. 'text-text-title' per un colore di risalto).",
+    },
   ],
   examples: [
     {

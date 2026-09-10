@@ -3,7 +3,7 @@
 
 /* Page Level Typography */
 .text-page-title {
-  @apply text-3xl font-bold text-text-primary;
+  @apply text-3xl font-bold text-text-title;
 }
 
 .text-page-subtitle {

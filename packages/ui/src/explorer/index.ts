@@ -6,4 +6,5 @@
 // trascina con sé tutti gli showcase.
 export { default as Explorer } from './Explorer';
 export { ThemePreview } from './ThemePreview';
+export { IconsPreview } from './IconsPreview';
 export { THEME_PREVIEW_SAFELIST } from './safelist';

@@ -2,7 +2,7 @@
 import React from 'react';
 
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Eye } from '../../utils/icons';
 import { cn } from '../../utils';
 
 // Definizione del tipo per una singola azione

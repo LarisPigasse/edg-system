@@ -7,6 +7,8 @@ import { cn } from "../../../utils";
 export interface TabItem {
   id: string;
   label: React.ReactNode;
+  /** Icona opzionale (componente Lucide, non istanziata) mostrata a sinistra dell'etichetta. */
+  icon?: React.ComponentType<{ className?: string }>;
   content: React.ReactNode;
   disabled?: boolean;
 }
@@ -77,18 +79,19 @@ export const Tabs: React.FC<TabsProps> = ({
   return (
     <div className={cn("w-full", className)} {...props}>
       {/* Tab List */}
-      <div className={cn("flex overflow-x-auto no-scrollbar", variantClasses[variant])}>
+      <div className={cn("flex overflow-x-auto overflow-y-hidden scrollbar-hide", variantClasses[variant])}>
         {items.map((item) => (
           <button
             key={item.id}
             onClick={() => !item.disabled && handleTabClick(item.id)}
             disabled={item.disabled}
             className={cn(
-              "whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-action-primary focus:ring-offset-1 rounded-sm",
+              "inline-flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-action-primary focus:ring-offset-1 rounded-sm",
               tabClasses[variant](activeTab === item.id),
               item.disabled && "opacity-50 cursor-not-allowed"
             )}
           >
+            {item.icon && <item.icon className="w-4 h-4 shrink-0" />}
             {item.label}
           </button>
         ))}

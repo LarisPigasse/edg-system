@@ -4,7 +4,9 @@ import type { ReactNode } from 'react';
 import { cn } from '../../../utils/';
 import { ActionMenu, EditAction, DeleteAction } from '../../actions';
 import type { Action } from '../../actions';
-import { X, ArrowUp, ArrowDown, ArrowUpDown, ChevronRight } from 'lucide-react';
+import { X, ArrowUp, ArrowDown, ArrowUpDown, ChevronRight, Database } from '../../../utils/icons';
+import TechnicalDetailsModal from '../../ui/technical-details-modal/TechnicalDetailsModal';
+import { useTableCapabilities } from './TableCapabilities';
 
 export interface TableColumn<T> {
   header: string | (() => ReactNode);
@@ -48,6 +50,8 @@ export interface TableRowActions<T> {
       getItemName?: (item: T) => string;
       showLabel?: boolean;
     };
+    // Nota: l'azione "Dati tecnici" non si configura qui — è automatica su
+    // ogni Table per l'utente root, vedi TableCapabilitiesProvider.
   };
   /** Modalità di visualizzazione */
   mode?: 'menu' | 'buttons' | 'mixed';
@@ -106,6 +110,16 @@ function Table<T>({
 
   // 📂 Expanded rows state (solo se `expandable` è passato)
   const [expandedKeys, setExpandedKeys] = useState<Set<string | number>>(new Set());
+
+  // 🔧 Riga selezionata per il modal "Dati tecnici" — stato e rendering del
+  // modal restano interamente qui, nessuna pagina consumer deve occuparsene.
+  const [technicalDetailsItem, setTechnicalDetailsItem] = useState<T | null>(null);
+
+  // 🔑 "Dati tecnici" è sempre disponibile per root, su ogni Table, a
+  // prescindere da quali altre azioni la pagina abbia configurato — vedi
+  // TableCapabilitiesProvider (ADR021/022).
+  const { isRoot } = useTableCapabilities();
+  const showActionsColumn = Boolean(rowActions?.enabled) || isRoot;
 
   const toggleExpanded = (key: string | number) => {
     setExpandedKeys(prev => {
@@ -182,14 +196,14 @@ function Table<T>({
   const preparedColumns = React.useMemo(() => {
     const cols = [...columns];
 
-    if (rowActions?.enabled) {
+    if (showActionsColumn) {
       const actionsColumn: TableColumn<T> = {
-        header: rowActions.header || 'Azioni',
+        header: rowActions?.header || 'Azioni',
         accessor: () => null, // Will be overridden in render
         className: 'w-20', // Fixed width for actions
       };
 
-      if (rowActions.position === 'start') {
+      if (rowActions?.position === 'start') {
         cols.unshift(actionsColumn);
       } else {
         cols.push(actionsColumn);
@@ -197,7 +211,7 @@ function Table<T>({
     }
 
     return cols;
-  }, [columns, rowActions]);
+  }, [columns, rowActions, showActionsColumn]);
 
   // 🎯 Handle column header click for sorting
   const handleSort = (column: TableColumn<T>) => {
@@ -281,49 +295,62 @@ function Table<T>({
 
   // 🛠️ Generate actions for row
   const generateRowActions = (item: T): Action[] => {
-    if (!rowActions?.enabled) return [];
-
     const actions: Action[] = [];
 
-    // Custom actions first
-    if (rowActions.actions) {
-      actions.push(...rowActions.actions(item));
-    }
+    if (rowActions?.enabled) {
+      // Custom actions first
+      if (rowActions.actions) {
+        actions.push(...rowActions.actions(item));
+      }
 
-    // Quick actions
-    if (rowActions.quickActions?.edit?.enabled) {
-      const editConfig = rowActions.quickActions.edit;
-      const canEdit = editConfig.canEdit?.(item) ?? true;
+      // Quick actions
+      if (rowActions.quickActions?.edit?.enabled) {
+        const editConfig = rowActions.quickActions.edit;
+        const canEdit = editConfig.canEdit?.(item) ?? true;
 
-      actions.push({
-        id: 'edit',
-        label: 'Modifica',
-        onClick: () => editConfig.onEdit(item),
-        disabled: !canEdit,
-        variant: 'default',
-      });
-    }
+        actions.push({
+          id: 'edit',
+          label: 'Modifica',
+          onClick: () => editConfig.onEdit(item),
+          disabled: !canEdit,
+          variant: 'default',
+        });
+      }
 
-    if (rowActions.quickActions?.delete?.enabled) {
-      const deleteConfig = rowActions.quickActions.delete;
-      const canDelete = deleteConfig.canDelete?.(item) ?? true;
+      if (rowActions.quickActions?.delete?.enabled) {
+        const deleteConfig = rowActions.quickActions.delete;
+        const canDelete = deleteConfig.canDelete?.(item) ?? true;
 
-      actions.push({
-        id: 'delete',
-        label: 'Elimina',
-        onClick: () => {
-          if (deleteConfig.requireConfirmation) {
-            const itemName = deleteConfig.getItemName?.(item) || 'questo elemento';
-            if (window.confirm(`Sei sicuro di voler eliminare ${itemName}?`)) {
+        actions.push({
+          id: 'delete',
+          label: 'Elimina',
+          onClick: () => {
+            if (deleteConfig.requireConfirmation) {
+              const itemName = deleteConfig.getItemName?.(item) || 'questo elemento';
+              if (window.confirm(`Sei sicuro di voler eliminare ${itemName}?`)) {
+                deleteConfig.onDelete(item);
+              }
+            } else {
               deleteConfig.onDelete(item);
             }
-          } else {
-            deleteConfig.onDelete(item);
-          }
-        },
-        disabled: !canDelete,
-        variant: 'danger',
-        divider: rowActions.quickActions?.edit?.enabled, // Add divider if edit is also enabled
+          },
+          disabled: !canDelete,
+          variant: 'danger',
+          divider: rowActions.quickActions?.edit?.enabled, // Add divider if edit is also enabled
+        });
+      }
+    }
+
+    // "Dati tecnici": sempre presente per root, indipendentemente da quali
+    // altre azioni la pagina abbia configurato — vedi TableCapabilitiesProvider.
+    if (isRoot) {
+      actions.push({
+        id: 'technicalDetails',
+        label: 'Dati tecnici',
+        icon: <Database className='w-4 h-4' />,
+        onClick: () => setTechnicalDetailsItem(item),
+        variant: 'default',
+        divider: actions.length > 0, // separata dalle azioni precedenti, se presenti
       });
     }
 
@@ -332,18 +359,22 @@ function Table<T>({
 
   // 🎨 Render actions cell
   const renderActionsCell = (item: T) => {
-    if (!rowActions?.enabled) return null;
+    if (!showActionsColumn) return null;
 
     const actions = generateRowActions(item);
     if (actions.length === 0) return null;
 
-    const mode = rowActions.mode || 'menu';
+    const mode = rowActions?.mode || 'menu';
 
     switch (mode) {
-      case 'buttons':
+      case 'buttons': {
+        // Modalità "solo pulsanti": nessun menu per azioni personalizzate,
+        // ma "Dati tecnici" (root) resta garantita tramite un menu minimo.
+        const technicalDetailsAction = actions.find(a => a.id === 'technicalDetails');
+
         return (
           <div className='flex items-center space-x-1'>
-            {rowActions.quickActions?.edit?.enabled && (
+            {rowActions?.quickActions?.edit?.enabled && (
               <EditAction
                 item={item}
                 onEdit={rowActions.quickActions.edit.onEdit}
@@ -352,7 +383,7 @@ function Table<T>({
                 size={size === 'sm' ? 'xs' : 'xs'}
               />
             )}
-            {rowActions.quickActions?.delete?.enabled && (
+            {rowActions?.quickActions?.delete?.enabled && (
               <DeleteAction
                 item={item}
                 onDelete={rowActions.quickActions.delete.onDelete}
@@ -363,17 +394,21 @@ function Table<T>({
                 size={size === 'sm' ? 'xs' : 'xs'}
               />
             )}
+            {technicalDetailsAction && (
+              <ActionMenu actions={[technicalDetailsAction]} size={size === 'sm' ? 'sm' : 'md'} align='end' />
+            )}
           </div>
         );
+      }
 
       case 'mixed': {
-        // Show primary actions as buttons, others in menu
+        // Show primary actions as buttons, others (incluso "Dati tecnici") in menu
         const secondaryActions = actions.filter(a => !['edit', 'delete'].includes(a.id));
 
         return (
           <div className='flex items-center space-x-1'>
             {/* Render primary actions as individual buttons */}
-            {rowActions.quickActions?.edit?.enabled && (
+            {rowActions?.quickActions?.edit?.enabled && (
               <EditAction
                 item={item}
                 onEdit={rowActions.quickActions.edit.onEdit}
@@ -382,7 +417,7 @@ function Table<T>({
                 size={size === 'sm' ? 'xs' : 'xs'}
               />
             )}
-            {rowActions.quickActions?.delete?.enabled && (
+            {rowActions?.quickActions?.delete?.enabled && (
               <DeleteAction
                 item={item}
                 onDelete={rowActions.quickActions.delete.onDelete}
@@ -408,10 +443,11 @@ function Table<T>({
   };
 
   return (
+    <>
     <div className={cn('overflow-x-auto', className)}>
       <table className={cn('min-w-full divide-y divide-border-default', sizeClasses[size])}>
         {/* 📊 Table Header */}
-        <thead className='bg-bg-secondary'>
+        <thead className='bg-bg-info'>
           <tr>
             {expandable && <th className={cn(headerPaddingClasses[size], 'w-10')}></th>}
             {preparedColumns.map((column, index) => (
@@ -472,9 +508,9 @@ function Table<T>({
                   {preparedColumns.map((column, colIndex) => {
                     // Handle actions column
                     const isActionsColumn =
-                      rowActions?.enabled &&
-                      ((rowActions.position === 'start' && colIndex === 0) ||
-                        (rowActions.position !== 'start' && colIndex === preparedColumns.length - 1));
+                      showActionsColumn &&
+                      ((rowActions?.position === 'start' && colIndex === 0) ||
+                        (rowActions?.position !== 'start' && colIndex === preparedColumns.length - 1));
 
                     if (isActionsColumn) {
                       return (
@@ -537,6 +573,15 @@ function Table<T>({
         </tbody>
       </table>
     </div>
+
+    {isRoot && (
+      <TechnicalDetailsModal
+        isOpen={!!technicalDetailsItem}
+        onClose={() => setTechnicalDetailsItem(null)}
+        record={technicalDetailsItem as Record<string, unknown> | null}
+      />
+    )}
+    </>
   );
 }
 

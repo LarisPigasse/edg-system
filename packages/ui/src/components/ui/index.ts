@@ -32,3 +32,12 @@ export type { ComponentCategory } from './info-card/InfoCard';
 export { default as Modal } from './modal/Modal';
 export { modalData } from './modal/Modal.data';
 export type { ModalSize } from './modal/Modal';
+
+// DetailModal
+export { default as DetailModal } from './detail-modal/DetailModal';
+export { detailModalData } from './detail-modal/DetailModal.data';
+export type { DetailField, DetailSection } from './detail-modal/DetailModal';
+
+// TechnicalDetailsModal
+export { default as TechnicalDetailsModal } from './technical-details-modal/TechnicalDetailsModal';
+export { technicalDetailsModalData } from './technical-details-modal/TechnicalDetailsModal.data';

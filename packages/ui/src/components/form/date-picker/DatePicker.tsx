@@ -1,7 +1,7 @@
 // src/core/components/form/date-picker/DatePicker.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight } from '../../../utils/icons';
 
 import { cn } from '../../../utils';
 import { useClickOutside } from '../../../hooks';

@@ -1,7 +1,7 @@
 // src/core/components/layout/PageHeader/PageHeader.tsx
 
 import React from 'react';
-import { RefreshCw } from 'lucide-react';
+import { iconMap } from '../../../utils';
 import { Tooltip } from '../../feedback';
 import { Button } from '../../ui';
 
@@ -34,7 +34,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, onRefre
           {onRefresh && (
             <Tooltip content='Aggiorna' side='bottom'>
               <Button variant='secondary' size='md' onClick={onRefresh} disabled={isLoading}>
-                <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                <iconMap.refresh className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
             </Tooltip>
           )}

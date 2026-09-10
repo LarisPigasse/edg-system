@@ -1,7 +1,7 @@
 // src/core/components/navigation/custom/SettingsMenu.tsx
 import React, { useEffect } from 'react';
 import { useUISettings } from '../../../state/hooks';
-import { X } from 'lucide-react';
+import { iconMap } from '../../../utils';
 
 interface SettingsMenuProps {
   className?: string;
@@ -61,7 +61,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ className = '' }) => {
                 className='p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-lg transition-colors'
                 aria-label='Chiudi menu'
               >
-                <X className='w-4 h-4' />
+                <iconMap.close className='w-4 h-4' />
               </button>
             </div>
 

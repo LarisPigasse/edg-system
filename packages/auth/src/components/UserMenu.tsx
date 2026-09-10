@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUISettings, useEdgConfig } from '@edg/ui';
 import { useAuth } from '../hooks';
 import { UserAvatar } from '@edg/ui';
-import { X, User, Settings, LogOut, Mail, Shield, Lock } from 'lucide-react';
+import { User, Settings, LogOut, Mail, Shield, Lock, iconMap } from '@edg/ui';
 
 interface UserMenuProps {
   className?: string;
@@ -67,6 +67,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
     closeUserMenu();
   };
 
+  // ============================================================================
+  // HANDLER IL MIO PROFILO
+  // ============================================================================
+  const handleProfile = () => {
+    navigate(routes.profile);
+    closeUserMenu();
+  };
+
   if (!userMenuOpen) return null;
 
   // Dati utente dall'auth state
@@ -118,7 +126,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
                 aria-label='Chiudi menu'
                 disabled={loading}
               >
-                <X className='w-4 h-4' />
+                <iconMap.close className='w-4 h-4' />
               </button>
             </div>
           </div>
@@ -128,17 +136,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
             {/* Profilo */}
             <button
               className='w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed'
-              onClick={() => {
-                // TODO: Navigate to profile
-                console.log('Profile clicked');
-                closeUserMenu();
-              }}
+              onClick={handleProfile}
               disabled={loading}
             >
               <User className='w-4 h-4 text-text-secondary' />
               <div>
                 <span className='text-text-primary font-medium block'>Il mio profilo</span>
-                <span className='text-text-secondary text-sm block'>Gestisci il tuo account</span>
+                <span className='text-text-secondary text-sm block'>Dati account, ruolo e permessi</span>
               </div>
             </button>
 
@@ -157,18 +161,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
 
             {/* Preferenze */}
             <button
-              className='w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed'
-              onClick={() => {
-                // TODO: Navigate to preferences
-                console.log('Preferences clicked');
-                closeUserMenu();
-              }}
-              disabled={loading}
+              className='w-full px-4 py-3 text-left flex items-center space-x-3 opacity-50 cursor-not-allowed'
+              disabled
+              title='Non ancora disponibile'
             >
               <Settings className='w-4 h-4 text-text-secondary' />
               <div>
                 <span className='text-text-primary font-medium block'>Preferenze</span>
-                <span className='text-text-secondary text-sm block'>Personalizza l'esperienza</span>
+                <span className='text-text-secondary text-sm block'>Non ancora disponibile</span>
               </div>
             </button>
 

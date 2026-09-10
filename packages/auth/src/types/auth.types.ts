@@ -25,9 +25,12 @@ export interface AuthAccount {
   id: number;
   email: string;
   accountType: AccountType;
+  tenantId: number; // ADR009
   roleId: number;
   permissions: string[];
   roleName?: string;
+  modules: string[]; // ADR009: moduli attivi del tenant, solo per UX (menu/route visibili). Il controllo reale è nel gateway.
+  tenantName?: string | null; // Nome del tenant, solo per la pagina profilo (display)
 }
 
 // ============================================================================

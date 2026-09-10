@@ -100,7 +100,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             <label
               className={cn(
                 "absolute left-0 pointer-events-none select-none transition-all duration-200 ease-out",
-                isFloating ? "top-0 text-sm font-medium" : "top-1/2 -translate-y-1/2 text-base",
+                isFloating ? "top-0 text-sm font-medium" : "top-1/2 -translate-y-1/2 text-sm",
                 open && !hasError ? "text-text-primary" : "text-text-label",
                 hasError && "text-text-error"
               )}

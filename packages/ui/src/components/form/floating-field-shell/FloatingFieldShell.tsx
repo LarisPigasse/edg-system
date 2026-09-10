@@ -61,9 +61,11 @@ const SIZE_CONFIG: Record<FloatingFieldShellSize, SizeConfigEntry> = {
  * Shell condivisa per campi custom con floating label e popup Portal (DatePicker,
  * TimePicker, e futuri componenti simili). Calibrata per essere visivamente identica
  * a Input.tsx nella variante "md": stesso padding verticale asimmetrico (pt-5 pb-2),
- * stessa sottolineatura da 1px, stessa animazione della label (spostamento + cambio
- * font-size, MAI transform: scale — è proprio la scala a causare la sovrapposizione
- * osservata in produzione).
+ * stessa sottolineatura da 1px. La label anima SOLO la posizione (mai transform:
+ * scale — è proprio la scala a causare la sovrapposizione osservata in produzione):
+ * la dimensione resta sempre quella "in alto" (config.floatingTextSize), anche
+ * mentre funge da placeholder al centro, per evitare che cambi dimensione durante
+ * lo spostamento.
  *
  * Puramente presentazionale: non gestisce apertura/chiusura di popup, solo l'aspetto
  * del campo (contenitore, input, label, icona opzionale, sottolineatura, helper/errore).
@@ -127,10 +129,12 @@ export const FloatingFieldShell = React.forwardRef<HTMLInputElement, FloatingFie
                     'top-0 font-medium',
                     config.floatingTextSize,
                     isFocused && !hasError && 'text-text-link',
-                    !isFocused && !hasError && 'text-text-secondary',
+                    // Stesso comportamento di Input.tsx: valore senza focus
+                    // = colore discreto del placeholder.
+                    !isFocused && !hasError && 'text-text-placeholder',
                     hasError && 'text-text-error'
                   )
-                : cn('top-1/2 -translate-y-1/2', config.textSize, 'text-text-placeholder'),
+                : cn('top-1/2 -translate-y-1/2', config.floatingTextSize, 'text-text-placeholder'),
               disabled && 'text-text-disabled'
             )}
           >

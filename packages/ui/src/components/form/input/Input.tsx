@@ -168,12 +168,16 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             // Label in alto quando c'è focus o valore
             'top-0 text-sm font-medium',
             isFocused && !hasError && 'text-text-link',
-            !isFocused && !hasError && 'text-text-secondary',
+            // Valore presente ma senza focus: stesso colore discreto del
+            // placeholder, per un aspetto più leggero — il focus resta
+            // l'unico stato che "accende" la label.
+            !isFocused && !hasError && 'text-text-placeholder',
             hasError && 'text-text-error'
           )
         : cn(
-            // Label centrata quando vuoto e non in focus
-            'top-1/2 -translate-y-1/2 text-base text-text-placeholder'
+            // Label centrata quando vuoto e non in focus — stessa text-sm dello
+            // stato "in alto": solo la posizione anima, mai la dimensione
+            'top-1/2 -translate-y-1/2 text-sm text-text-placeholder'
           ),
       disabled && 'text-text-disabled'
     );

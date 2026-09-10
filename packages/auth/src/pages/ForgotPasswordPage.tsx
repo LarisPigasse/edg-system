@@ -9,8 +9,8 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail, CheckCircle } from 'lucide-react';
-import { Logo } from '@edg/ui';
+import { ArrowLeft, Mail, CheckCircle } from '@edg/ui';
+import { Logo, PageBackground } from '@edg/ui';
 import { Input } from '@edg/ui';
 import { Button } from '@edg/ui';
 import { authApi } from '../api';
@@ -96,46 +96,48 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (pageState === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-secondary p-4">
-        <div className="w-full max-w-md">
+      <>
+        <PageBackground />
+        <div className='relative min-h-screen flex items-center justify-center p-4'>
+        <div className='w-full max-w-md'>
           {/* Header con logo */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-6">
-              <Logo className="text-4xl" />
+          <div className='text-center mb-8'>
+            <div className='flex justify-center mb-6'>
+              <Logo className='text-4xl' />
             </div>
           </div>
 
           {/* Card successo */}
-          <div className="bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <div className='bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8 text-center'>
+            <div className='flex justify-center mb-4'>
+              <div className='w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center'>
+                <CheckCircle className='w-8 h-8 text-green-600 dark:text-green-400' />
               </div>
             </div>
 
-            <h1 className="text-xl font-semibold text-text-primary mb-2">
-              Controlla la tua email
-            </h1>
+            <h1 className='text-xl font-semibold text-text-primary mb-2'>Controlla la tua email</h1>
 
-            <p className="text-text-secondary mb-6">
-              Se esiste un account associato a <strong>{email}</strong>, riceverai un'email con le istruzioni per reimpostare la password.
+            <p className='text-text-secondary mb-6'>
+              Se esiste un account associato a <strong>{email}</strong>, riceverai un'email con le istruzioni per reimpostare la
+              password.
             </p>
 
             <Link
               to={routes.login}
-              className="inline-flex items-center justify-center gap-2 text-text-link hover:text-text-link-hover transition-colors"
+              className='inline-flex items-center justify-center gap-2 text-text-link hover:text-text-link-hover transition-colors'
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className='w-4 h-4' />
               Torna al login
             </Link>
           </div>
 
           {/* Footer */}
-          <p className="mt-8 text-center text-xs text-text-tertiary">
+          <p className='mt-8 text-center text-xs text-text-tertiary'>
             © {new Date().getFullYear()} Express Delivery Group. Tutti i diritti riservati.
           </p>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -144,77 +146,78 @@ export const ForgotPasswordPage: React.FC = () => {
   // ============================================================================
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-secondary p-4">
-      <div className="w-full max-w-md">
+    <>
+      <PageBackground />
+      <div className='relative min-h-screen flex items-center justify-center p-4'>
+      <div className='w-full max-w-md'>
         {/* Header con logo */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <Logo className="text-4xl" />
+        <div className='text-center mb-8'>
+          <div className='flex justify-center mb-6'>
+            <Logo className='text-4xl' />
           </div>
 
-          <h1 className="text-2xl font-semibold text-text-primary">
-            Password dimenticata?
-          </h1>
-          <p className="mt-2 text-sm text-text-secondary">
+          <h1 className='text-4xl font-semibold text-text-title'>Password dimenticata?</h1>
+          <p className='mt-2 text-sm text-text-secondary'>
             Inserisci la tua email e ti invieremo le istruzioni per reimpostarla
           </p>
         </div>
 
         {/* Card form */}
-        <div className="bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className='bg-bg-primary rounded-xl shadow-lg border border-border-default p-6 sm:p-8'>
+          <form onSubmit={handleSubmit} className='space-y-6'>
             {/* Errore API */}
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <div className='p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
+                <p className='text-sm text-red-600 dark:text-red-400'>{error}</p>
               </div>
             )}
 
             {/* Campo Email */}
             <Input
-              type="email"
-              label="Email"
+              type='email'
+              label='Email'
               value={email}
               onChange={handleEmailChange}
               error={formErrors.email}
               required
               disabled={loading}
-              autoComplete="email"
+              autoComplete='email'
               autoFocus
             />
 
             {/* Pulsante Submit */}
             <Button
-              type="submit"
-              variant="primary"
-              size="lg"
+              type='submit'
+              variant='primary'
+              size='lg'
               fullWidth
               isLoading={loading}
-              loadingText="Invio in corso..."
-              leftIcon={<Mail className="w-5 h-5" />}
+              loadingText='Invio in corso...'
+              leftIcon={<Mail className='w-5 h-5' />}
             >
               Invia istruzioni
             </Button>
           </form>
 
           {/* Link torna al login */}
-          <div className="mt-6 text-center">
+          <div className='mt-6 text-center'>
             <Link
               to={routes.login}
-              className="inline-flex items-center gap-2 text-sm text-text-link hover:text-text-link-hover transition-colors"
+              className='inline-flex items-center gap-2 text-sm text-text-link hover:text-text-link-hover transition-colors'
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className='w-4 h-4' />
               Torna al login
             </Link>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-xs text-text-tertiary">
+        <p className='mt-8 text-center text-xs text-text-tertiary'>
           © {new Date().getFullYear()} Express Delivery Group. Tutti i diritti riservati.
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

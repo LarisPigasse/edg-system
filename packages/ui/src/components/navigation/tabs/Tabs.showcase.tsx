@@ -8,16 +8,12 @@ import { Palette, SquarePen, Settings, Bell } from "lucide-react";
 import { Button } from "../../ui";
 import { Input, Switch } from "../../form";
 
-// ✨ Definiamo i dati per le schede, con icone nel label come nell'esempio
+// Dati per le schede: icona a sinistra dell'etichetta tramite la prop `icon`
 const showcaseItems: TabItem[] = [
   {
     id: "theme",
-    label: (
-      <>
-        <Palette size={16} />
-        <span>Tema</span>
-      </>
-    ),
+    label: "Tema",
+    icon: Palette,
     content: (
       <div className="p-4 space-y-4 max-w-md">
         <h3 className="font-semibold text-text-primary">
@@ -30,12 +26,8 @@ const showcaseItems: TabItem[] = [
   },
   {
     id: "profile",
-    label: (
-      <>
-        <SquarePen size={16} />
-        <span>Profilo</span>
-      </>
-    ),
+    label: "Profilo",
+    icon: SquarePen,
     content: (
       <div className="p-4 space-y-4 max-w-md">
         <Input label="Nome Utente" defaultValue="LarisPigasse" />
@@ -46,12 +38,8 @@ const showcaseItems: TabItem[] = [
   },
   {
     id: "notifications",
-    label: (
-      <>
-        <Bell size={16} />
-        <span>Notifiche</span>
-      </>
-    ),
+    label: "Notifiche",
+    icon: Bell,
     content: (
       <div className="p-4 space-y-4 max-w-md">
         <Switch label="Notifiche Email" checked />
@@ -61,12 +49,8 @@ const showcaseItems: TabItem[] = [
   },
   {
     id: "disabled",
-    label: (
-      <>
-        <Settings size={16} />
-        <span>Admin</span>
-      </>
-    ),
+    label: "Admin",
+    icon: Settings,
     content: <></>,
     disabled: true,
   },

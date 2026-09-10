@@ -42,6 +42,9 @@ interface PrivateRouteProps {
   /** Lista di permessi richiesti - deve averli tutti (opzionale) */
   requiredPermissions?: string[];
 
+  /** Modulo richiesto per accedere (opzionale, ADR009 - solo UX: nasconde la route se il tenant non ha il modulo attivo) */
+  requiredModule?: string;
+
   /** Path dove reindirizzare se non autenticato (default: /login) */
   redirectTo?: string;
 
@@ -78,10 +81,11 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({
   children,
   requiredPermission,
   requiredPermissions,
+  requiredModule,
   redirectTo = '/login',
   unauthorizedRedirectTo = '/',
 }) => {
-  const { isAuthenticated, initializing, hasPermission, hasAllPermissions } = useAuth();
+  const { isAuthenticated, initializing, hasPermission, hasAllPermissions, hasModule } = useAuth();
   const location = useLocation();
 
   // 1. Durante l'inizializzazione, mostra spinner
@@ -108,7 +112,12 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({
     }
   }
 
-  // 5. Tutto ok, renderizza il contenuto protetto
+  // 5. Se richiesto un modulo (ADR009), verifica che sia attivo per il tenant
+  if (requiredModule && !hasModule(requiredModule)) {
+    return <Navigate to={unauthorizedRedirectTo} replace />;
+  }
+
+  // 6. Tutto ok, renderizza il contenuto protetto
   return <>{children}</>;
 };
 

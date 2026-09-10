@@ -3,9 +3,10 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { Header, Footer } from '..';
+import PageBackground from './PageBackground';
 import { SettingsMenu } from '../../navigation';
 import { useUISettings } from '../../../state/hooks';
-import { useIsMobile, useThemedImage } from '../../../hooks';
+import { useIsMobile } from '../../../hooks';
 import { useEdgConfig } from '../../../config';
 
 interface MainLayoutProps {
@@ -29,32 +30,20 @@ interface MainLayoutProps {
  * Sulla home l'immagine si vede piena. Sulle pagine interne le si sovrappone un
  * velo del colore di fondo, così il contenuto resta leggibile: colore, opacità
  * e z-index arrivano da `EdgConfigProvider`, un punto solo da ritoccare.
+ *
+ * Il disegno vero e proprio vive in `PageBackground`, condiviso anche dalle
+ * pagine fuori dal layout (login, password dimenticata, reset password).
  */
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { footerVisible } = useUISettings();
-  const { layout, isHomeActive } = useEdgConfig();
+  const { isHomeActive } = useEdgConfig();
   const isMobile = useIsMobile();
   const { pathname } = useLocation();
 
-  const bgSrc = useThemedImage(layout.backgroundImage);
   const isHome = isHomeActive(pathname);
 
   /** Immagine a tutta finestra + velo sulle pagine interne. */
-  const background = (
-    <>
-      <div
-        aria-hidden
-        className='fixed inset-0 -z-20 bg-bg-base bg-cover bg-center bg-no-repeat'
-        style={{ backgroundImage: `url(${bgSrc})` }}
-      />
-      {!isHome && (
-        <div
-          aria-hidden
-          className={`fixed inset-0 ${layout.innerPageBgZIndex} ${layout.innerPageBgColor} ${layout.innerPageBgOpacity}`}
-        />
-      )}
-    </>
-  );
+  const background = <PageBackground veil={!isHome} />;
 
   if (isMobile) {
     return (

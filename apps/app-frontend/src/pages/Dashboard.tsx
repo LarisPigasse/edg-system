@@ -13,7 +13,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className='flex h-full min-h-[50vh] flex-col items-center justify-center px-4 text-center'>
       <h1>
-        <span className='font-semibold text-xl sm:text-2xl uppercase'>{APP_CONFIG.SIGLA}</span>
+        <span className='font-semibold text-text-primary text-xl sm:text-2xl uppercase'>{APP_CONFIG.SIGLA}</span>
         <span className={`${APP_CONFIG.COLORE} font-bold text-3xl font-semibold tracking-tight sm:text-5xl `}>
           {APP_CONFIG.TITOLO}
         </span>

@@ -10,6 +10,7 @@ import {
   ForgotPasswordPage,
   ResetPasswordPage,
   ChangePasswordPage,
+  ProfilePage,
   PrivateRoute,
   UserMenu,
 } from '@edg/auth';
@@ -19,6 +20,8 @@ import { EDG_CONFIG, ROUTES } from './config';
 import { Dashboard } from './pages';
 
 const NotFound = lazy(() => import('./pages/NotFound'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
 
 
 /** Inizializza tema e sessione una volta sola all'avvio. */
@@ -85,6 +88,30 @@ const App: React.FC = () => {
                                 element={
                                   <PrivateRoute>
                                     <ChangePasswordPage />
+                                  </PrivateRoute>
+                                }
+                              />
+                              <Route
+                                path={ROUTES.PROFILE}
+                                element={
+                                  <PrivateRoute>
+                                    <ProfilePage />
+                                  </PrivateRoute>
+                                }
+                              />
+                              <Route
+                                path={ROUTES.TERMS}
+                                element={
+                                  <PrivateRoute>
+                                    <TermsPage />
+                                  </PrivateRoute>
+                                }
+                              />
+                              <Route
+                                path={ROUTES.SUPPORT}
+                                element={
+                                  <PrivateRoute>
+                                    <SupportPage />
                                   </PrivateRoute>
                                 }
                               />

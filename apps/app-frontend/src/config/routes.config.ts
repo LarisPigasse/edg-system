@@ -19,7 +19,12 @@ export const ROUTES = {
 
   // User menu
   SETTINGS: '/settings',
+  PROFILE: '/profile',
   NOT_FOUND: '/404',
+
+  // Footer
+  TERMS: '/terms',
+  SUPPORT: '/support',
 } as const;
 
 export type RouteKeys = keyof typeof ROUTES;

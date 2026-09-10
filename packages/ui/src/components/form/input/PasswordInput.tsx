@@ -1,7 +1,7 @@
 // src/core/components/form/input/PasswordInput.tsx
 
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from '../../../utils/icons';
 import { Input } from './Input';
 import { cn } from '../../../utils';
 

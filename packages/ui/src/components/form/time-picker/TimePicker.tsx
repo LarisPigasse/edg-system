@@ -1,7 +1,7 @@
 // src/core/components/form/time-picker/TimePicker.tsx
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Clock } from 'lucide-react';
+import { Clock } from '../../../utils/icons';
 
 import { cn } from '../../../utils';
 import { useClickOutside } from '../../../hooks';

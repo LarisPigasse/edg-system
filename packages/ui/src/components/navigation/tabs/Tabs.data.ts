@@ -15,7 +15,8 @@ export const tabsData: ComponentData = {
       name: "items",
       type: "TabItem[]",
       required: true,
-      description: "Un array di oggetti che definisce le schede (label e contenuto).",
+      description:
+        "Un array di oggetti che definisce le schede: id, label, contenuto, un'icona opzionale (componente Lucide, mostrata a sinistra della label) e disabled.",
     },
     { name: "defaultTab", type: "string", description: "L'ID della scheda da attivare di default." },
     {
@@ -32,9 +33,9 @@ export const tabsData: ComponentData = {
       title: "Variante 'default'",
       description: "La variante standard, adatta per la maggior parte dei layout.",
       code: `const items = [
-  { id: 'profilo', label: 'Profilo', content: 'Contenuto del profilo...' },
-  { id: 'account', label: 'Account', content: 'Contenuto dell\\'account...' },
-  { id: 'notifiche', label: 'Notifiche', content: 'Contenuto delle notifiche...' }
+  { id: 'profilo', label: 'Profilo', icon: User, content: 'Contenuto del profilo...' },
+  { id: 'account', label: 'Account', icon: Settings, content: 'Contenuto account...' },
+  { id: 'notifiche', label: 'Notifiche', icon: Bell, content: 'Contenuto delle notifiche...' }
 ];
 
 <Tabs items={items} defaultTab="profilo" />`,
@@ -61,5 +62,5 @@ export const tabsData: ComponentData = {
     },
   ],
   notes:
-    "Il componente gestisce internamente lo stato della scheda attiva. Il contenuto di ogni scheda può essere un qualsiasi nodo React (testo, altri componenti, ecc.). Su schermi piccoli, l'elenco delle schede diventa scrollabile orizzontalmente.",
+    "Il componente gestisce internamente lo stato della scheda attiva. Il contenuto di ogni scheda può essere un qualsiasi nodo React (testo, altri componenti, ecc.). L'icona opzionale di ogni scheda si affianca sempre a sinistra della label. Su schermi piccoli, l'elenco delle schede diventa scrollabile orizzontalmente.",
 };

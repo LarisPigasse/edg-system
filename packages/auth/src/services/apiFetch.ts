@@ -83,7 +83,8 @@ async function tryRefreshToken(): Promise<string | null> {
  * Fetch base con retry automatico su 401.
  *
  * Flusso:
- * 1. Esegue la chiamata con il token corrente
+ * 1. Esegue la chiamata con il token corrente e Content-Type/Authorization
+ *    di default (da getAuthHeaders), sovrascrivibili passando `headers`
  * 2. Se riceve 401 e non è già un retry → tenta refresh token
  * 3. Se il refresh ha successo → ripete la chiamata con il nuovo token
  * 4. Se il refresh fallisce → lancia l'errore originale (401)
@@ -93,9 +94,19 @@ async function tryRefreshToken(): Promise<string | null> {
  * @param isRetry   Flag interno per evitare loop infiniti — non usare dall'esterno
  */
 export async function apiFetch<T>(url: string, options: RequestInit = {}, isRetry = false): Promise<T> {
+  // Content-Type + Authorization di default: senza Content-Type esplicito,
+  // fetch() lo deduce dal body (una stringa JSON.stringify diventa
+  // 'text/plain', che express.json() ignora silenziosamente — il body non
+  // viene fatto il parsing e arriva vuoto al backend).
+  const headers: Record<string, string> = {
+    ...getAuthHeaders(),
+    ...(options.headers as Record<string, string> | undefined),
+  };
+
   const response = await fetch(url, {
     cache: 'no-store',
     ...options,
+    headers,
   });
 
   // Gestione 401 con refresh automatico (solo al primo tentativo)
@@ -104,10 +115,7 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}, isRetr
     if (newToken) {
       const retryOptions: RequestInit = {
         ...options,
-        headers: {
-          ...(options.headers as Record<string, string>),
-          Authorization: `Bearer ${newToken}`,
-        },
+        headers: { ...headers, Authorization: `Bearer ${newToken}` },
       };
       return apiFetch<T>(url, retryOptions, true);
     }
@@ -117,7 +125,21 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}, isRetr
     const errorData = await response.json().catch(() => ({
       error: `HTTP error ${response.status}`,
     }));
-    throw new Error(errorData.error || errorData.message || `HTTP error ${response.status}`);
+
+    const baseMessage: string = errorData.error || errorData.message || `HTTP error ${response.status}`;
+
+    // I microservizi EDG allegano agli errori di validazione (Joi, abortEarly:false)
+    // il dettaglio dei singoli campi non validi in `errors: [{ field, message }]`.
+    // Senza questo, il chiamante vedrebbe solo un generico "Dati non validi" —
+    // qui lo si aggiunge al messaggio così l'errore mostrato all'utente (e nei
+    // log) dice subito quale campo e perché.
+    const details: string = Array.isArray(errorData.errors)
+      ? (errorData.errors as Array<{ field?: string; message: string }>)
+          .map(e => (e.field ? `${e.field}: ${e.message}` : e.message))
+          .join('; ')
+      : '';
+
+    throw new Error(details ? `${baseMessage}: ${details}` : baseMessage);
   }
 
   // 204 No Content — nessun body da parsare

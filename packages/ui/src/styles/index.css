@@ -5,8 +5,13 @@
 
 /* Tailwind v4 rileva da solo le classi nei file dell'applicazione che lo importa,
    ma non risale fuori dalla radice del progetto Vite: senza questa riga le classi
-   usate dai componenti di @edg/ui non finirebbero nel CSS generato. */
-@source '../';
+   usate dai componenti condivisi non finirebbero nel CSS generato.
+   Copre l'intera cartella packages/ (non solo @edg/ui) perché anche @edg/auth
+   (UserMenu, LoginForm, ...) e i futuri pacchetti condivisi usano classi Tailwind
+   proprie: con '../' soltanto, le classi usate SOLO in un altro pacchetto (es. il
+   posizionamento e le dimensioni del pannello di UserMenu: top-14, w-72, ecc.)
+   non venivano generate, lasciando il componente presente nel DOM ma invisibile. */
+@source '../../../';
 
 @theme {
   /* Font personalizzato */
@@ -73,6 +78,7 @@
   --color-text-error: var(--text-error);
   --color-text-menu: var(--text-menu);
   --color-text-menu-active: var(--text-menu-active);
+  --color-text-title: var(--text-title);
 
   /* Bordi e linee  - mapping diretto da globals.css */
   --color-border-default: var(--border-default);

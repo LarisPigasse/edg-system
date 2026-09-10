@@ -1,7 +1,8 @@
 // src/core/components/feedback/error-boundary/ErrorFallback.tsx
 import React from 'react';
 import type { ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, Home, ChevronDown, ChevronUp } from '../../../utils/icons';
+import { iconMap } from '../../../utils';
 
 interface ErrorFallbackProps {
   error: Error | null;
@@ -88,7 +89,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo, onReset
               onClick={onReset}
               className='inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-action-primary text-white hover:bg-action-primary-hover transition-colors font-medium'
             >
-              <RefreshCw className='w-4 h-4' />
+              <iconMap.refresh className='w-4 h-4' />
               Riprova
             </button>
           )}
@@ -97,7 +98,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, errorInfo, onReset
             onClick={handleReload}
             className='inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-bg-secondary border border-border-default text-text-primary hover:bg-bg-hover transition-colors font-medium'
           >
-            <RefreshCw className='w-4 h-4' />
+            <iconMap.refresh className='w-4 h-4' />
             Ricarica pagina
           </button>
 

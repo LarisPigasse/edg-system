@@ -44,6 +44,11 @@ export { AUTH_STORAGE_KEYS } from './types';
 
 export { authApi } from './api';
 
+// apiFetch: utility fetch condivisa (Bearer token + refresh automatico su 401).
+// Riusabile da qualunque modulo che chiami un microservizio dietro il gateway,
+// non solo auth-service — es. le pagine di gestione dati in pro-frontend.
+export { apiFetch, getAuthToken, getAuthHeaders } from './services/apiFetch';
+
 // ============================================================================
 // STORE - Redux slice per stato globale
 // ============================================================================
@@ -71,6 +76,8 @@ export {
   selectAuthInitializing,
   selectAuthError,
   selectPermissions,
+  selectModules,
+  selectTenantId,
 } from './store';
 
 // ============================================================================
@@ -90,4 +97,4 @@ export { PrivateRoute, LoginForm } from './components';
 // PAGES - Pagine complete
 // ============================================================================
 
-export { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage } from './pages';
+export { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage, ProfilePage } from './pages';
