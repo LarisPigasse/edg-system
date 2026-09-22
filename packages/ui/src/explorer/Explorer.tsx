@@ -15,6 +15,10 @@ import { tableData } from '../components/data/table/Table.data';
 import { TableShowcase } from '../components/data/table/Table.showcase';
 import { tableLinkData } from '../components/data/table-link/TableLink.data';
 import { TableLinkShowcase } from '../components/data/table-link/TableLink.showcase';
+import { statCardData } from '../components/data/stat-card/StatCard.data';
+import { StatCardShowcase } from '../components/data/stat-card/StatCard.showcase';
+import { statTileData } from '../components/data/stat-tile/StatTile.data';
+import { StatTileShowcase } from '../components/data/stat-tile/StatTile.showcase';
 
 // LAYOUT Components
 import { cardData } from '../components/layout/card/Card.data';
@@ -202,6 +206,14 @@ const RESTRUCTURED_COMPONENTS: Record<string, RestructuredComponent> = {
     data: spinnerData,
     showcase: SpinnerShowcase,
   },
+  statCard: {
+    data: statCardData,
+    showcase: StatCardShowcase,
+  },
+  statTile: {
+    data: statTileData,
+    showcase: StatTileShowcase,
+  },
   switch: {
     data: switchData,
     showcase: SwitchShowcase,
@@ -378,7 +390,7 @@ const Explorer: React.FC<ExplorerProps> = ({
 
       {/* Components Grid */}
       {filteredComponents.length > 0 ? (
-        <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4'>
+        <div className='grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2'>
           {filteredComponents.map(component => (
             <InfoCard
               key={component.id}

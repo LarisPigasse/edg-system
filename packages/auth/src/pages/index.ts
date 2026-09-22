@@ -4,3 +4,4 @@ export { ForgotPasswordPage } from './ForgotPasswordPage';
 export { ResetPasswordPage } from './ResetPasswordPage';
 export { ChangePasswordPage } from './ChangePasswordPage';
 export { ProfilePage } from './ProfilePage';
+export { SessioneTerminataPage } from './SessioneTerminataPage';

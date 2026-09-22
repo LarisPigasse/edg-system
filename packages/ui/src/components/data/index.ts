@@ -16,3 +16,8 @@ export type { TableLinkVariant } from './table-link/TableLink';
 export { default as StatCard } from './stat-card/StatCard';
 export { statCardData } from './stat-card/StatCard.data';
 export type { StatCardProps } from './stat-card/StatCard';
+
+// StatTile
+export { default as StatTile } from './stat-tile/StatTile';
+export { statTileData } from './stat-tile/StatTile.data';
+export type { StatTileProps, StatTileTone } from './stat-tile/StatTile';

@@ -444,143 +444,143 @@ function Table<T>({
 
   return (
     <>
-    <div className={cn('overflow-x-auto', className)}>
-      <table className={cn('min-w-full divide-y divide-border-default', sizeClasses[size])}>
-        {/* 📊 Table Header */}
-        <thead className='bg-bg-info'>
-          <tr>
-            {expandable && <th className={cn(headerPaddingClasses[size], 'w-10')}></th>}
-            {preparedColumns.map((column, index) => (
-              <th
-                key={index}
-                onClick={() => handleSort(column)}
-                className={cn(
-                  headerPaddingClasses[size],
-                  'text-xs font-medium text-text-secondary uppercase tracking-wider',
-                  column.className?.includes('text-right') ? 'text-right' : 'text-left',
-                  column.sortable && 'cursor-pointer hover:bg-bg-hover transition-colors',
-                  column.className
-                )}
-              >
-                <div className='flex items-center space-x-1'>
-                  <span>{typeof column.header === 'function' ? column.header() : column.header}</span>
-                  {column.sortable && getSortIcon(column)}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-
-        {/* 📋 Table Body */}
-        <tbody className='bg-bg-primary divide-y divide-border-default'>
-          {sortedData.map((item, rowIndex) => {
-            const key = keyExtractor(item);
-            const isExpanded = expandable ? expandedKeys.has(key) : false;
-
-            return (
-              <React.Fragment key={key}>
-                <tr
-                  onClick={() => handleRowClick(item)}
+      <div className={cn('overflow-x-auto', className)}>
+        <table className={cn('min-w-full divide-y divide-border-default', sizeClasses[size])}>
+          {/* 📊 Table Header */}
+          <thead className='bg-bg-info border-b border-blue-400'>
+            <tr>
+              {expandable && <th className={cn(headerPaddingClasses[size], 'w-10')}></th>}
+              {preparedColumns.map((column, index) => (
+                <th
+                  key={index}
+                  onClick={() => handleSort(column)}
                   className={cn(
-                    'transition-colors duration-200',
-                    hoverable && 'hover:bg-bg-hover',
-                    striped && rowIndex % 2 === 1 && 'bg-bg-secondary/30',
-                    onRowClick && 'cursor-pointer'
+                    headerPaddingClasses[size],
+                    'text-xs font-medium text-text-secondary uppercase tracking-wider',
+                    column.className?.includes('text-right') ? 'text-right' : 'text-left',
+                    column.sortable && 'cursor-pointer hover:bg-bg-hover transition-colors',
+                    column.className
                   )}
                 >
-                  {expandable && (
-                    <td
-                      className={cn(cellPaddingClasses[size], 'whitespace-nowrap')}
-                      onClick={e => {
-                        e.stopPropagation(); // Non attivare onRowClick
-                        toggleExpanded(key);
-                      }}
-                    >
-                      <ChevronRight
-                        className={cn(
-                          'w-4 h-4 text-text-secondary transition-transform duration-200 cursor-pointer',
-                          isExpanded && 'rotate-90'
-                        )}
-                      />
-                    </td>
-                  )}
+                  <div className='flex items-center space-x-1'>
+                    <span>{typeof column.header === 'function' ? column.header() : column.header}</span>
+                    {column.sortable && getSortIcon(column)}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-                  {preparedColumns.map((column, colIndex) => {
-                    // Handle actions column
-                    const isActionsColumn =
-                      showActionsColumn &&
-                      ((rowActions?.position === 'start' && colIndex === 0) ||
-                        (rowActions?.position !== 'start' && colIndex === preparedColumns.length - 1));
+          {/* 📋 Table Body */}
+          <tbody className='bg-bg-primary divide-y divide-border-default'>
+            {sortedData.map((item, rowIndex) => {
+              const key = keyExtractor(item);
+              const isExpanded = expandable ? expandedKeys.has(key) : false;
 
-                    if (isActionsColumn) {
+              return (
+                <React.Fragment key={key}>
+                  <tr
+                    onClick={() => handleRowClick(item)}
+                    className={cn(
+                      'transition-colors duration-200',
+                      hoverable && 'hover:bg-bg-hover',
+                      striped && rowIndex % 2 === 1 && 'bg-bg-secondary/30',
+                      onRowClick && 'cursor-pointer'
+                    )}
+                  >
+                    {expandable && (
+                      <td
+                        className={cn(cellPaddingClasses[size], 'whitespace-nowrap')}
+                        onClick={e => {
+                          e.stopPropagation(); // Non attivare onRowClick
+                          toggleExpanded(key);
+                        }}
+                      >
+                        <ChevronRight
+                          className={cn(
+                            'w-4 h-4 text-text-secondary transition-transform duration-200 cursor-pointer',
+                            isExpanded && 'rotate-90'
+                          )}
+                        />
+                      </td>
+                    )}
+
+                    {preparedColumns.map((column, colIndex) => {
+                      // Handle actions column
+                      const isActionsColumn =
+                        showActionsColumn &&
+                        ((rowActions?.position === 'start' && colIndex === 0) ||
+                          (rowActions?.position !== 'start' && colIndex === preparedColumns.length - 1));
+
+                      if (isActionsColumn) {
+                        return (
+                          <td
+                            key={colIndex}
+                            className={cn(cellPaddingClasses[size], 'whitespace-nowrap', column.className)}
+                            onClick={e => e.stopPropagation()} // Prevent row click
+                          >
+                            {renderActionsCell(item)}
+                          </td>
+                        );
+                      }
+
+                      // Handle regular columns
+                      const cellContent =
+                        typeof column.accessor === 'function'
+                          ? column.accessor(item)
+                          : column.render
+                            ? column.render(item)
+                            : item[column.accessor];
+
+                      const isClickableCell = column.clickable;
+
                       return (
                         <td
                           key={colIndex}
-                          className={cn(cellPaddingClasses[size], 'whitespace-nowrap', column.className)}
-                          onClick={e => e.stopPropagation()} // Prevent row click
+                          onClick={
+                            isClickableCell
+                              ? e => {
+                                  e.stopPropagation(); // Prevent row click
+                                  if (column.onCellClick) {
+                                    column.onCellClick(item);
+                                  }
+                                }
+                              : undefined
+                          }
+                          className={cn(
+                            cellPaddingClasses[size],
+                            'whitespace-nowrap text-text-primary',
+                            getClickableCellClasses(column),
+                            column.className
+                          )}
                         >
-                          {renderActionsCell(item)}
+                          {cellContent as ReactNode}
                         </td>
                       );
-                    }
-
-                    // Handle regular columns
-                    const cellContent =
-                      typeof column.accessor === 'function'
-                        ? column.accessor(item)
-                        : column.render
-                          ? column.render(item)
-                          : item[column.accessor];
-
-                    const isClickableCell = column.clickable;
-
-                    return (
-                      <td
-                        key={colIndex}
-                        onClick={
-                          isClickableCell
-                            ? e => {
-                                e.stopPropagation(); // Prevent row click
-                                if (column.onCellClick) {
-                                  column.onCellClick(item);
-                                }
-                              }
-                            : undefined
-                        }
-                        className={cn(
-                          cellPaddingClasses[size],
-                          'whitespace-nowrap text-text-primary',
-                          getClickableCellClasses(column),
-                          column.className
-                        )}
-                      >
-                        {cellContent as ReactNode}
-                      </td>
-                    );
-                  })}
-                </tr>
-
-                {expandable && isExpanded && (
-                  <tr className='bg-bg-secondary/30'>
-                    <td colSpan={preparedColumns.length + 1} className={cellPaddingClasses[size]}>
-                      {expandable.render(item)}
-                    </td>
+                    })}
                   </tr>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
 
-    {isRoot && (
-      <TechnicalDetailsModal
-        isOpen={!!technicalDetailsItem}
-        onClose={() => setTechnicalDetailsItem(null)}
-        record={technicalDetailsItem as Record<string, unknown> | null}
-      />
-    )}
+                  {expandable && isExpanded && (
+                    <tr className='bg-bg-secondary/30'>
+                      <td colSpan={preparedColumns.length + 1} className={cellPaddingClasses[size]}>
+                        {expandable.render(item)}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {isRoot && (
+        <TechnicalDetailsModal
+          isOpen={!!technicalDetailsItem}
+          onClose={() => setTechnicalDetailsItem(null)}
+          record={technicalDetailsItem as Record<string, unknown> | null}
+        />
+      )}
     </>
   );
 }

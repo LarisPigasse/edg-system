@@ -11,6 +11,7 @@
  */
 
 import apiService from './apiService';
+import { handleSessionInvalid } from './sessionGuard';
 
 // ─── Costanti storage (allineate con authSlice.ts) ───────────────────────────
 
@@ -138,6 +139,14 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}, isRetr
           .map(e => (e.field ? `${e.field}: ${e.message}` : e.message))
           .join('; ')
       : '';
+
+    // Una richiesta autenticata (Bearer presente) tornata 401 anche dopo il
+    // tentativo di refresh qui sopra significa che la sessione non è più
+    // valida (account bloccato, sessione revocata, refresh token scaduto):
+    // non è un errore che la pagina chiamante possa "gestire" da sola.
+    if (response.status === 401 && headers.Authorization) {
+      handleSessionInvalid(baseMessage);
+    }
 
     throw new Error(details ? `${baseMessage}: ${details}` : baseMessage);
   }

@@ -28,9 +28,7 @@ import type { AccountType } from '../types';
 /** Etichette leggibili per i tipi di account (AccountType del backend). */
 const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   operatore: 'Operatore',
-  partner: 'Partner',
   cliente: 'Cliente',
-  agente: 'Agente',
 };
 
 /** Un tenant/permesso con questo valore ha accesso completo (wildcard, ADR009). */

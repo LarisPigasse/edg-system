@@ -19,6 +19,7 @@ import type {
   ConfirmResetPasswordRequest,
   AuthAccount,
 } from '../types';
+import { handleSessionInvalid } from '../services/sessionGuard';
 
 // ============================================================================
 // STORAGE HELPER
@@ -78,6 +79,18 @@ const AUTH_ENDPOINT = `${API_BASE_URL}/auth`;
 // HELPER - Funzione fetch con gestione errori e token
 // ============================================================================
 
+// Endpoint le cui risposte 401 NON indicano una sessione da chiudere qui:
+// - /login: puo' fallire per credenziali errate, non per sessione invalida
+//   (e non richiede comunque un token per essere chiamato);
+// - /me e /refresh: il loro fallimento e' gia' gestito dal chiamante
+//   (initializeAuth in authSlice.ts prova prima /me, poi /refresh come
+//   fallback, e solo se anche questo fallisce imposta isAuthenticated=false,
+//   lasciando che sia PrivateRoute a portare al login — nessun bisogno di
+//   un redirect "duro" da qui, che romperebbe il refresh silenzioso normale
+//   di un token semplicemente scaduto);
+// - le pagine di reset password: pubbliche, non richiedono una sessione.
+const SESSION_GUARD_EXCLUDED_SUFFIXES = ['/login', '/me', '/refresh', '/request-reset-password', '/reset-password'];
+
 /**
  * Wrapper per fetch che:
  * - Aggiunge automaticamente Content-Type JSON
@@ -128,6 +141,9 @@ async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise
 
     // Se HTTP error (4xx, 5xx), ritorna errore strutturato
     if (!response.ok) {
+      if (response.status === 401 && token && !SESSION_GUARD_EXCLUDED_SUFFIXES.some(suffix => url.endsWith(suffix))) {
+        handleSessionInvalid(data.error || data.message);
+      }
       return {
         success: false,
         error: data.error || data.message || `Errore HTTP ${response.status}`,

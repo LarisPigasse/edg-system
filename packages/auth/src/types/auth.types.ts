@@ -13,9 +13,12 @@
 
 /**
  * Tipi di account supportati dal sistema EDG.
- * Corrisponde a AccountType nel backend.
+ * Corrisponde a AccountType nel backend. 'partner' e 'agente' non sono mai
+ * stati account type distinti: un partner e' un account 'cliente' collegato
+ * a un'anagrafica di tipo partner, un agente e' un account 'operatore' di
+ * un reparto specifico - vedi discussione del 17/09/2026.
  */
-export type AccountType = 'operatore' | 'partner' | 'cliente' | 'agente';
+export type AccountType = 'operatore' | 'cliente';
 
 /**
  * Informazioni account restituite dal login.
@@ -150,4 +153,5 @@ export const AUTH_STORAGE_KEYS = {
   ACCESS_TOKEN: 'edg_access_token',
   REFRESH_TOKEN: 'edg_refresh_token',
   ACCOUNT: 'edg_account',
+  REMEMBER_ME: 'edg_remember_me',
 } as const;

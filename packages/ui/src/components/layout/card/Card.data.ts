@@ -26,6 +26,13 @@ export const cardData: ComponentData = {
       description: "Padding interno del contenitore.",
     },
     {
+      name: "rounded",
+      type: '"none" | "sm" | "md" | "lg" | "xl" | "2xl" | "full"',
+      required: false,
+      defaultValue: '"lg"',
+      description: "Raggio degli angoli del contenitore.",
+    },
+    {
       name: "hover",
       type: "boolean",
       required: false,

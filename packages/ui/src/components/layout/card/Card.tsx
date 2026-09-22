@@ -5,6 +5,7 @@ import { cn } from "../../../utils";
 
 export type CardVariant = "default" | "elevated" | "outlined" | "flat";
 export type CardPadding = "none" | "sm" | "md" | "lg";
+export type CardRadius = "none" | "sm" | "md" | "lg" | "xl" | "2xl" | "full";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Contenuto del card */
@@ -13,6 +14,8 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: CardVariant;
   /** Padding interno */
   padding?: CardPadding;
+  /** Raggio degli angoli */
+  rounded?: CardRadius;
   /** Abilita hover effects */
   hover?: boolean;
   /** Card cliccabile */
@@ -32,6 +35,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
  * - Hover effects eleganti con border highlighting
  * - Clickable behavior con keyboard support
  * - Padding responsive e configurabile
+ * - Raggio degli angoli configurabile (rounded)
  * - Focus styling con border (no ring)
  *
  * @example
@@ -44,6 +48,7 @@ export const Card: React.FC<CardProps> = ({
   children,
   variant = "default",
   padding = "md",
+  rounded = "lg",
   hover,
   clickable = false,
   onClick,
@@ -88,11 +93,23 @@ export const Card: React.FC<CardProps> = ({
     lg: "p-6",
   };
 
+  // Configurazione raggio angoli
+  const radiusClasses: Record<CardRadius, string> = {
+    none: "rounded-none",
+    sm: "rounded-sm",
+    md: "rounded-md",
+    lg: "rounded-lg",
+    xl: "rounded-xl",
+    "2xl": "rounded-2xl",
+    full: "rounded-full",
+  };
+
   const config = variantConfig[variant];
 
   // Classi base
   const baseClasses = cn(
-    "rounded-lg transition-all duration-200 ease-in-out",
+    radiusClasses[rounded],
+    "transition-all duration-200 ease-in-out",
     config.bg,
     config.border,
     config.shadow,

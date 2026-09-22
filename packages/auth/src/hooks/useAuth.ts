@@ -273,12 +273,22 @@ export function useAuth() {
   );
 
   /**
-   * True se l'account connesso ha il ruolo 'root' (l'unico account con modulo
-   * wildcard '*', vedi tenants.seed.ts). Uso tipico: nascondere dettagli
-   * tecnici del dato (id, uuid, chiavi esterne) che non interessano mai un
-   * utente normale, anche se amministratore del proprio tenant.
+   * True se l'account connesso ha il permesso jolly '*' — stesso criterio
+   * del requireRoot() di backend (permissionMiddleware.ts, controlla
+   * account.permissions.includes('*')) e di hasPermission('*') qui sopra,
+   * NON un controllo sul nome del ruolo. Allineato così (ADR024): finché
+   * '*' resta riservato al solo ruolo root (impostato/verificato sia in UI
+   * sia server-side, vedi RolePermissionsModal e
+   * AccountController.updateRolePermissions) i due criteri coincidono, ma
+   * un controllo sul permesso reale è quello davvero coerente con cosa
+   * sblocca — non un'assunzione sul nome del ruolo.
+   *
+   * Uso tipico: nascondere dettagli tecnici del dato (id, uuid, chiavi
+   * esterne) che non interessano mai un utente normale, anche se
+   * amministratore del proprio tenant, e filtrare la voce di menu SISTEMA
+   * (vedi navigation.config.ts).
    */
-  const isRoot = account?.roleName === 'root';
+  const isRoot = hasPermission('*');
 
   // ============================================================================
   // HELPER DISPLAY - Informazioni per UI

@@ -49,6 +49,11 @@ export { authApi } from './api';
 // non solo auth-service — es. le pagine di gestione dati in pro-frontend.
 export { apiFetch, getAuthToken, getAuthHeaders } from './services/apiFetch';
 
+// Reazione centralizzata a una sessione non più valida (401 definitivo su una
+// richiesta autenticata): pulisce lo storage e forza il redirect dedicato.
+// Riusabile da un futuro controllo periodico (polling) lato app.
+export { handleSessionInvalid, clearAuthStorage } from './services/sessionGuard';
+
 // ============================================================================
 // STORE - Redux slice per stato globale
 // ============================================================================
@@ -97,4 +102,4 @@ export { PrivateRoute, LoginForm } from './components';
 // PAGES - Pagine complete
 // ============================================================================
 
-export { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage, ProfilePage } from './pages';
+export { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage, ProfilePage, SessioneTerminataPage } from './pages';
