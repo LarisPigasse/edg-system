@@ -16,6 +16,12 @@ export const ROUTES = {
   BASE_OPERATORI: '/base/operatori',
   BASE_TABELLE: '/base/tabelle',
 
+  // SISTEMA: gestione di account, permessi e tenant (ADR024) — solo root
+  SISTEMA_TENANT: '/sistema/tenant',
+  SISTEMA_ACCOUNT: '/sistema/account',
+  SISTEMA_SESSIONI: '/sistema/sessioni',
+  SISTEMA_RUOLI: '/sistema/ruoli',
+
   // Strumenti di sviluppo del design system (nascosti in produzione)
   DESIGN_TEMA: '/design/tema',
   DESIGN_COMPONENTI: '/design/componenti',
@@ -26,6 +32,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   CHANGE_PASSWORD: '/change-password',
+  SESSION_ENDED: '/sessione-terminata',
 
   // User menu
   SETTINGS: '/settings',

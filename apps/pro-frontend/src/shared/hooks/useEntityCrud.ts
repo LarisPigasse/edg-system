@@ -1,24 +1,21 @@
-// src/features/base/hooks/useEntityCrud.ts
-import { useCallback, useEffect, useState } from 'react';
+// src/shared/hooks/useEntityCrud.ts
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useToast } from '@edg/ui';
 
-import {
-  listResource,
-  createResource,
-  updateResource,
-  removeResource,
-  toggleResourceActive,
-  type ListParams,
-} from '../api/systemApi';
-import type { ApiResponse } from '../types';
+import type { ResourceApi, ListParams } from '../api/createResourceApi';
+import type { ApiResponse } from '../types/api';
 
 /** Filtro stato: 'active' (default) = solo attivi, 'inactive' = solo non attivi, 'all' = tutti. */
 export type StatusFilter = 'active' | 'inactive' | 'all';
 
 interface UseEntityCrudOptions {
-  /** Nome della risorsa nel path (es. 'reparti', 'operatori', 'anagrafiche') */
+  /** Client CRUD verso il backend giusto (system-service, auth-service, ...) —
+   * vedi createResourceApi. Esplicito e non un default silenzioso: quale
+   * backend viene interrogato deve essere sempre leggibile dal chiamante. */
+  api: ResourceApi;
+  /** Nome della risorsa nel path (es. 'reparti', 'operatori', 'tenants') */
   resource: string;
-  /** Etichetta human-readable per i messaggi (es. 'Reparto', 'Operatore') */
+  /** Etichetta human-readable per i messaggi (es. 'Reparto', 'Tenant') */
   label: string;
   /** Default: 'active' (solo attivi). Le tabelle con pochi record possono
    * fissarlo su 'all' per mostrare sempre tutto; le altre lo pilotano da
@@ -30,11 +27,13 @@ interface UseEntityCrudOptions {
 }
 
 /**
- * Centralizza fetch/create/update/delete/toggle per una risorsa di
- * system-service. Le pagine specifiche portano solo colonne e form: la
- * gestione di stato, loading ed errori (via toast) è qui, una volta sola.
+ * Centralizza fetch/create/update/delete/toggle per una risorsa CRUD dietro
+ * il gateway. Le pagine specifiche portano solo colonne e form: la
+ * gestione di stato, loading ed errori (via toast) è qui, una volta sola —
+ * indipendentemente dal backend che la risorsa espone (`api`).
  */
 export function useEntityCrud<T extends { isActive: boolean }>({
+  api,
   resource,
   label,
   statusFilter = 'active',
@@ -46,23 +45,37 @@ export function useEntityCrud<T extends { isActive: boolean }>({
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // True per tutta la vita del componente montato. Evita che una richiesta
+  // di caricamento ormai superata (per smontaggio, o per il doppio effetto
+  // di React StrictMode in sviluppo) aggiorni ancora stato o mostri ancora
+  // un toast - altrimenti un solo fallimento genera due notifiche identiche.
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const refetch = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res: ApiResponse<T[]> = await listResource<T>(resource, {
+      const res: ApiResponse<T[]> = await api.listResource<T>(resource, {
         active: statusFilter === 'all' ? 'all' : statusFilter === 'active',
         search: search || undefined,
         extra: extraFilters,
         limit: 100,
       });
-      setItems(res.data ?? []);
+      if (isMountedRef.current) setItems(res.data ?? []);
     } catch (err) {
-      toast?.danger({ title: `Impossibile caricare ${label.toLowerCase()}`, description: (err as Error).message });
+      if (isMountedRef.current) {
+        toast?.danger({ title: `Impossibile caricare ${label.toLowerCase()}`, description: (err as Error).message });
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resource, label, statusFilter, search, JSON.stringify(extraFilters)]);
+  }, [api, resource, label, statusFilter, search, JSON.stringify(extraFilters)]);
 
   useEffect(() => {
     refetch();
@@ -72,7 +85,7 @@ export function useEntityCrud<T extends { isActive: boolean }>({
     async <I,>(body: I): Promise<boolean> => {
       setIsSaving(true);
       try {
-        await createResource<T, I>(resource, body);
+        await api.createResource<T, I>(resource, body);
         toast?.({ title: `${label} creato con successo` });
         await refetch();
         return true;
@@ -83,14 +96,14 @@ export function useEntityCrud<T extends { isActive: boolean }>({
         setIsSaving(false);
       }
     },
-    [resource, label, refetch, toast]
+    [api, resource, label, refetch, toast]
   );
 
   const update = useCallback(
     async <I,>(id: number, body: I): Promise<boolean> => {
       setIsSaving(true);
       try {
-        await updateResource<T, I>(resource, id, body);
+        await api.updateResource<T, I>(resource, id, body);
         toast?.({ title: `${label} aggiornato con successo` });
         await refetch();
         return true;
@@ -101,15 +114,15 @@ export function useEntityCrud<T extends { isActive: boolean }>({
         setIsSaving(false);
       }
     },
-    [resource, label, refetch, toast]
+    [api, resource, label, refetch, toast]
   );
 
   const remove = useCallback(
     async (id: number): Promise<boolean> => {
       try {
-        const res = await removeResource(resource, id);
+        const res = await api.removeResource(resource, id);
         // Il backend dice se ha eliminato davvero o solo disattivato
-        // (referenziato altrove): il messaggio riflette l'esito reale.
+        // (referenziato altrove, o protetto): il messaggio riflette l'esito reale.
         toast?.({ title: res.message ?? `${label} rimosso` });
         await refetch();
         return true;
@@ -118,13 +131,13 @@ export function useEntityCrud<T extends { isActive: boolean }>({
         return false;
       }
     },
-    [resource, label, refetch, toast]
+    [api, resource, label, refetch, toast]
   );
 
   const toggleActive = useCallback(
     async (id: number): Promise<boolean> => {
       try {
-        await toggleResourceActive(resource, id);
+        await api.toggleResourceActive(resource, id);
         await refetch();
         return true;
       } catch (err) {
@@ -132,7 +145,7 @@ export function useEntityCrud<T extends { isActive: boolean }>({
         return false;
       }
     },
-    [resource, refetch, toast]
+    [api, resource, refetch, toast]
   );
 
   return { items, isLoading, isSaving, refetch, create, update, remove, toggleActive };

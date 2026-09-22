@@ -2,7 +2,7 @@
 import type { EdgConfig } from '@edg/ui';
 
 import { ROUTES } from './routes.config';
-import { MODULES } from './navigation.config';
+import { getModules } from './navigation.config';
 
 /**
  * IDENTITÀ E CONFIGURAZIONE DEL GESTIONALE
@@ -51,7 +51,10 @@ export const EDG_CONFIG: EdgConfig = {
     terms: ROUTES.TERMS,
     support: ROUTES.SUPPORT,
   },
-  modules: MODULES,
+  // Default sicuro (nessun utente root): App.tsx ricalcola i moduli a
+  // runtime con getModules(isRoot) non appena l'autenticazione è nota —
+  // vedi AppConfigProvider.
+  modules: getModules(false),
   layout: {
     backgroundImage: 'bg',
     innerPageBgColor: 'bg-bg-secondary',
@@ -62,4 +65,4 @@ export const EDG_CONFIG: EdgConfig = {
 };
 
 export { ROUTES } from './routes.config';
-export { MODULES } from './navigation.config';
+export { getModules } from './navigation.config';

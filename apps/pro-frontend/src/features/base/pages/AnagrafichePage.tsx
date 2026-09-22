@@ -1,6 +1,5 @@
 // src/features/base/pages/AnagrafichePage.tsx
 import React, { useState } from 'react';
-import { useAuth } from '@edg/auth';
 import {
   PageHeader,
   Table,
@@ -18,7 +17,9 @@ import {
 
 import AnagraficaFormModal from '../components/AnagraficaFormModal';
 import { STATUS_FILTER_OPTIONS } from '../constants';
-import { useEntityCrud, type StatusFilter } from '../hooks/useEntityCrud';
+import { useEntityCrud, type StatusFilter } from '../../../shared/hooks/useEntityCrud';
+import { systemApi } from '../api/systemApi';
+import { useTenantDirectory } from '../api/useTenantDirectory';
 import type { Anagrafica, AnagraficaInput, TipoAnagrafica } from '../types';
 import { TIPO_ANAGRAFICA_LABELS } from '../types';
 
@@ -27,18 +28,29 @@ const TIPO_FILTER_OPTIONS: SelectOption[] = [
   ...(Object.entries(TIPO_ANAGRAFICA_LABELS) as [TipoAnagrafica, string][]).map(([value, label]) => ({ value, label })),
 ];
 
-const AnagrafichePage: React.FC = () => {
-  const { account } = useAuth();
-  const currentTenantId = account?.tenantId ?? 0;
+const TENANT_FILTER_ALL = 'tutti';
 
+const AnagrafichePage: React.FC = () => {
   const [tipoFilter, setTipoFilter] = useState<string>('tutti');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
+  const [tenantFilter, setTenantFilter] = useState<string>(TENANT_FILTER_ALL);
+
+  const { tenants, getTenant } = useTenantDirectory();
+  const tenantFilterOptions: SelectOption[] = [
+    { value: TENANT_FILTER_ALL, label: 'Tutti i tenant' },
+    ...tenants.map(t => ({ value: String(t.id), label: t.name })),
+  ];
+
+  const extraFilters: Record<string, string | number | boolean | undefined> = {};
+  if (tipoFilter !== 'tutti') extraFilters.tipo = tipoFilter;
+  if (tenantFilter !== TENANT_FILTER_ALL) extraFilters.idTenant = tenantFilter;
 
   const { items, isLoading, isSaving, refetch, create, update, remove } = useEntityCrud<Anagrafica>({
+    api: systemApi,
     resource: 'anagrafiche',
     label: 'Anagrafica',
     statusFilter,
-    extraFilters: tipoFilter !== 'tutti' ? { tipo: tipoFilter } : undefined,
+    extraFilters: Object.keys(extraFilters).length > 0 ? extraFilters : undefined,
   });
 
   const [modalItem, setModalItem] = useState<Anagrafica | null>(null);
@@ -55,6 +67,7 @@ const AnagrafichePage: React.FC = () => {
     {
       fields: [
         { label: 'Tipo', value: TIPO_ANAGRAFICA_LABELS[item.tipo] },
+        { label: 'Tenant', value: getTenant(item.idTenant)?.name ?? '—' },
         { label: 'Stato', value: <Badge variant={item.isActive ? 'success' : 'default'}>{item.isActive ? 'Attivo' : 'Disattivo'}</Badge> },
       ],
     },
@@ -97,6 +110,17 @@ const AnagrafichePage: React.FC = () => {
       onCellClick: item => setDetailItem(item),
     },
     { header: 'Tipo', accessor: item => TIPO_ANAGRAFICA_LABELS[item.tipo] },
+    {
+      header: 'Tenant',
+      accessor: item => {
+        const tenant = getTenant(item.idTenant);
+        if (!tenant) return '—';
+        // Il colore distingue a colpo d'occhio chi ha un tenant dedicato
+        // (accesso proprio alla piattaforma) da chi è gestito direttamente
+        // da Express Delivery (tenant di sistema, nessun accesso proprio).
+        return <Badge variant={tenant.isSystem ? 'default' : 'info'}>{tenant.name}</Badge>;
+      },
+    },
     { header: 'Città', accessor: item => item.citta ?? '—' },
     { header: 'Referente', accessor: item => item.referente ?? '—' },
     {
@@ -108,14 +132,16 @@ const AnagrafichePage: React.FC = () => {
   const handleExportPdf = () => {
     const tipoLabel = TIPO_FILTER_OPTIONS.find(o => o.value === tipoFilter)?.label ?? 'Tutti i tipi';
     const statoLabel = STATUS_FILTER_OPTIONS.find(o => o.value === statusFilter)?.label ?? 'Tutti gli stati';
+    const tenantLabel = tenantFilterOptions.find(o => o.value === tenantFilter)?.label ?? 'Tutti i tenant';
 
     exportTableToPdf({
       filename: 'anagrafiche',
       title: 'Anagrafiche',
-      subtitle: `${tipoLabel} · ${statoLabel}`,
+      subtitle: `${tipoLabel} · ${tenantLabel} · ${statoLabel}`,
       columns: [
         { header: 'Ragione sociale', accessor: item => item.ragioneSociale },
         { header: 'Tipo', accessor: item => TIPO_ANAGRAFICA_LABELS[item.tipo] },
+        { header: 'Tenant', accessor: item => getTenant(item.idTenant)?.name ?? '—' },
         { header: 'Partita IVA', accessor: item => item.partitaIva ?? '—' },
         { header: 'Città', accessor: item => item.citta ?? '—' },
         { header: 'Prov.', accessor: item => item.provincia ?? '—' },
@@ -129,12 +155,15 @@ const AnagrafichePage: React.FC = () => {
 
   return (
     <div className='space-y-6'>
-      <PageHeader title='Anagrafiche' subtitle='Partner, clienti e agenti' onRefresh={refetch} isLoading={isLoading} />
+      <PageHeader title='Anagrafiche' subtitle='Partner e clienti' onRefresh={refetch} isLoading={isLoading} />
 
       <div className='flex items-end justify-between gap-4'>
         <div className='flex gap-4'>
           <div className='w-56'>
             <Select label='Filtra per tipo' options={TIPO_FILTER_OPTIONS} value={tipoFilter} onValueChange={setTipoFilter} />
+          </div>
+          <div className='w-56'>
+            <Select label='Filtra per tenant' options={tenantFilterOptions} value={tenantFilter} onValueChange={setTenantFilter} />
           </div>
           <div className='w-48'>
             <Select
@@ -190,7 +219,6 @@ const AnagrafichePage: React.FC = () => {
         onSave={handleSave}
         isSaving={isSaving}
         item={modalItem}
-        currentTenantId={currentTenantId}
       />
 
       <ConfirmModal

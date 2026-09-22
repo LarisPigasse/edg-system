@@ -14,13 +14,15 @@ import {
   type TableColumn,
 } from '@edg/ui';
 
-import { useEntityCrud } from '../hooks/useEntityCrud';
+import { useEntityCrud } from '../../../shared/hooks/useEntityCrud';
+import { systemApi } from '../api/systemApi';
 import type { Reparto, RepartoInput } from '../types';
 
 const EMPTY_FORM: RepartoInput = { reparto: '', isActive: true };
 
 const RepartiTab: React.FC = () => {
   const { items, isLoading, isSaving, create, update, remove } = useEntityCrud<Reparto>({
+    api: systemApi,
     resource: 'reparti',
     label: 'Reparto',
     statusFilter: 'all', // tabella primitiva: pochi record, ha senso vederli tutti

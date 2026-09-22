@@ -6,20 +6,7 @@
  * (ADR014 — convenzione naming tabelle Postgres).
  */
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  errors?: { field: string; message: string }[];
-  meta?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
+export type { ApiResponse } from '../../../shared/types/api';
 
 // ─── Reparto (tabella primitiva) ─────────────────────────────────────────────
 
@@ -59,14 +46,17 @@ export interface OperatoreInput {
   isActive?: boolean;
 }
 
-// ─── Anagrafica (partner / cliente / agente) ─────────────────────────────────
+// ─── Anagrafica (partner / cliente) ──────────────────────────────────────────
 
-export type TipoAnagrafica = 'partner' | 'cliente' | 'agente';
+// Gli agenti sono operatori interni assegnati a un reparto specifico (es.
+// "Commerciale"), non un tipo di anagrafica: vedi discussione del
+// 17/09/2026. Restano solo i due rapporti commerciali distinti dal punto di
+// vista di Express Delivery.
+export type TipoAnagrafica = 'partner' | 'cliente';
 
 export const TIPO_ANAGRAFICA_LABELS: Record<TipoAnagrafica, string> = {
   partner: 'Partner',
   cliente: 'Cliente',
-  agente: 'Agente',
 };
 
 export interface Anagrafica {

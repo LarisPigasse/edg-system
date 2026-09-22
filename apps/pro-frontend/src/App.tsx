@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, useMemo, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 
@@ -11,13 +11,14 @@ import {
   ResetPasswordPage,
   ChangePasswordPage,
   ProfilePage,
+  SessioneTerminataPage,
   PrivateRoute,
   UserMenu,
   useAuth,
 } from '@edg/auth';
 
 import store from './app/store';
-import { EDG_CONFIG, ROUTES } from './config';
+import { EDG_CONFIG, ROUTES, getModules } from './config';
 import { Dashboard } from './pages';
 
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -28,6 +29,12 @@ const SupportPage = lazy(() => import('./pages/SupportPage'));
 const TabellePage = lazy(() => import('./features/base').then(m => ({ default: m.TabellePage })));
 const AnagrafichePage = lazy(() => import('./features/base').then(m => ({ default: m.AnagrafichePage })));
 const OperatoriPage = lazy(() => import('./features/base').then(m => ({ default: m.OperatoriPage })));
+
+// SISTEMA: gestione di account, permessi e tenant (ADR024) — solo root
+const TenantPage = lazy(() => import('./features/sistema').then(m => ({ default: m.TenantPage })));
+const AccountPage = lazy(() => import('./features/sistema').then(m => ({ default: m.AccountPage })));
+const SessioniPage = lazy(() => import('./features/sistema').then(m => ({ default: m.SessioniPage })));
+const RuoliPage = lazy(() => import('./features/sistema').then(m => ({ default: m.RuoliPage })));
 
 // Strumenti di sviluppo del design system: importati da un sottopath così non
 // pesano sul bundle principale, e non protetti da PrivateRoute per poterli
@@ -58,6 +65,18 @@ const AppTableCapabilities: React.FC<{ children: React.ReactNode }> = ({ childre
   return <TableCapabilitiesProvider isRoot={isRoot}>{children}</TableCapabilitiesProvider>;
 };
 
+/**
+ * Ricalcola i moduli del menu in base all'utente autenticato — oggi solo
+ * per SISTEMA (root-only, ADR024), stesso criterio del requireRoot() di
+ * backend. Un solo punto di collegamento fra stato di autenticazione e
+ * configurazione del design system, come AppTableCapabilities qui sopra.
+ */
+const AppConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isRoot } = useAuth();
+  const config = useMemo(() => ({ ...EDG_CONFIG, modules: getModules(isRoot) }), [isRoot]);
+  return <EdgConfigProvider config={config}>{children}</EdgConfigProvider>;
+};
+
 const PageLoadingFallback: React.FC = () => (
   <div className='flex items-center justify-center min-h-[60vh]'>
     <div className='text-center space-y-4'>
@@ -82,7 +101,7 @@ const App: React.FC = () => {
       <ToastProvider>
         <Provider store={store}>
           {/* Consegna al design system identità, rotte, moduli e layout */}
-          <EdgConfigProvider config={EDG_CONFIG}>
+          <AppConfigProvider>
             <AppInitializer>
               <AppTableCapabilities>
                 <Router>
@@ -92,6 +111,9 @@ const App: React.FC = () => {
                       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
                       <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
                       <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
+                      {/* Destinazione del redirect forzato di sessionGuard.ts: non protetta da
+                          PrivateRoute, ci si arriva proprio perché non si è più autenticati. */}
+                      <Route path={ROUTES.SESSION_ENDED} element={<SessioneTerminataPage />} />
 
                       {/* Tutto il resto dentro il layout */}
                       <Route
@@ -166,6 +188,40 @@ const App: React.FC = () => {
                                   }
                                 />
 
+                                {/* SISTEMA — solo root (stesso criterio del requireRoot() di backend) */}
+                                <Route
+                                  path={ROUTES.SISTEMA_ACCOUNT}
+                                  element={
+                                    <PrivateRoute requiredPermission='*'>
+                                      <AccountPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
+                                  path={ROUTES.SISTEMA_TENANT}
+                                  element={
+                                    <PrivateRoute requiredPermission='*'>
+                                      <TenantPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
+                                  path={ROUTES.SISTEMA_SESSIONI}
+                                  element={
+                                    <PrivateRoute requiredPermission='*'>
+                                      <SessioniPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
+                                  path={ROUTES.SISTEMA_RUOLI}
+                                  element={
+                                    <PrivateRoute requiredPermission='*'>
+                                      <RuoliPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+
                                 {/* Design system — solo in sviluppo */}
                                 {import.meta.env.DEV && (
                                   <Route path={ROUTES.DESIGN_TEMA} element={<ThemePreview />} />
@@ -192,7 +248,7 @@ const App: React.FC = () => {
                 </Router>
               </AppTableCapabilities>
             </AppInitializer>
-          </EdgConfigProvider>
+          </AppConfigProvider>
         </Provider>
       </ToastProvider>
     </ErrorBoundary>

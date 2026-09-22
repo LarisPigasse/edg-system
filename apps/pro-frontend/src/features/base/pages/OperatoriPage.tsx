@@ -13,10 +13,10 @@ import {
   type SelectOption,
 } from '@edg/ui';
 
-import { listResource } from '../api/systemApi';
+import { listResource, systemApi } from '../api/systemApi';
 import OperatoreFormModal from '../components/OperatoreFormModal';
 import { STATUS_FILTER_OPTIONS } from '../constants';
-import { useEntityCrud, type StatusFilter } from '../hooks/useEntityCrud';
+import { useEntityCrud, type StatusFilter } from '../../../shared/hooks/useEntityCrud';
 import type { Operatore, OperatoreInput, Reparto } from '../types';
 
 const TUTTI_I_REPARTI = 'tutti';
@@ -39,6 +39,7 @@ const OperatoriPage: React.FC = () => {
   }, []);
 
   const { items, isLoading, isSaving, refetch, create, update, remove } = useEntityCrud<Operatore>({
+    api: systemApi,
     resource: 'operatori',
     label: 'Operatore',
     statusFilter,
