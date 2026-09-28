@@ -21,6 +21,7 @@ export const ROUTES = {
   SISTEMA_ACCOUNT: '/sistema/account',
   SISTEMA_SESSIONI: '/sistema/sessioni',
   SISTEMA_RUOLI: '/sistema/ruoli',
+  SISTEMA_LOGS: '/sistema/logs',
 
   // Strumenti di sviluppo del design system (nascosti in produzione)
   DESIGN_TEMA: '/design/tema',

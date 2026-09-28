@@ -70,4 +70,17 @@ export const PERMISSION_CATALOG: PermissionModuleDef[] = [
       { value: 'export', label: 'Esporta' },
     ],
   },
+  {
+    // Non e' un modulo CRUD come gli altri: 'sistema.<azione>' sono permessi
+    // indipendenti verso pagine di sola consultazione sotto SISTEMA (Logs
+    // oggi, Alert e Salute del Sistema nei prossimi passi — vedi
+    // logRoutes.ts/alertRoutes.ts/systemRoutes.ts in log-service). A
+    // differenza di Account/Tenant/Ruoli/Sessioni (root-only, requiredPermission='*'),
+    // queste pagine si aprono con un permesso granulare assegnabile a
+    // qualunque ruolo, vedi PrivateRoute in App.tsx.
+    module: 'sistema',
+    label: 'Sistema (log ed eventi)',
+    active: true,
+    actions: [{ value: 'logs', label: 'Log azioni' }],
+  },
 ];

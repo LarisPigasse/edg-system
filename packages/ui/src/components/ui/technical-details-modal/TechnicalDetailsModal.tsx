@@ -34,13 +34,13 @@ const TechnicalDetailsModal: React.FC<TechnicalDetailsModalProps> = ({ isOpen, o
   const entries = record ? Object.entries(record) : [];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size='sm'>
-      <div className='space-y-1 font-mono text-xs'>
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size='lg'>
+      <div className='grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 font-mono text-xs'>
         {entries.map(([key, value]) => (
-          <div key={key} className='flex gap-2'>
-            <span className='text-text-secondary shrink-0'>{key}:</span>
+          <React.Fragment key={key}>
+            <span className='text-text-secondary text-right'>{key}:</span>
             <span className='text-text-primary break-all'>{formatValue(value)}</span>
-          </div>
+          </React.Fragment>
         ))}
       </div>
     </Modal>

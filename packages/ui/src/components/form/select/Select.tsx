@@ -18,6 +18,15 @@ interface SelectProps extends Omit<SelectPrimitive.SelectProps, 'size'> {
   helperText?: string;
   fullWidth?: boolean;
   className?: string;
+  /**
+   * Dimensione del testo delle voci nel menu a tendina (non tocca il
+   * trigger chiuso, solo le opzioni della lista) — 'sm' per i filtri con
+   * poco spazio orizzontale, dove il popup è vincolato alla stessa
+   * larghezza del campo chiuso (vedi width: var(--radix-select-trigger-
+   * width) qui sotto) e le etichette lunghe non ci stanno comode a
+   * dimensione piena. Default 'md', invariato per tutti gli usi esistenti.
+   */
+  optionSize?: 'sm' | 'md';
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,6 +45,7 @@ export const Select = React.forwardRef<any, SelectProps>(
       value,
       defaultValue,
       onValueChange,
+      optionSize = 'md',
       ...props
     },
     ref
@@ -72,6 +82,12 @@ export const Select = React.forwardRef<any, SelectProps>(
                 // riquadro a determinare dove cade la sottolineatura — altezze
                 // diverse tra i due componenti producevano una linea disallineata.
                 'relative w-full min-h-[56px] pt-5 pb-2 px-0 bg-transparent text-left',
+                // Select.Value di Radix ignora il proprio className (destrutturato
+                // e mai riapplicato allo span interno — verificato nel sorgente
+                // del pacchetto): la taglia del testo scelto va quindi impostata
+                // qui sul trigger, da cui Value la eredita per cascata (non ha una
+                // sua font-size esplicita che la sovrascriva).
+                optionSize === 'sm' && 'text-sm',
                 'focus:outline-none',
                 disabled && 'cursor-not-allowed opacity-50'
               )}
@@ -111,7 +127,8 @@ export const Select = React.forwardRef<any, SelectProps>(
                     value={option.value}
                     disabled={option.disabled}
                     className={cn(
-                      'relative flex items-center px-3 py-2 text-base rounded-md cursor-pointer',
+                      'relative flex items-center px-3 py-2 rounded-md cursor-pointer',
+                      optionSize === 'sm' ? 'text-sm' : 'text-base',
                       'focus:bg-bg-hover focus:outline-none',
                       'data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed'
                     )}

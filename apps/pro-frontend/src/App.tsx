@@ -35,6 +35,7 @@ const TenantPage = lazy(() => import('./features/sistema').then(m => ({ default:
 const AccountPage = lazy(() => import('./features/sistema').then(m => ({ default: m.AccountPage })));
 const SessioniPage = lazy(() => import('./features/sistema').then(m => ({ default: m.SessioniPage })));
 const RuoliPage = lazy(() => import('./features/sistema').then(m => ({ default: m.RuoliPage })));
+const LogsPage = lazy(() => import('./features/sistema').then(m => ({ default: m.LogsPage })));
 
 // Strumenti di sviluppo del design system: importati da un sottopath così non
 // pesano sul bundle principale, e non protetti da PrivateRoute per poterli
@@ -218,6 +219,18 @@ const App: React.FC = () => {
                                   element={
                                     <PrivateRoute requiredPermission='*'>
                                       <RuoliPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+
+                                {/* Permesso granulare 'sistema.logs' (non root-only, a differenza delle
+                                    altre voci SISTEMA sopra) — vedi permissionCatalog.ts. La voce di menu
+                                    resta comunque root-only per ora, vedi navigation.config.ts. */}
+                                <Route
+                                  path={ROUTES.SISTEMA_LOGS}
+                                  element={
+                                    <PrivateRoute requiredPermission='sistema.logs'>
+                                      <LogsPage />
                                     </PrivateRoute>
                                   }
                                 />
