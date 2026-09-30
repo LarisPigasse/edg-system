@@ -78,6 +78,8 @@ export function getModules(isRoot: boolean): EdgModuleConfig[] {
               // singolo figlio non e' ancora cablato in Header.tsx/MobileMenu.tsx (il campo
               // EdgSubMenuItem.permission esiste nel tipo ma nessun renderer lo legge oggi).
               { id: 'logs', label: 'Logs', href: ROUTES.SISTEMA_LOGS },
+              // Salute della piattaforma e allarmi (ADR038) — sempre l'ultima voce
+              { id: 'info', label: 'Info', href: ROUTES.SISTEMA_INFO },
             ],
           } satisfies EdgModuleConfig,
         ]

@@ -18,11 +18,15 @@ import {
 import { useTenantDirectory } from '../../base/api/useTenantDirectory';
 import { useAccountDirectory } from '../../base/api/useAccountDirectory';
 import { useEntityDirectory } from '../api/useEntityDirectory';
+import { stateChanges } from './StateChanges';
+import RelatedEvents from './RelatedEvents';
 
 interface LogDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   log: AzioneLog | null;
+  /** Apre un altro evento (dalla sezione "Stessa richiesta") al posto di quello corrente */
+  onOpenLog?: (log: AzioneLog) => void;
 }
 
 /** Blocco JSON grezzo per i campi che non si prestano a una singola riga (dettagli, stato, metadata). */
@@ -43,7 +47,7 @@ const JsonBlock: React.FC<{ value: unknown }> = ({ value }) => {
  * (vedi types/index.ts); Stato, Metadata e Tag compaiono solo se il log
  * porta davvero quel dato, per non riempire la scheda di sezioni vuote.
  */
-const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log }) => {
+const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log, onOpenLog }) => {
   // Chiamati prima dell'early return sotto: le regole degli hook impongono lo
   // stesso ordine ad ogni render, anche quando log è null.
   const { getTenantName } = useTenantDirectory();
@@ -55,7 +59,7 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log })
   const account = getAccount(originAccountId(log) ?? null);
   const utenteNome = account ? getEntityLabel(account.accountType, account.entityId) : null;
 
-  const hasStato = Boolean(log.stato && (log.stato.precedente || log.stato.nuovo || log.stato.diff));
+  const changes = stateChanges(log.stato);
   const hasMetadata = Boolean(log.metadata && Object.keys(log.metadata).length > 0);
   const hasDettagliAzione = Boolean(log.azione.dettagli && Object.keys(log.azione.dettagli).length > 0);
   const hasTags = log.tags.length > 0;
@@ -104,13 +108,27 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log })
     },
   ];
 
-  if (hasStato) {
+  // Prima/dopo leggibile (ADR039): diff per le modifiche, valori per creazioni ed eliminazioni
+  if (changes) {
     sections.push({
-      title: 'Stato',
+      title: 'Modifiche',
+      fields: [{ label: changes.label, value: <div className='w-full'>{changes.content}</div> }],
+    });
+  }
+
+  // Tutti gli eventi della stessa richiesta, in qualunque servizio (ADR039)
+  if (log.contesto.transazioneId) {
+    sections.push({
+      title: 'Stessa richiesta',
       fields: [
-        { label: 'Precedente', value: <JsonBlock value={log.stato.precedente} /> },
-        { label: 'Nuovo', value: <JsonBlock value={log.stato.nuovo} /> },
-        { label: 'Diff', value: <JsonBlock value={log.stato.diff} /> },
+        {
+          label: 'Eventi',
+          value: (
+            <div className='w-full'>
+              <RelatedEvents transazioneId={log.contesto.transazioneId} currentId={log._id} onOpenLog={onOpenLog} />
+            </div>
+          ),
+        },
       ],
     });
   }

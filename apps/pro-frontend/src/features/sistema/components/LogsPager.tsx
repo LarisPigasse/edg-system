@@ -10,6 +10,8 @@ interface LogsPagerProps {
   isLoading?: boolean;
   onPrev: () => void;
   onNext: () => void;
+  /** Cosa si sta contando (default 'eventi'; es. 'allarmi' nello Storico di Info) */
+  unitLabel?: string;
 }
 
 /**
@@ -20,13 +22,13 @@ interface LogsPagerProps {
  * questo controllo, piccolo e locale alla feature, chiude il cerchio senza
  * introdurre una dipendenza pesante solo per una pagina.
  */
-const LogsPager: React.FC<LogsPagerProps> = ({ page, totalPages, totalCount, isLoading, onPrev, onNext }) => {
+const LogsPager: React.FC<LogsPagerProps> = ({ page, totalPages, totalCount, isLoading, onPrev, onNext, unitLabel = 'eventi' }) => {
   if (totalCount === 0) return null;
 
   return (
     <div className='flex items-center justify-between gap-4 text-sm text-text-secondary'>
       <span>
-        Pagina {page + 1} di {Math.max(totalPages, 1)} · {totalCount} eventi
+        Pagina {page + 1} di {Math.max(totalPages, 1)} · {totalCount} {unitLabel}
       </span>
       <div className='flex gap-2'>
         <Button

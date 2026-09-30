@@ -1,5 +1,6 @@
 // src/features/sistema/pages/LogsPage.tsx
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader, Table, Badge, StatTile, useToast, type TableColumn, type SelectOption } from '@edg/ui';
 
 import { cercaLogs, getLogStatistiche, getLogUtenti } from '../api/logsApi';
@@ -32,7 +33,12 @@ const LogsPage: React.FC = () => {
   const { getAccount } = useAccountDirectory();
   const { getShortLabel: getEntityLabel } = useEntityDirectory();
 
-  const [filters, setFilters] = useState<LogFiltersValue>(EMPTY_LOG_FILTERS);
+  // Filtro Utente iniziale dall'URL (?userId=...): "Vedi attività" della pagina Account (ADR039)
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<LogFiltersValue>(() => ({
+    ...EMPTY_LOG_FILTERS,
+    userId: searchParams.get('userId') ?? '',
+  }));
   const debouncedSearch = useDebouncedValue(filters.search);
   const [page, setPage] = useState(0);
 
@@ -229,7 +235,7 @@ const LogsPage: React.FC = () => {
         onNext={() => setPage(p => p + 1)}
       />
 
-      <LogDetailModal isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} log={selectedLog} />
+      <LogDetailModal isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} log={selectedLog} onOpenLog={setSelectedLog} />
     </div>
   );
 };

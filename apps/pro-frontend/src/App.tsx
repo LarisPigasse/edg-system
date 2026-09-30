@@ -36,6 +36,7 @@ const AccountPage = lazy(() => import('./features/sistema').then(m => ({ default
 const SessioniPage = lazy(() => import('./features/sistema').then(m => ({ default: m.SessioniPage })));
 const RuoliPage = lazy(() => import('./features/sistema').then(m => ({ default: m.RuoliPage })));
 const LogsPage = lazy(() => import('./features/sistema').then(m => ({ default: m.LogsPage })));
+const InfoPage = lazy(() => import('./features/sistema').then(m => ({ default: m.InfoPage })));
 
 // Strumenti di sviluppo del design system: importati da un sottopath così non
 // pesano sul bundle principale, e non protetti da PrivateRoute per poterli
@@ -231,6 +232,17 @@ const App: React.FC = () => {
                                   element={
                                     <PrivateRoute requiredPermission='sistema.logs'>
                                       <LogsPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+
+                                {/* Salute e allarmi (ADR038): 'sistema.info' come richiesto da log-service
+                                    su /api/system/health; le schede Regole/Storico useranno 'sistema.alert'. */}
+                                <Route
+                                  path={ROUTES.SISTEMA_INFO}
+                                  element={
+                                    <PrivateRoute requiredPermission='sistema.info'>
+                                      <InfoPage />
                                     </PrivateRoute>
                                   }
                                 />

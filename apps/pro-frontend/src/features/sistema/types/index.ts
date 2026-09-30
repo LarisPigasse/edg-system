@@ -255,6 +255,8 @@ export interface LogSearchParams {
   startDate?: string;
   endDate?: string;
   search?: string;
+  /** Tutti gli eventi della stessa richiesta (ADR039) */
+  transazioneId?: string;
   page?: number;
   limit?: number;
 }

@@ -1,5 +1,6 @@
 // src/features/sistema/pages/AccountPage.tsx
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   PageHeader,
   Table,
@@ -22,6 +23,7 @@ import {
 import { apiFetch } from '@edg/auth';
 
 import { authApi } from '../api/authApi';
+import { ROUTES } from '../../../config';
 import AccountFormModal from '../components/AccountFormModal';
 import BlockUserModal from '../components/BlockUserModal';
 import { useEntityDirectory } from '../api/useEntityDirectory';
@@ -47,6 +49,7 @@ const ROLE_FILTER_ALL = 'all';
 
 const AccountPage: React.FC = () => {
   const toast = useToast();
+  const navigate = useNavigate();
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [tenantFilter, setTenantFilter] = useState<string>(TENANT_FILTER_ALL);
@@ -281,7 +284,16 @@ const AccountPage: React.FC = () => {
             edit: { enabled: true, onEdit: openEdit },
           },
           actions: item => {
-            const list: Action[] = [];
+            // "Vedi attività" (ADR039): i Logs gia' filtrati su questo account.
+            // Prima voce, separata dalle azioni che modificano l'account.
+            const list: Action[] = [
+              {
+                id: 'activity',
+                label: 'Vedi attività',
+                onClick: () => navigate(`${ROUTES.SISTEMA_LOGS}?userId=${item.id}`),
+                divider: true,
+              },
+            ];
 
             // "Bloccato" ha una sola via d'uscita: Sblocca (pulisce anche
             // blockedUntil/blockReason). Il semplice Attiva resterebbe
