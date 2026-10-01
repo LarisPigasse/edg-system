@@ -42,6 +42,13 @@ export const getSystemHealth = (): Promise<SystemHealth> =>
 export const checkSystemHealthNow = (): Promise<SystemHealth> =>
   unwrap(apiFetch<Envelope<SystemHealth>>('/api/system/health', json('POST')));
 
+/**
+ * POST /api/alert/digest — invia subito il riepilogo giornaliero (ADR046).
+ * Restituisce il messaggio di esito ("Riepilogo inviato a 2 destinatari ...").
+ */
+export const sendDigestNow = async (): Promise<string> =>
+  (await apiFetch<{ success: boolean; message: string }>('/api/alert/digest', json('POST'))).message;
+
 // ---------------------------------------------------------------------------
 // Regole
 // ---------------------------------------------------------------------------

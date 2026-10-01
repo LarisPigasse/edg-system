@@ -26,7 +26,7 @@ interface HealthTabProps {
 export const HealthTab: React.FC<HealthTabProps> = ({ data, isLoading, error, onRetry, onOpenHistory }) => {
   if (isLoading) {
     return (
-      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6'>
         {Array.from({ length: 8 }).map((_, i) => (
           <ServiceHealthCardSkeleton key={i} />
         ))}
@@ -57,7 +57,7 @@ export const HealthTab: React.FC<HealthTabProps> = ({ data, isLoading, error, on
           {GROUP_ORDER.map(group => (
             <ServiceGroup key={group} group={group} services={data.services.filter(s => s.group === group)} />
           ))}
-          <JobsSection jobs={data.jobs ?? []} />
+          <JobsSection jobs={data.jobs ?? []} onChanged={onRetry} />
           {/* Attivita', Allarmi e Ultimo allarme sulla stessa riga (impilate sotto lg) */}
           <div className='grid grid-cols-1 gap-3 lg:grid-cols-3'>
             <HealthActivity stats={data.stats} />

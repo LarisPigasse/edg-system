@@ -4,11 +4,14 @@
 // pianificazione, ultima esecuzione (quando, durata, riepilogo o errore) e
 // stato. "In ritardo" significa che non c'e' stata nessuna esecuzione
 // riuscita entro il tempo previsto: il processo potrebbe non essere partito.
-import React from 'react';
-import { Badge, Table, type TableColumn } from '@edg/ui';
+// "Invia riepilogo ora" esegue subito il riepilogo giornaliero (ADR046), che
+// e' a sua volta uno dei processi elencati.
+import React, { useState } from 'react';
+import { Badge, Button, Table, useToast, type TableColumn } from '@edg/ui';
 
 import { useNow } from '../../../../shared/hooks/useNow';
 import { formatAgo, formatDateTime } from '../../utils/healthFormat';
+import { sendDigestNow } from '../../api/infoApi';
 import type { JobState, JobStatus } from '../../types/info';
 
 const STATUS: Record<JobStatus, { label: string; variant: 'success' | 'danger' | 'warning' | 'default' }> = {
@@ -23,10 +26,27 @@ const formatDuration = (ms: number | null) =>
 
 interface JobsSectionProps {
   jobs: JobState[];
+  /** Dopo un'esecuzione a richiesta: rilegge lo stato dei processi */
+  onChanged: () => void;
 }
 
-export const JobsSection: React.FC<JobsSectionProps> = ({ jobs }) => {
+export const JobsSection: React.FC<JobsSectionProps> = ({ jobs, onChanged }) => {
   const now = useNow(16000);
+  const toast = useToast();
+  const [sending, setSending] = useState(false);
+
+  const handleSendDigest = async () => {
+    setSending(true);
+    try {
+      toast?.({ title: await sendDigestNow() });
+    } catch (err) {
+      toast?.danger({ title: 'Riepilogo non inviato', description: (err as Error).message });
+    } finally {
+      setSending(false);
+      onChanged();
+    }
+  };
+
   if (jobs.length === 0) return null;
   const ok = jobs.filter(j => j.status === 'OK').length;
 
@@ -80,11 +100,16 @@ export const JobsSection: React.FC<JobsSectionProps> = ({ jobs }) => {
 
   return (
     <section className='flex flex-col gap-2'>
-      <header className='flex items-baseline gap-2'>
-        <h3 className='text-xs font-semibold uppercase tracking-wider text-text-secondary'>Processi pianificati</h3>
-        <span className='text-xs tabular-nums text-text-secondary'>
-          {ok}/{jobs.length}
-        </span>
+      <header className='flex items-end justify-between gap-4'>
+        <div className='flex items-baseline gap-2'>
+          <h3 className='text-xs font-semibold uppercase tracking-wider text-text-secondary'>Processi pianificati</h3>
+          <span className='text-xs tabular-nums text-text-secondary'>
+            {ok}/{jobs.length}
+          </span>
+        </div>
+        <Button variant='outline' size='xs' onClick={handleSendDigest} isLoading={sending} loadingText='Invio in corso...'>
+          Invia riepilogo ora
+        </Button>
       </header>
       <Table data={jobs} columns={columns} keyExtractor={j => j.id} striped />
     </section>

@@ -25,7 +25,7 @@ export const ServiceGroup: React.FC<ServiceGroupProps> = ({ group, services }) =
           {up}/{services.length}
         </span>
       </header>
-      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5'>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6'>
         {services.map(s => (
           <ServiceHealthCard key={s.id} service={s} />
         ))}
