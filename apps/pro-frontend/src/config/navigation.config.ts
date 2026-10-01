@@ -41,23 +41,6 @@ export function getModules(isRoot: boolean): EdgModuleConfig[] {
       ],
     },
 
-    // Design system: solo in sviluppo, sparisce dal bundle di produzione
-    ...(import.meta.env.DEV
-      ? [
-          {
-            id: 'design',
-            label: 'DESIGN',
-            href: ROUTES.DESIGN_TEMA,
-            icon: Palette,
-            children: [
-              { id: 'tema', label: 'Tema', href: ROUTES.DESIGN_TEMA },
-              { id: 'componenti', label: 'Componenti', href: ROUTES.DESIGN_COMPONENTI },
-              { id: 'icone', label: 'Icone', href: ROUTES.DESIGN_ICONE },
-            ],
-          } satisfies EdgModuleConfig,
-        ]
-      : []),
-
     // SISTEMA: gestione di account, permessi e tenant (ADR024) — solo root,
     // sempre l'ultima voce del menu. Cresce con Account e Ruoli man mano che
     // si aggiungono, stesso schema di BASE.
@@ -66,7 +49,7 @@ export function getModules(isRoot: boolean): EdgModuleConfig[] {
           {
             id: 'sistema',
             label: 'SISTEMA',
-            href: ROUTES.SISTEMA_TENANT,
+            href: ROUTES.SISTEMA_ACCOUNT,
             icon: Shield,
             children: [
               { id: 'account', label: 'Account', href: ROUTES.SISTEMA_ACCOUNT },
@@ -80,6 +63,23 @@ export function getModules(isRoot: boolean): EdgModuleConfig[] {
               { id: 'logs', label: 'Logs', href: ROUTES.SISTEMA_LOGS },
               // Salute della piattaforma e allarmi (ADR038) — sempre l'ultima voce
               { id: 'info', label: 'Info', href: ROUTES.SISTEMA_INFO },
+            ],
+          } satisfies EdgModuleConfig,
+        ]
+      : []),
+
+    // Design system: solo in sviluppo, sparisce dal bundle di produzione
+    ...(import.meta.env.DEV
+      ? [
+          {
+            id: 'design',
+            label: 'DESIGN',
+            href: ROUTES.DESIGN_TEMA,
+            icon: Palette,
+            children: [
+              { id: 'tema', label: 'Tema', href: ROUTES.DESIGN_TEMA },
+              { id: 'componenti', label: 'Componenti', href: ROUTES.DESIGN_COMPONENTI },
+              { id: 'icone', label: 'Icone', href: ROUTES.DESIGN_ICONE },
             ],
           } satisfies EdgModuleConfig,
         ]
