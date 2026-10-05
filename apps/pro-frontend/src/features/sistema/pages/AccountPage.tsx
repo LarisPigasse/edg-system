@@ -20,7 +20,7 @@ import {
   type Action,
 } from '@edg/ui';
 
-import { apiFetch } from '@edg/auth';
+import { apiFetch, useAuth } from '@edg/auth';
 
 import { authApi } from '../api/authApi';
 import { ROUTES } from '../../../config';
@@ -50,6 +50,14 @@ const ROLE_FILTER_ALL = 'all';
 const AccountPage: React.FC = () => {
   const toast = useToast();
   const navigate = useNavigate();
+
+  // ADR049-050: l'admin EDG gestisce tutti gli account tranne i root, e non
+  // elimina definitivamente; "Vedi attività" porta ai Logs (sistema.logs).
+  // Il backend applica comunque le stesse regole: qui si evita solo di
+  // mostrare azioni che riceverebbero un 403.
+  const { isRoot, hasPermission } = useAuth();
+  const canSeeLogs = hasPermission('sistema.logs');
+  const canManage = (item: Account): boolean => isRoot || item.role?.name !== 'root';
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [tenantFilter, setTenantFilter] = useState<string>(TENANT_FILTER_ALL);
@@ -281,19 +289,24 @@ const AccountPage: React.FC = () => {
         rowActions={{
           enabled: true,
           quickActions: {
-            edit: { enabled: true, onEdit: openEdit },
+            edit: { enabled: true, onEdit: openEdit, canEdit: canManage },
           },
           actions: item => {
             // "Vedi attività" (ADR039): i Logs gia' filtrati su questo account.
             // Prima voce, separata dalle azioni che modificano l'account.
-            const list: Action[] = [
-              {
-                id: 'activity',
-                label: 'Vedi attività',
-                onClick: () => navigate(`${ROUTES.SISTEMA_LOGS}?userId=${item.id}`),
-                divider: true,
-              },
-            ];
+            const list: Action[] = canSeeLogs
+              ? [
+                  {
+                    id: 'activity',
+                    label: 'Vedi attività',
+                    onClick: () => navigate(`${ROUTES.SISTEMA_LOGS}?userId=${item.id}`),
+                    divider: true,
+                  },
+                ]
+              : [];
+
+            // Account root per chi non e' root: nessuna azione che lo modifichi
+            if (!canManage(item)) return list;
 
             // "Bloccato" ha una sola via d'uscita: Sblocca (pulisce anche
             // blockedUntil/blockReason). Il semplice Attiva resterebbe
@@ -327,8 +340,8 @@ const AccountPage: React.FC = () => {
 
             // Eliminabile definitivamente solo se non e' mai stato collegato
             // a un'entita' operativa (entityId nullo): un account creato per
-            // errore non deve restare per sempre.
-            if (!item.entityId) {
+            // errore non deve restare per sempre. Solo root (ADR049).
+            if (isRoot && !item.entityId) {
               list[list.length - 1].divider = true;
               list.push({
                 id: 'hard-delete',

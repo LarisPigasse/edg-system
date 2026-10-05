@@ -68,14 +68,14 @@ const AppTableCapabilities: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 /**
- * Ricalcola i moduli del menu in base all'utente autenticato — oggi solo
- * per SISTEMA (root-only, ADR024), stesso criterio del requireRoot() di
- * backend. Un solo punto di collegamento fra stato di autenticazione e
- * configurazione del design system, come AppTableCapabilities qui sopra.
+ * Ricalcola i moduli del menu in base ai permessi dell'utente autenticato
+ * (ADR050: SISTEMA mostra a ciascuno solo le voci permesse). Un solo punto
+ * di collegamento fra stato di autenticazione e configurazione del design
+ * system, come AppTableCapabilities qui sopra.
  */
 const AppConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isRoot } = useAuth();
-  const config = useMemo(() => ({ ...EDG_CONFIG, modules: getModules(isRoot) }), [isRoot]);
+  const { hasPermission } = useAuth();
+  const config = useMemo(() => ({ ...EDG_CONFIG, modules: getModules(hasPermission) }), [hasPermission]);
   return <EdgConfigProvider config={config}>{children}</EdgConfigProvider>;
 };
 
@@ -190,11 +190,12 @@ const App: React.FC = () => {
                                   }
                                 />
 
-                                {/* SISTEMA — solo root (stesso criterio del requireRoot() di backend) */}
+                                {/* SISTEMA — Account e Tenant anche per l'admin EDG (ADR049-050),
+                                    stessi permessi del backend; le altre voci solo root */}
                                 <Route
                                   path={ROUTES.SISTEMA_ACCOUNT}
                                   element={
-                                    <PrivateRoute requiredPermission='*'>
+                                    <PrivateRoute requiredPermission='sistema.account'>
                                       <AccountPage />
                                     </PrivateRoute>
                                   }
@@ -202,7 +203,7 @@ const App: React.FC = () => {
                                 <Route
                                   path={ROUTES.SISTEMA_TENANT}
                                   element={
-                                    <PrivateRoute requiredPermission='*'>
+                                    <PrivateRoute requiredPermission='sistema.tenant'>
                                       <TenantPage />
                                     </PrivateRoute>
                                   }

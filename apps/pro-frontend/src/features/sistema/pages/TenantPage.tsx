@@ -11,6 +11,7 @@ import {
   exportTableToPdf,
   type TableColumn,
 } from '@edg/ui';
+import { useAuth } from '@edg/auth';
 
 import { authApi } from '../api/authApi';
 import TenantFormModal from '../components/TenantFormModal';
@@ -21,6 +22,8 @@ import type { Tenant, TenantInput } from '../types';
 
 const TenantPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
+  // ADR049-050: l'admin EDG crea e modifica i tenant, ma l'eliminazione resta a root
+  const { isRoot } = useAuth();
 
   const { items, isLoading, isSaving, refetch, create, update, remove } = useEntityCrud<Tenant>({
     api: authApi,
@@ -111,7 +114,7 @@ const TenantPage: React.FC = () => {
           quickActions: {
             edit: { enabled: true, onEdit: openEdit },
             delete: {
-              enabled: true,
+              enabled: isRoot,
               onDelete: item => setToDelete(item),
               canDelete: item => !item.isSystem,
               getItemName: item => item.name,

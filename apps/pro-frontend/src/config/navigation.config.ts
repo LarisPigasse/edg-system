@@ -1,20 +1,41 @@
 // src/config/navigation.config.ts
-import { Home, Palette, Database, Shield, type EdgModuleConfig } from '@edg/ui';
+import { Home, Palette, Database, Shield, type EdgModuleConfig, type EdgSubMenuItem } from '@edg/ui';
 
 import { ROUTES } from './routes.config';
+
+/** Verifica di un permesso dell'utente corrente (useAuth().hasPermission) */
+export type PermissionCheck = (permission: string) => boolean;
+
+/** Permesso riservato a root: il jolly '*' lo ha solo lui */
+const ROOT_ONLY = '*';
+
+/**
+ * Tiene solo le sottovoci che l'utente può vedere. Il permesso è dichiarato
+ * nel campo standard `EdgSubMenuItem.permission`, ma Header/MobileMenu di
+ * @edg/ui oggi non lo leggono: il filtro si applica qui, a monte (ADR050).
+ */
+const visibleChildren = (children: EdgSubMenuItem[], can: PermissionCheck): EdgSubMenuItem[] =>
+  children.filter(child => !child.permission || can(child.permission));
+
+/**
+ * Modulo con sottovoci filtrate: sparisce se non resta nessuna voce, e il suo
+ * link punta alla prima voce visibile (es. l'admin entra in SISTEMA da Account).
+ */
+const withVisibleChildren = (module: EdgModuleConfig, can: PermissionCheck): EdgModuleConfig[] => {
+  const children = visibleChildren(module.children ?? [], can);
+  return children.length > 0 ? [{ ...module, href: children[0].href, children }] : [];
+};
 
 /**
  * Moduli disponibili nel portale utenti.
  *
  * Questa è la dichiarazione di ciò che *esiste*. Ciò che ciascun utente *vede*
  * è l'intersezione fra i moduli attivi per il suo tenant (ADR009) e i permessi
- * del suo ruolo. La maggior parte del filtro resta dichiarativo (`permission`,
- * usato lato UX in attesa di un filtro generico — vedi commento su BASE);
- * SISTEMA è l'eccezione voluta: root, non un permesso RBAC delegabile (stesso
- * criterio del `requireRoot()` di backend), quindi il filtro è qui, a monte,
- * tramite il parametro `isRoot` — vedi App.tsx.
+ * del suo ruolo. Per SISTEMA ogni sottovoce dichiara il proprio permesso e il
+ * filtro si applica qui, con `can` = useAuth().hasPermission — vedi App.tsx.
+ * Il controllo vero resta nel backend: qui si decide solo cosa mostrare.
  */
-export function getModules(isRoot: boolean): EdgModuleConfig[] {
+export function getModules(can: PermissionCheck = () => false): EdgModuleConfig[] {
   return [
     {
       id: 'home',
@@ -41,32 +62,30 @@ export function getModules(isRoot: boolean): EdgModuleConfig[] {
       ],
     },
 
-    // SISTEMA: gestione di account, permessi e tenant (ADR024) — solo root,
-    // sempre l'ultima voce del menu. Cresce con Account e Ruoli man mano che
-    // si aggiungono, stesso schema di BASE.
-    ...(isRoot
-      ? [
-          {
-            id: 'sistema',
-            label: 'SISTEMA',
-            href: ROUTES.SISTEMA_ACCOUNT,
-            icon: Shield,
-            children: [
-              { id: 'account', label: 'Account', href: ROUTES.SISTEMA_ACCOUNT },
-              { id: 'ruoli', label: 'Ruoli', href: ROUTES.SISTEMA_RUOLI },
-              { id: 'tenant', label: 'Tenant', href: ROUTES.SISTEMA_TENANT },
-              { id: 'sessioni', label: 'Sessioni', href: ROUTES.SISTEMA_SESSIONI },
-              // 'sistema.logs' e' un permesso gia' assegnabile (vedi permissionCatalog.ts),
-              // ma qui la voce resta root-only come le altre: il filtro per permesso sul
-              // singolo figlio non e' ancora cablato in Header.tsx/MobileMenu.tsx (il campo
-              // EdgSubMenuItem.permission esiste nel tipo ma nessun renderer lo legge oggi).
-              { id: 'logs', label: 'Logs', href: ROUTES.SISTEMA_LOGS },
-              // Salute della piattaforma e allarmi (ADR038) — sempre l'ultima voce
-              { id: 'info', label: 'Info', href: ROUTES.SISTEMA_INFO },
-            ],
-          } satisfies EdgModuleConfig,
-        ]
-      : []),
+    // SISTEMA: account, ruoli, tenant e piattaforma — sempre l'ultima voce.
+    // ADR050: l'admin EDG vede solo Account e Tenant (permessi delegabili
+    // 'sistema.account' e 'sistema.tenant'); tutto il resto resta a root.
+    // Le attivazioni dei moduli dell'admin stanno dentro la pagina Tenant.
+    ...withVisibleChildren(
+      {
+        id: 'sistema',
+        label: 'SISTEMA',
+        href: ROUTES.SISTEMA_ACCOUNT,
+        icon: Shield,
+        children: [
+          { id: 'account', label: 'Account', href: ROUTES.SISTEMA_ACCOUNT, permission: 'sistema.account' },
+          { id: 'ruoli', label: 'Ruoli', href: ROUTES.SISTEMA_RUOLI, permission: ROOT_ONLY },
+          { id: 'tenant', label: 'Tenant', href: ROUTES.SISTEMA_TENANT, permission: 'sistema.tenant' },
+          { id: 'sessioni', label: 'Sessioni', href: ROUTES.SISTEMA_SESSIONI, permission: ROOT_ONLY },
+          // 'sistema.logs' e' gia' un permesso assegnabile (permissionCatalog.ts), ma la
+          // voce resta a root finche' non si decide di delegarla
+          { id: 'logs', label: 'Logs', href: ROUTES.SISTEMA_LOGS, permission: ROOT_ONLY },
+          // Salute della piattaforma e allarmi (ADR038) — sempre l'ultima voce
+          { id: 'info', label: 'Info', href: ROUTES.SISTEMA_INFO, permission: ROOT_ONLY },
+        ],
+      },
+      can
+    ),
 
     // Design system: solo in sviluppo, sparisce dal bundle di produzione
     ...(import.meta.env.DEV

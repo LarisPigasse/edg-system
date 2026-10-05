@@ -51,10 +51,10 @@ export const EDG_CONFIG: EdgConfig = {
     terms: ROUTES.TERMS,
     support: ROUTES.SUPPORT,
   },
-  // Default sicuro (nessun utente root): App.tsx ricalcola i moduli a
-  // runtime con getModules(isRoot) non appena l'autenticazione è nota —
+  // Default sicuro (nessun permesso): App.tsx ricalcola i moduli a runtime
+  // con getModules(hasPermission) non appena l'autenticazione è nota —
   // vedi AppConfigProvider.
-  modules: getModules(false),
+  modules: getModules(),
   layout: {
     backgroundImage: 'bg',
     innerPageBgColor: 'bg-bg-secondary',
@@ -65,4 +65,4 @@ export const EDG_CONFIG: EdgConfig = {
 };
 
 export { ROUTES } from './routes.config';
-export { getModules } from './navigation.config';
+export { getModules, type PermissionCheck } from './navigation.config';
