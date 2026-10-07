@@ -16,7 +16,7 @@ export const DEFAULT_TRIAL_DAYS = 32;
 type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'default';
 
 export const MODULE_STATUS: Record<ModuleStatus, { label: string; variant: BadgeVariant; hint: string }> = {
-  sviluppo: { label: 'In sviluppo', variant: 'info', hint: 'Attivabile per prove e demo, non ancora in vendita' },
+  sviluppo: { label: 'In sviluppo', variant: 'info', hint: 'Solo per il personale EDG: non si attiva ai clienti' },
   disponibile: { label: 'Disponibile', variant: 'success', hint: 'Pronto per i clienti' },
   dismesso: { label: 'Dismesso', variant: 'default', hint: 'Non più attivabile; chi lo aveva lo perde' },
 };

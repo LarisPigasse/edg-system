@@ -1,4 +1,5 @@
 // packages/ui/src/config/types.ts
+import type { ReactNode } from 'react';
 import type { LucideIcon } from '../utils/icons';
 import type { ThemedImageKey } from '../hooks/useThemedImage';
 
@@ -39,6 +40,12 @@ export interface EdgModuleConfig {
   children?: EdgSubMenuItem[];
   /** Permesso richiesto per vedere il modulo. Assente = sempre visibile. */
   permission?: string;
+  /**
+   * Titolo del modulo nell'header, quando si è dentro il modulo: prende il
+   * posto del nome dell'app accanto all'icona (es. il titolo di ADR054 reso
+   * con ModuleBrand). Assente = nome dell'app.
+   */
+  brand?: ReactNode;
 }
 
 /**

@@ -6,9 +6,11 @@ import { useEdgConfig } from '../../config';
 interface LogoProps {
   compact?: boolean;
   className?: string;
+  /** Al posto del nome dell'app (es. il titolo del modulo in cui ci si trova) */
+  title?: React.ReactNode;
 }
 
-const Logo: React.FC<LogoProps> = ({ compact = false, className = '' }) => {
+const Logo: React.FC<LogoProps> = ({ compact = false, className = '', title }) => {
   const { app } = useEdgConfig();
   const iconSrc = useThemedImage(app.icon ?? 'icon');
 
@@ -43,9 +45,15 @@ const Logo: React.FC<LogoProps> = ({ compact = false, className = '' }) => {
           e.currentTarget.style.display = 'none';
         }}
       />
-      {/* Nome dell'applicazione, fornito dalla configurazione */}
-      <span className={`${app.coloreSigla} font-bold`}>{app.sigla}</span>
-      <span className={`${app.colore} font-bold`}>{app.name}</span>
+      {/* Titolo del modulo corrente, oppure il nome dell'applicazione dalla configurazione */}
+      {title ? (
+        <span className='flex h-8 items-center'>{title}</span>
+      ) : (
+        <>
+          <span className={`${app.coloreSigla} font-bold`}>{app.sigla}</span>
+          <span className={`${app.colore} font-bold`}>{app.name}</span>
+        </>
+      )}
     </Link>
   );
 };

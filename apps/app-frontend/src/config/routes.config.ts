@@ -8,8 +8,8 @@
 export const ROUTES = {
   HOME: '/',
 
-  // Moduli applicativi — si aggiungono qui man mano che vengono attivati
-  // (es. VIGILO: '/vigilo', LOGISTICA: '/logistica')
+  // Moduli applicativi: il loro percorso base sta nel manifest
+  // (features/<chiave>/module.ts, basePath), raccolti in modules.config.ts
 
   // Auth
   LOGIN: '/login',

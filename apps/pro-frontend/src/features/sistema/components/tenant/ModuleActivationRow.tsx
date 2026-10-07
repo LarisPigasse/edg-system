@@ -49,17 +49,21 @@ function notInForceReason(view: TenantModuleView, missing: string[]): string | n
   if (new Date(a.startsAt) > new Date()) return `Non ancora in vigore: inizia il ${formatDate(a.startsAt)}`;
   if (missing.length > 0) return `Non in vigore: richiede ${missing.join(', ')}`;
   if (view.module.status === 'dismesso') return 'Non in vigore: modulo dismesso';
+  if (view.module.status === 'sviluppo') return 'Non in vigore: modulo in sviluppo';
   return 'Non in vigore';
 }
 
 const ModuleActivationRow: React.FC<ModuleActivationRowProps> = ({ view, missingDependencies, onIntent }) => {
   const { module, activation } = view;
-  const dismissed = module.status === 'dismesso';
-  const blockedBy = dismissed
-    ? 'Modulo dismesso'
-    : missingDependencies.length > 0
-      ? `Richiede ${missingDependencies.join(', ')}`
-      : null;
+  // Ai clienti solo moduli disponibili (ADR062): né dismessi né in sviluppo
+  const blockedBy =
+    module.status === 'dismesso'
+      ? 'Modulo dismesso'
+      : module.status === 'sviluppo'
+        ? 'In sviluppo: si potrà attivare quando sarà disponibile'
+        : missingDependencies.length > 0
+          ? `Richiede ${missingDependencies.join(', ')}`
+          : null;
   const reason = notInForceReason(view, missingDependencies);
 
   const act = (intent: ModuleIntent) => () => onIntent(intent, view);

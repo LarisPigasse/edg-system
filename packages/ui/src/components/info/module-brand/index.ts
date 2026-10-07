@@ -1,5 +1,9 @@
 export { HomeModuleTile } from './HomeModuleTile';
-export type { HomeModuleTileProps, HomeModuleStatus } from './HomeModuleTile';
+export type { HomeModuleTileProps } from './HomeModuleTile';
+export { ModuleInfoModal } from './ModuleInfoModal';
+export type { ModuleInfoModalProps, ModuleInfo, ModuleContact } from './ModuleInfoModal';
+export { HOME_MODULE_STATUS, isModuleUsable, homeModuleStatusLabel } from './moduleStatus';
+export type { HomeModuleStatus, HomeModuleStatusMeta } from './moduleStatus';
 export { ModuleBrand } from './ModuleBrand';
 export type { ModuleBrandProps, ModuleBrandSize } from './ModuleBrand';
 export { buildModuleImages } from './moduleImages';

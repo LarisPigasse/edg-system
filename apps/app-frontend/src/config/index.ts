@@ -24,6 +24,15 @@ export const APP_CONFIG = {
   TAGLINE: 'I tuoi moduli operativi',
   COPYRIGHT: `© ${new Date().getFullYear()} Express Delivery`,
   VERSION: import.meta.env.VITE_APP_VERSION || '0.1.0',
+  /**
+   * Recapiti dell'ufficio commerciale nella scheda dei moduli in vetrina,
+   * in prova, sospesi o scaduti (ADR056). Un telefono vuoto non viene mostrato.
+   */
+  CONTACT: {
+    name: 'Ufficio commerciale EDG',
+    email: 'comm.edg@expressdeliverygroup.com',
+    phone: '+39 0861.808227',
+  },
 } as const;
 
 /** Configurazione consegnata al design system. */
@@ -62,4 +71,5 @@ export const EDG_CONFIG: EdgConfig = {
 };
 
 export { ROUTES } from './routes.config';
-export { MODULES } from './navigation.config';
+export { MODULES, getModules } from './navigation.config';
+export { MODULE_MANIFESTS, getManifest } from './modules.config';

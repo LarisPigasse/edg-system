@@ -104,9 +104,9 @@ const Header: React.FC<HeaderProps> = ({ userInitials = 'AD', userName = 'Admin 
     <header className='bg-bg-primary border-b border-border-default'>
       <div className='w-full px-2 sm:px-4'>
         <div className='flex items-center h-10'>
-          {/* LEFT AREA - Logo (FISSO) */}
+          {/* LEFT AREA - Logo: dentro un modulo, il suo titolo al posto del nome dell'app */}
           <div className='shrink-0'>
-            <Logo />
+            <Logo title={activeModule?.brand} />
           </div>
 
           {/* NAVIGATION - Centr dopo logo */}

@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, useMemo, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 
@@ -13,10 +13,13 @@ import {
   ProfilePage,
   PrivateRoute,
   UserMenu,
+  useAuth,
 } from '@edg/auth';
 
 import store from './app/store';
-import { EDG_CONFIG, ROUTES } from './config';
+import { EDG_CONFIG, MODULE_MANIFESTS, ROUTES, getModules } from './config';
+import { MyModulesProvider, ModuleRoutes, useMyModules } from './core/modules';
+import { moduleImages } from './assets/moduli';
 import { Dashboard } from './pages';
 
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -32,6 +35,24 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }, []);
 
   return <>{children}</>;
+};
+
+/**
+ * Ricalcola il menu dai moduli che l'utente può aprire (JWT + permessi) e dal
+ * catalogo (titolo del modulo nell'header). Un solo punto di collegamento fra
+ * autenticazione, moduli e configurazione del design system.
+ */
+const AppConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { hasModule, hasPermission, permissions } = useAuth();
+  const { byKey } = useMyModules();
+  const config = useMemo(
+    () => ({
+      ...EDG_CONFIG,
+      modules: getModules({ hasModule, hasPermission, permissions, myModules: byKey, images: moduleImages }),
+    }),
+    [hasModule, hasPermission, permissions, byKey]
+  );
+  return <EdgConfigProvider config={config}>{children}</EdgConfigProvider>;
 };
 
 const PageLoadingFallback: React.FC = () => (
@@ -57,79 +78,93 @@ const App: React.FC = () => {
     <ErrorBoundary onError={handleError}>
       <ToastProvider>
         <Provider store={store}>
-          {/* Consegna al design system identità, rotte, moduli e layout */}
-          <EdgConfigProvider config={EDG_CONFIG}>
-            <AppInitializer>
-              <Router>
-                <Suspense fallback={<PageLoadingFallback />}>
-                  <Routes>
-                    {/* Pagine pubbliche, fuori dal layout */}
-                    <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-                    <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
-                    <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
+          {/* Moduli dell'utente, poi la configurazione del design system che ne dipende */}
+          <MyModulesProvider>
+            <AppConfigProvider>
+              <AppInitializer>
+                <Router>
+                  <Suspense fallback={<PageLoadingFallback />}>
+                    <Routes>
+                      {/* Pagine pubbliche, fuori dal layout */}
+                      <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+                      <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
+                      <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
 
-                    {/* Tutto il resto dentro il layout */}
-                    <Route
-                      path='*'
-                      element={
-                        <div className='App'>
-                          <MainLayout>
-                            <Routes>
-                              <Route
-                                path={ROUTES.HOME}
-                                element={
-                                  <PrivateRoute>
-                                    <Dashboard />
-                                  </PrivateRoute>
-                                }
-                              />
-                              <Route
-                                path={ROUTES.CHANGE_PASSWORD}
-                                element={
-                                  <PrivateRoute>
-                                    <ChangePasswordPage />
-                                  </PrivateRoute>
-                                }
-                              />
-                              <Route
-                                path={ROUTES.PROFILE}
-                                element={
-                                  <PrivateRoute>
-                                    <ProfilePage />
-                                  </PrivateRoute>
-                                }
-                              />
-                              <Route
-                                path={ROUTES.TERMS}
-                                element={
-                                  <PrivateRoute>
-                                    <TermsPage />
-                                  </PrivateRoute>
-                                }
-                              />
-                              <Route
-                                path={ROUTES.SUPPORT}
-                                element={
-                                  <PrivateRoute>
-                                    <SupportPage />
-                                  </PrivateRoute>
-                                }
-                              />
-                              <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
-                              <Route path='*' element={<NotFound />} />
-                            </Routes>
-                          </MainLayout>
+                      {/* Tutto il resto dentro il layout */}
+                      <Route
+                        path='*'
+                        element={
+                          <div className='App'>
+                            <MainLayout>
+                              <Routes>
+                                <Route
+                                  path={ROUTES.HOME}
+                                  element={
+                                    <PrivateRoute>
+                                      <Dashboard />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                {/* Un ramo per modulo: le sue pagine stanno nel manifest */}
+                                {MODULE_MANIFESTS.map(manifest => (
+                                  <Route
+                                    key={manifest.key}
+                                    path={`${manifest.basePath}/*`}
+                                    element={
+                                      <PrivateRoute>
+                                        <ModuleRoutes manifest={manifest} homePath={ROUTES.HOME} />
+                                      </PrivateRoute>
+                                    }
+                                  />
+                                ))}
+                                <Route
+                                  path={ROUTES.CHANGE_PASSWORD}
+                                  element={
+                                    <PrivateRoute>
+                                      <ChangePasswordPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
+                                  path={ROUTES.PROFILE}
+                                  element={
+                                    <PrivateRoute>
+                                      <ProfilePage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
+                                  path={ROUTES.TERMS}
+                                  element={
+                                    <PrivateRoute>
+                                      <TermsPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
+                                  path={ROUTES.SUPPORT}
+                                  element={
+                                    <PrivateRoute>
+                                      <SupportPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
+                                <Route path='*' element={<NotFound />} />
+                              </Routes>
+                            </MainLayout>
 
-                          <UserMenu />
-                          <MobileMenu />
-                        </div>
-                      }
-                    />
-                  </Routes>
-                </Suspense>
-              </Router>
-            </AppInitializer>
-          </EdgConfigProvider>
+                            <UserMenu />
+                            <MobileMenu />
+                          </div>
+                        }
+                      />
+                    </Routes>
+                  </Suspense>
+                </Router>
+              </AppInitializer>
+            </AppConfigProvider>
+          </MyModulesProvider>
         </Provider>
       </ToastProvider>
     </ErrorBoundary>
