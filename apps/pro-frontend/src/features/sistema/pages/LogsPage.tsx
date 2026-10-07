@@ -142,12 +142,30 @@ const LogsPage: React.FC = () => {
     loadStats();
   };
 
+  // Tabella "fit" (larghezza della pagina, nessuno scorrimento orizzontale):
+  // larghezza fissa per le colonne a contenuto breve e prevedibile (date,
+  // badge, tenant), il resto dello spazio si divide fra Azione, Utente e
+  // Account, che troncano con i puntini e mostrano il testo completo al
+  // passaggio del mouse. Il dettaglio completo è sempre nella modal (Azione).
   const columns: TableColumn<AzioneLog>[] = [
-    { header: 'Quando', accessor: item => formatDateTime(item.timestamp) },
-    { header: 'Categoria', accessor: item => <Badge variant='default'>{categoriaLabel(item.categoria)}</Badge> },
+    { header: 'Quando', accessor: item => formatDateTime(item.timestamp), className: 'w-40' },
+    {
+      header: 'Categoria',
+      accessor: item => (
+        <Badge size='xs' variant='default'>
+          {categoriaLabel(item.categoria)}
+        </Badge>
+      ),
+      className: 'w-32',
+    },
     {
       header: 'Criticità',
-      accessor: item => <Badge variant={severityBadgeVariant(item.criticita)}>{severityLabel(item.criticita)}</Badge>,
+      className: 'w-28',
+      accessor: item => (
+        <Badge size='xs' variant={severityBadgeVariant(item.criticita)}>
+          {severityLabel(item.criticita)}
+        </Badge>
+      ),
     },
     {
       // Colonna cliccabile per aprire il dettaglio — stesso schema di
@@ -161,7 +179,12 @@ const LogsPage: React.FC = () => {
     },
     {
       header: 'Esito',
-      accessor: item => <Badge variant={esitoBadgeVariant(item.risultato.esito)}>{esitoLabel(item.risultato.esito)}</Badge>,
+      className: 'w-24',
+      accessor: item => (
+        <Badge size='xs' variant={esitoBadgeVariant(item.risultato.esito)}>
+          {esitoLabel(item.risultato.esito)}
+        </Badge>
+      ),
     },
     {
       // Nome dell'operatore o ragione sociale collegati all'account (via
@@ -171,6 +194,7 @@ const LogsPage: React.FC = () => {
       // (es. account di sistema) o se il log è troppo vecchio per avere
       // origine.id come account valido.
       header: 'Utente',
+      className: 'w-48',
       accessor: item => {
         const account = getAccount(originAccountId(item) ?? null);
         const nome = account ? getEntityLabel(account.accountType, account.entityId) : null;
@@ -179,6 +203,7 @@ const LogsPage: React.FC = () => {
     },
     {
       header: 'Tenant',
+      className: 'w-44',
       accessor: item => getTenantName(originTenantId(item) ?? null) ?? '—',
     },
     {
@@ -186,6 +211,7 @@ const LogsPage: React.FC = () => {
       // effettivamente usata per il login, non quella corrente se nel
       // frattempo è cambiata.
       header: 'Account',
+      className: 'w-48',
       accessor: item => originEmail(item) ?? item.origine.id,
     },
   ];
@@ -222,6 +248,8 @@ const LogsPage: React.FC = () => {
         keyExtractor={item => item._id}
         isLoading={isLoading}
         emptyMessage='Nessun evento trovato con questi filtri'
+        size='xs'
+        fit
         striped
         hoverable
       />
@@ -235,7 +263,12 @@ const LogsPage: React.FC = () => {
         onNext={() => setPage(p => p + 1)}
       />
 
-      <LogDetailModal isOpen={!!selectedLog} onClose={() => setSelectedLog(null)} log={selectedLog} onOpenLog={setSelectedLog} />
+      <LogDetailModal
+        isOpen={!!selectedLog}
+        onClose={() => setSelectedLog(null)}
+        log={selectedLog}
+        onOpenLog={setSelectedLog}
+      />
     </div>
   );
 };

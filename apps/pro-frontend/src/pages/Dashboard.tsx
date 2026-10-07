@@ -1,25 +1,28 @@
 // src/pages/Dashboard.tsx
 import React from 'react';
+import { HomeAppTile, HomeTileGrid } from '@edg/ui';
+import { useAuth } from '@edg/auth';
 
-import { APP_CONFIG } from '../config';
+// Import diretto (non dall'indice della feature): l'indice porta con sé
+// tutte le pagine di sistema, che invece si caricano a richiesta
+import ModulesTile from '../features/sistema/components/ModulesTile';
 
 /**
- * HOME — pagina di ingresso dopo il login.
- *
- * Qui andranno le tessere dei moduli attivi per l'utente. Con un solo modulo
- * attivo conviene invece portarlo direttamente alla sua home.
+ * HOME — pagina di ingresso dopo il login (ADR055): grandi riquadri, il primo
+ * con nome e sottotitolo del frontend, poi uno per modulo con il suo logo.
+ * I moduli li vede chi li gestisce (sistema.moduli).
  */
 const Dashboard: React.FC = () => {
+  const { hasPermission } = useAuth();
+
   return (
-    <div className='flex h-full min-h-[50vh] flex-col items-center justify-center px-4 text-center'>
-      <h1>
-        <span className='font-semibold text-text-primary text-xl sm:text-2xl uppercase'>{APP_CONFIG.SIGLA}</span>
-        <span className={`${APP_CONFIG.COLORE} font-bold text-3xl font-semibold tracking-tight sm:text-5xl `}>
-          {APP_CONFIG.TITOLO}
-        </span>
-      </h1>
-      <span aria-hidden className='mt-5 block h-px w-64 bg-violet-500/70' />
-      <p className='mt-5 max-w-xl text-text-primary sm:text-lg'>{APP_CONFIG.TAGLINE}</p>
+    <div className='mx-auto flex min-h-[50vh] max-w-7xl items-center px-4 py-8'>
+      <HomeTileGrid>
+        <li>
+          <HomeAppTile />
+        </li>
+        {hasPermission('sistema.moduli') && <ModulesTile />}
+      </HomeTileGrid>
     </div>
   );
 };

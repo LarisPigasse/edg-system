@@ -1,23 +1,23 @@
 // src/features/sistema/pages/InfoPage.tsx
 //
 // SISTEMA → Info (ADR038): salute della piattaforma e allarmi, in tre
-// schede (Salute, Regole, Storico). La pagina possiede solo lo stato
+// schede (Salute, Regole, Storico) più la Guida di sola lettura (ADR052). La pagina possiede solo lo stato
 // condiviso (salute, scheda attiva) e compone i componenti di
 // components/info.
 //
-// Scheda attiva nell'URL (?tab=salute|regole|storico): sopravvive al
+// Scheda attiva nell'URL (?tab=salute|regole|storico|guida): sopravvive al
 // ricaricamento e permette link diretti. Tabs di @edg/ui non e' controllabile
 // dall'esterno (solo defaultTab): per cambiare scheda da codice ("Vedi
 // storico") lo si rimonta con key = scheda attiva.
 import React, { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { BellRing, HeartPulse, History } from 'lucide-react';
+import { BellRing, BookOpen, HeartPulse, History } from 'lucide-react';
 import { PageHeader, StatTile, Tabs, type TabItem } from '@edg/ui';
 
-import { HealthTab, HistoryTab, RulesTab } from '../components/info';
+import { GuideTab, HealthTab, HistoryTab, RulesTab } from '../components/info';
 import { useSystemHealth } from '../hooks/useSystemHealth';
 
-const TAB_IDS = ['salute', 'regole', 'storico'] as const;
+const TAB_IDS = ['salute', 'regole', 'storico', 'guida'] as const;
 type InfoTab = (typeof TAB_IDS)[number];
 
 const isInfoTab = (v: string | null): v is InfoTab => !!v && (TAB_IDS as readonly string[]).includes(v);
@@ -69,6 +69,13 @@ const InfoPage: React.FC = () => {
       label: 'Storico',
       icon: History,
       content: <HistoryTab />,
+    },
+    {
+      // Solo lettura: spiega i meccanismi della pagina con i valori dal vivo
+      id: 'guida',
+      label: 'Guida',
+      icon: BookOpen,
+      content: <GuideTab health={data ?? null} />,
     },
   ];
 

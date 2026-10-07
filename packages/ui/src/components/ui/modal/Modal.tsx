@@ -5,7 +5,7 @@ import { iconMap } from '../../../utils';
 
 import { cn } from '../../../utils/';
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl' | 'full';
 
 interface ModalProps {
   /** Stato aperto/chiuso del modal */
@@ -59,6 +59,8 @@ const Modal: React.FC<ModalProps> = ({
     lg: 'max-w-xl',
     xl: 'max-w-2xl',
     xxl: 'max-w-4xl',
+    // Editor a griglia larga (es. permessi dei ruoli: tre gruppi per riga)
+    xxxl: 'max-w-6xl',
     full: 'max-w-[95vw] max-h-[95vh]',
   };
   // 🎨 Classes per overlay/backdrop - USA IL NOSTRO THEME SYSTEM

@@ -18,6 +18,7 @@ export const ROUTES = {
 
   // SISTEMA: gestione di account, permessi e tenant (ADR024) — solo root
   SISTEMA_TENANT: '/sistema/tenant',
+  SISTEMA_MODULI: '/sistema/moduli', // catalogo moduli, solo root (ADR048)
   SISTEMA_ACCOUNT: '/sistema/account',
   SISTEMA_SESSIONI: '/sistema/sessioni',
   SISTEMA_RUOLI: '/sistema/ruoli',

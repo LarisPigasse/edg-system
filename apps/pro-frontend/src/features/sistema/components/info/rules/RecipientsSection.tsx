@@ -4,7 +4,7 @@
 // destinatario lo toglie anche dalle regole che lo indicano: quelle rimaste
 // senza destinatari specifici tornano ai predefiniti (log-service).
 import React, { useState } from 'react';
-import { Badge, ConfirmModal, Table, type Action, type TableColumn } from '@edg/ui';
+import { Badge, ConfirmModal, Power, Table, type TableRowAction, type TableColumn } from '@edg/ui';
 
 import SectionHeader from './SectionHeader';
 import RecipientFormModal from './RecipientFormModal';
@@ -64,9 +64,10 @@ export const RecipientsSection: React.FC<RecipientsSectionProps> = ({
     },
   ];
 
-  const toggleAction = (r: AlertRecipient): Action[] => [
+  const toggleAction = (r: AlertRecipient): TableRowAction[] => [
     {
       id: 'toggle',
+      icon: <Power className='w-4 h-4' />,
       label: r.enabled ? 'Disattiva' : 'Attiva',
       onClick: () => void onToggle(r),
       variant: r.enabled ? 'warning' : 'success',

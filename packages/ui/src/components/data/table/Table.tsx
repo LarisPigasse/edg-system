@@ -22,6 +22,13 @@ export interface TableColumn<T> {
   clickVariant?: 'primary' | 'secondary' | 'danger' | 'success';
 }
 
+/**
+ * Azione personalizzata di riga: l'icona è obbligatoria, perché le voci
+ * predefinite del menu (Modifica, Elimina, Dati tecnici) ce l'hanno e un
+ * menu ha icone su tutte le voci o su nessuna (vedi ActionMenu).
+ */
+export type TableRowAction = Action & { icon: React.ReactNode };
+
 /** Configurazione azioni per ogni riga */
 export interface TableRowActions<T> {
   /** Abilita colonna azioni */
@@ -31,7 +38,7 @@ export interface TableRowActions<T> {
   /** Header della colonna azioni */
   header?: string;
   /** Azioni personalizzate */
-  actions?: (item: T) => Action[];
+  actions?: (item: T) => TableRowAction[];
   /** Azioni predefinite */
   quickActions?: {
     /** Azione di modifica */
@@ -57,7 +64,7 @@ export interface TableRowActions<T> {
   mode?: 'menu' | 'buttons' | 'mixed';
 }
 
-export type TableSize = 'sm' | 'md' | 'lg';
+export type TableSize = 'xs' | 'sm' | 'md' | 'lg';
 
 interface TableProps<T> {
   data: T[];
@@ -66,7 +73,16 @@ interface TableProps<T> {
   isLoading?: boolean;
   emptyMessage?: string;
   className?: string;
+  /** Densità: 'xs' = testo piccolo e padding ridotto, per tabelle con molte colonne (es. Logs) */
   size?: TableSize;
+  /**
+   * true = la tabella occupa esattamente la larghezza del contenitore, senza
+   * scorrimento orizzontale: colonne a larghezza fissa (table-fixed, larghezze
+   * dalle className delle colonne, es. 'w-32') e testo troppo lungo troncato
+   * con i puntini (testo completo nel tooltip). Default false: larghezza
+   * naturale con scorrimento orizzontale se serve.
+   */
+  fit?: boolean;
   striped?: boolean;
   hoverable?: boolean;
   /** Callback per click su intera riga */
@@ -99,6 +115,7 @@ function Table<T>({
   emptyMessage = 'Nessun dato disponibile',
   className = '',
   size = 'md',
+  fit = false,
   striped = false,
   hoverable = true,
   onRowClick,
@@ -135,22 +152,36 @@ function Table<T>({
 
   // 📏 Size variants con CSS custom properties
   const sizeClasses = {
+    xs: 'text-xs',
     sm: 'text-sm',
     md: 'text-sm',
     lg: 'text-base',
   };
 
   const cellPaddingClasses = {
+    xs: 'px-2 py-1.5',
     sm: 'px-3 py-2',
     md: 'px-4 py-3',
     lg: 'px-6 py-4',
   };
 
   const headerPaddingClasses = {
+    xs: 'px-2 py-2',
     sm: 'px-3 py-3',
     md: 'px-4 py-3',
     lg: 'px-6 py-4',
   };
+
+  // Menu azioni piccolo per le densità compatte
+  const isCompact = size === 'xs' || size === 'sm';
+
+  // Una riga per cella: con `fit` il testo in eccesso si tronca, altrimenti
+  // la colonna si allarga (e la tabella scorre in orizzontale se serve)
+  const cellTextClass = fit ? 'truncate' : 'whitespace-nowrap';
+
+  /** Tooltip col testo completo, utile quando `fit` tronca una cella testuale */
+  const cellTitle = (content: unknown): string | undefined =>
+    fit && (typeof content === 'string' || typeof content === 'number') ? String(content) : undefined;
 
   // 📊 Sort data based on current config
   const sortedData = useMemo(() => {
@@ -395,7 +426,7 @@ function Table<T>({
               />
             )}
             {technicalDetailsAction && (
-              <ActionMenu actions={[technicalDetailsAction]} size={size === 'sm' ? 'sm' : 'md'} align='end' />
+              <ActionMenu actions={[technicalDetailsAction]} size={isCompact ? 'sm' : 'md'} align='end' />
             )}
           </div>
         );
@@ -430,7 +461,7 @@ function Table<T>({
             )}
             {/* Render secondary actions in menu */}
             {secondaryActions.length > 0 && (
-              <ActionMenu actions={secondaryActions} size={size === 'sm' ? 'sm' : 'md'} align='end' />
+              <ActionMenu actions={secondaryActions} size={isCompact ? 'sm' : 'md'} align='end' />
             )}
           </div>
         );
@@ -438,14 +469,20 @@ function Table<T>({
 
       case 'menu':
       default:
-        return <ActionMenu actions={actions} size={size === 'sm' ? 'sm' : 'md'} align='end' />;
+        return <ActionMenu actions={actions} size={isCompact ? 'sm' : 'md'} align='end' />;
     }
   };
 
   return (
     <>
-      <div className={cn('overflow-x-auto', className)}>
-        <table className={cn('min-w-full divide-y divide-border-default', sizeClasses[size])}>
+      <div className={cn(fit ? 'overflow-x-hidden' : 'overflow-x-auto', className)}>
+        <table
+          className={cn(
+            fit ? 'w-full table-fixed' : 'min-w-full',
+            'divide-y divide-border-default',
+            sizeClasses[size]
+          )}
+        >
           {/* 📊 Table Header */}
           <thead className='bg-bg-info border-b border-blue-400'>
             <tr>
@@ -457,6 +494,7 @@ function Table<T>({
                   className={cn(
                     headerPaddingClasses[size],
                     'text-xs font-medium text-text-secondary uppercase tracking-wider',
+                    fit && 'truncate',
                     column.className?.includes('text-right') ? 'text-right' : 'text-left',
                     column.sortable && 'cursor-pointer hover:bg-bg-hover transition-colors',
                     column.className
@@ -490,7 +528,7 @@ function Table<T>({
                   >
                     {expandable && (
                       <td
-                        className={cn(cellPaddingClasses[size], 'whitespace-nowrap')}
+                        className={cn(cellPaddingClasses[size], cellTextClass)}
                         onClick={e => {
                           e.stopPropagation(); // Non attivare onRowClick
                           toggleExpanded(key);
@@ -516,6 +554,7 @@ function Table<T>({
                         return (
                           <td
                             key={colIndex}
+                            // Mai troncata: contiene il pulsante del menu (larghezza fissa w-20)
                             className={cn(cellPaddingClasses[size], 'whitespace-nowrap', column.className)}
                             onClick={e => e.stopPropagation()} // Prevent row click
                           >
@@ -547,9 +586,11 @@ function Table<T>({
                                 }
                               : undefined
                           }
+                          title={cellTitle(cellContent)}
                           className={cn(
                             cellPaddingClasses[size],
-                            'whitespace-nowrap text-text-primary',
+                            cellTextClass,
+                            'text-text-primary',
                             getClickableCellClasses(column),
                             column.className
                           )}

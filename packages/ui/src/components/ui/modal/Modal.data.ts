@@ -18,7 +18,7 @@ export const modalData: ComponentData = {
     { name: 'children', type: 'React.ReactNode', required: true, description: 'Il contenuto principale del modal.' },
     {
       name: 'size',
-      type: '"sm" | "md" | "lg" | "xl" | "full"',
+      type: '"sm" | "md" | "lg" | "xl" | "xxl" | "xxxl" | "full"',
       defaultValue: '"md"',
       description: 'Dimensione (larghezza massima) del modal.',
     },

@@ -16,8 +16,10 @@ import {
   Trash2,
   Lock,
   Unlock,
+  Eye,
+  Power,
   type TableColumn,
-  type Action,
+  type TableRowAction,
 } from '@edg/ui';
 
 import { apiFetch, useAuth } from '@edg/auth';
@@ -294,11 +296,12 @@ const AccountPage: React.FC = () => {
           actions: item => {
             // "Vedi attività" (ADR039): i Logs gia' filtrati su questo account.
             // Prima voce, separata dalle azioni che modificano l'account.
-            const list: Action[] = canSeeLogs
+            const list: TableRowAction[] = canSeeLogs
               ? [
                   {
                     id: 'activity',
                     label: 'Vedi attività',
+                    icon: <Eye className='w-4 h-4' />,
                     onClick: () => navigate(`${ROUTES.SISTEMA_LOGS}?userId=${item.id}`),
                     divider: true,
                   },
@@ -323,6 +326,7 @@ const AccountPage: React.FC = () => {
               list.push({
                 id: 'toggle',
                 label: item.isActive ? 'Disattiva' : 'Attiva',
+                icon: <Power className='w-4 h-4' />,
                 variant: item.isActive ? 'danger' : 'success',
                 onClick: () => handleToggleClick(item),
               });

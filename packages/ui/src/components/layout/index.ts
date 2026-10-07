@@ -7,6 +7,10 @@ export { default as CenteredPage } from './custom/CenteredPage';
 export { default as CenteredSection } from './custom/CenteredSection';
 export { default as MainLayout } from './custom/MainLayout';
 export { default as PageBackground } from './custom/PageBackground';
+export { default as ScaleToFit } from './custom/ScaleToFit';
+
+// Riquadri della home (ADR055)
+export * from './home-tile';
 
 // Card
 export { default as Card } from './card/Card';

@@ -104,6 +104,15 @@
   --surface-4: #e9e2db; /* il più marcato */
   --surface-border: #78716c; /* stone-500 · costante nei due temi */
 
+  /* ── Riquadri della home (ADR055) ──────────────────────────────────────
+     Il primo (nome del frontend) bianco con bordo scuro; i moduli su grigio
+     chiarissimo, bordo sky che diventa violet al passaggio del mouse. */
+  --home-app-bg: #ffffff; /* grigio molto chiaro */
+  --home-app-border: #d4d4d8; /* stone-300 */
+  --home-module-bg: #f3f4f6; /* gray-100 */
+  --home-module-border: #d4d4d8; /* zinc-400 */
+  --home-module-border-hover: #a78bfa; /* violet-400 */
+
   /* ── Testo semantico — sul chiaro scurisce, sullo scuro schiarisce ───── */
   --text-danger: #dc2626;
   --text-danger-hover: #991b1b;
@@ -211,6 +220,13 @@
   --surface-3: #302c27;
   --surface-4: #292520;
   --surface-border: #78716c; /* stone-500 · lo stesso del chiaro */
+
+  /* ── Riquadri della home — stessi rapporti, sul fondo scuro ──────────── */
+  --home-app-bg: #1c1917; /* stone-900 */
+  --home-app-border: #a8a29e; /* stone-400 */
+  --home-module-bg: #292524; /* stone-800 */
+  --home-module-border: #38bdf8; /* sky-400 */
+  --home-module-border-hover: #8b5cf6; /* violet-500 */
 
   /* ── Testo semantico — schiarito per reggere sul fondo scuro ─────────── */
   --text-danger: #f87171;

@@ -105,7 +105,7 @@ const RolePermissionsModal: React.FC<RolePermissionsModalProps> = ({ isOpen, onC
       isOpen={isOpen}
       onClose={onClose}
       title={`Permessi ruolo "${role?.name ?? ''}"`}
-      size='xxl'
+      size='xxxl'
       footer={
         <div className='flex justify-end gap-3'>
           <Button variant='outline' onClick={onClose} disabled={isSubmitting}>
@@ -123,7 +123,8 @@ const RolePermissionsModal: React.FC<RolePermissionsModalProps> = ({ isOpen, onC
           azioni&quot; assegna il permesso jolly di modulo (<code>modulo.*</code>) e prevale sulle singole azioni.
         </p>
 
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+        {/* Tre gruppi per riga su schermi larghi (modal xxxl), due su schermi medi */}
+        <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
           {PERMISSION_CATALOG.map(moduleDef => (
             <div key={moduleDef.module} className='rounded-lg border border-border-default p-4 space-y-3'>
               <div className='flex items-center justify-between gap-2'>
@@ -152,7 +153,6 @@ const RolePermissionsModal: React.FC<RolePermissionsModalProps> = ({ isOpen, onC
                   <Checkbox
                     key={action.value}
                     label={action.label}
-                    description={action.description}
                     checked={isActionChecked(moduleDef.module, action.value)}
                     disabled={isWildcard(moduleDef.module)}
                     onCheckedChange={checked => toggleAction(moduleDef.module, action.value, checked === true)}

@@ -5,7 +5,7 @@
 // modale di creazione/modifica. Le regole predefinite non sono eliminabili
 // (vincolo applicato anche da log-service).
 import React, { useMemo, useState } from 'react';
-import { Badge, ConfirmModal, Table, type Action, type TableColumn } from '@edg/ui';
+import { Badge, ConfirmModal, Power, Table, type TableRowAction, type TableColumn } from '@edg/ui';
 
 import SectionHeader from './SectionHeader';
 import RuleFormModal from './RuleFormModal';
@@ -99,9 +99,10 @@ export const RulesSection: React.FC<RulesSectionProps> = ({
     },
   ];
 
-  const toggleAction = (rule: AlertRule): Action[] => [
+  const toggleAction = (rule: AlertRule): TableRowAction[] => [
     {
       id: 'toggle',
+      icon: <Power className='w-4 h-4' />,
       label: rule.enabled ? 'Disattiva' : 'Attiva',
       onClick: () => void onToggle(rule),
       variant: rule.enabled ? 'warning' : 'success',

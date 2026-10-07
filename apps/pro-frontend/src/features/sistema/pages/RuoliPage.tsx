@@ -11,7 +11,7 @@
 // AccountController.updateRolePermissions lato backend).
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { PageHeader, Table, Badge, Shield, useToast, type TableColumn, type Action } from '@edg/ui';
+import { PageHeader, Table, Badge, Shield, useToast, type TableColumn, type TableRowAction } from '@edg/ui';
 
 import { listRoles } from '../api/roleActions';
 import RolePermissionsModal from '../components/RolePermissionsModal';
@@ -85,7 +85,7 @@ const RuoliPage: React.FC = () => {
           enabled: true,
           actions: item => {
             if (item.name === 'root') return [];
-            const list: Action[] = [
+            const list: TableRowAction[] = [
               {
                 id: 'edit-permissions',
                 label: 'Modifica permessi',

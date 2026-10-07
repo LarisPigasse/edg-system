@@ -18,6 +18,8 @@ export interface Tenant {
   uuid: string;
   name: string;
   slug: string;
+  /** Cliente dell'anagrafica EDG collegato (ADR058): al massimo un tenant per cliente */
+  clienteUuid: string | null;
   defaultLocale: string;
   isActive: boolean;
   /** true per il tenant di sistema (Express Delivery Group): protetto da
@@ -30,6 +32,7 @@ export interface Tenant {
 export interface TenantInput {
   name: string;
   slug: string;
+  clienteUuid?: string | null;
   defaultLocale?: string;
   isActive?: boolean;
 }

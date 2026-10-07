@@ -1,6 +1,6 @@
 // src/features/sistema/pages/SessioniPage.tsx
 import React, { useCallback, useEffect, useState } from 'react';
-import { PageHeader, Table, ConfirmModal, StatTile, useToast, LogOut, Lock, type TableColumn, type Action } from '@edg/ui';
+import { PageHeader, Table, ConfirmModal, StatTile, useToast, LogOut, Lock, type TableColumn, type TableRowAction } from '@edg/ui';
 
 import { authApi } from '../api/authApi';
 import BlockUserModal from '../components/BlockUserModal';
@@ -93,7 +93,7 @@ const SessioniPage: React.FC = () => {
         rowActions={{
           enabled: true,
           actions: item => {
-            const list: Action[] = [
+            const list: TableRowAction[] = [
               {
                 id: 'revoke',
                 label: 'Revoca',

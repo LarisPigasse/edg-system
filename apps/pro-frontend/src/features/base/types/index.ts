@@ -22,6 +22,21 @@ export interface RepartoInput {
   isActive?: boolean;
 }
 
+// ─── Settore (tabella di base, ADR059) ───────────────────────────────────────
+
+/** Settore di attività delle aziende in anagrafica (clienti e partner) */
+export interface Settore {
+  idSettore: number;
+  uuidSettore: string;
+  settore: string;
+  isActive: boolean;
+}
+
+export interface SettoreInput {
+  settore: string;
+  isActive?: boolean;
+}
+
 // ─── Operatore ────────────────────────────────────────────────────────────────
 
 export interface Operatore {
@@ -64,6 +79,8 @@ export interface Anagrafica {
   uuidAnagrafica: string;
   tipo: TipoAnagrafica;
   idTenant: number;
+  /** Settore di attività (ADR059), dalla tabella di base Settori */
+  idSettore: number | null;
   ragioneSociale: string;
   partitaIva: string | null;
   codiceFiscale: string | null;
@@ -83,6 +100,7 @@ export interface Anagrafica {
 export interface AnagraficaInput {
   tipo: TipoAnagrafica;
   idTenant: number;
+  idSettore?: number | null;
   ragioneSociale: string;
   partitaIva?: string | null;
   codiceFiscale?: string | null;

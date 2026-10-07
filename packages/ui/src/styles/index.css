@@ -2,6 +2,7 @@
 @import './globals.css';
 @import './typography.css';
 @import './lazy-loading.css';
+@import './brand-palette.css';
 
 /* Tailwind v4 rileva da solo le classi nei file dell'applicazione che lo importa,
    ma non risale fuori dalla radice del progetto Vite: senza questa riga le classi
@@ -46,6 +47,13 @@
   --color-surface-3: var(--surface-3);
   --color-surface-4: var(--surface-4);
   --color-surface-border: var(--surface-border);
+
+  /* Riquadri della home (ADR055) */
+  --color-home-app-bg: var(--home-app-bg);
+  --color-home-app-border: var(--home-app-border);
+  --color-home-module-bg: var(--home-module-bg);
+  --color-home-module-border: var(--home-module-border);
+  --color-home-module-border-hover: var(--home-module-border-hover);
 
   /* Testo semantico */
   --color-text-danger: var(--text-danger);

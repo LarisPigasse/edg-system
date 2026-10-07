@@ -41,7 +41,14 @@ export const tableData: ComponentData = {
       defaultValue: '"Nessun dato disponibile"',
       description: "Messaggio da visualizzare quando l'array 'data' è vuoto.",
     },
-    { name: "size", type: '"sm" | "md" | "lg"', defaultValue: '"md"', description: "La dimensione del padding delle celle." },
+    { name: "size", type: '"xs" | "sm" | "md" | "lg"', defaultValue: '"md"', description: "Densità della tabella: 'xs' usa testo piccolo e padding ridotto, per tabelle con molte colonne." },
+    {
+      name: "fit",
+      type: "boolean",
+      defaultValue: "false",
+      description:
+        "Se true la tabella occupa esattamente la larghezza del contenitore, senza scorrimento orizzontale: colonne a larghezza fissa (dalle className delle colonne, es. 'w-32') e testo lungo troncato con i puntini, testo completo nel tooltip.",
+    },
     { name: "striped", type: "boolean", defaultValue: "false", description: "Applica uno sfondo a righe alternate." },
     { name: "hoverable", type: "boolean", defaultValue: "true", description: "Abilita l'effetto hover sulle righe." },
     { name: "onRowClick", type: "(item: T) => void", description: "Callback eseguita quando si clicca su un'intera riga." },

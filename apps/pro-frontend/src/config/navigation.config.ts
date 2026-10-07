@@ -76,6 +76,8 @@ export function getModules(can: PermissionCheck = () => false): EdgModuleConfig[
           { id: 'account', label: 'Account', href: ROUTES.SISTEMA_ACCOUNT, permission: 'sistema.account' },
           { id: 'ruoli', label: 'Ruoli', href: ROUTES.SISTEMA_RUOLI, permission: ROOT_ONLY },
           { id: 'tenant', label: 'Tenant', href: ROUTES.SISTEMA_TENANT, permission: 'sistema.tenant' },
+          // Catalogo moduli: solo root; le attivazioni per tenant stanno nella pagina del tenant
+          { id: 'moduli', label: 'Moduli', href: ROUTES.SISTEMA_MODULI, permission: ROOT_ONLY },
           { id: 'sessioni', label: 'Sessioni', href: ROUTES.SISTEMA_SESSIONI, permission: ROOT_ONLY },
           // 'sistema.logs' e' gia' un permesso assegnabile (permissionCatalog.ts), ma la
           // voce resta a root finche' non si decide di delegarla

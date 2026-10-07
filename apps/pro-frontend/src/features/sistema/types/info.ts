@@ -77,6 +77,9 @@ export interface JobState {
   name: string;
   service: string;
   schedule: string;
+  /** Intervallo atteso tra due esecuzioni riuscite e tolleranza, in ms */
+  everyMs: number;
+  graceMs: number;
   status: JobStatus;
   lastRunAt: string | null;
   lastOutcome: 'completed' | 'failed' | null;
@@ -87,13 +90,32 @@ export interface JobState {
   dueBy: string | null;
 }
 
+/** Parametri reali del monitor di log-service (letti dalla scheda Guida) */
+export interface HealthMonitorParams {
+  lastRunAt: string | null;
+  /** Intervallo tra due giri di controlli */
+  intervalMs: number;
+  /** Controlli falliti consecutivi prima di "Non raggiungibile" */
+  downAfterFailures: number;
+  /** Oltre questa latenza il servizio è "Rallentato" */
+  degradedLatencyMs: number;
+  /** Attesa massima di ogni singolo controllo */
+  probeTimeoutMs: number;
+  /** Pausa minima tra due giri richiesti a mano */
+  manualCheckMinGapMs: number;
+  /** Finestra in cui si contano i riavvii */
+  restartWindowMs: number;
+  /** Dopo l'avvio di log-service, per quanto i ritardi dei processi non generano allarmi */
+  jobsStartupGraceMs: number;
+}
+
 export interface SystemHealth {
   services: ServiceHealth[];
   jobs: JobState[];
   summary: HealthSummary;
   stats: HealthStats;
   lastAlert: AlertHistoryEntry | null;
-  monitor: { lastRunAt: string | null; intervalMs: number };
+  monitor: HealthMonitorParams;
   generatedAt: string;
 }
 

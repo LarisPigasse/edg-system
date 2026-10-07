@@ -1,9 +1,15 @@
 // src/features/sistema/components/TenantFormModal.tsx
-import React, { useEffect, useState } from 'react';
-import { Modal, Button, Input, Select, Switch, Shield } from '@edg/ui';
+//
+// Creazione e modifica di un tenant. Il campo Cliente (ADR058) collega il
+// tenant a un cliente dell'anagrafica EDG: al massimo un tenant per cliente,
+// quindi i clienti già collegati ad altri tenant non si propongono. Usato
+// anche da Anagrafiche ("Crea tenant"), con i valori iniziali precompilati.
+import React, { useEffect, useMemo, useState } from 'react';
+import { Modal, Button, Input, Select, Switch, Shield, type SelectOption } from '@edg/ui';
 
 import { TENANT_LOCALE_OPTIONS } from '../types';
 import type { Tenant, TenantInput } from '../types';
+import { useEdgClienti } from '../api/useEdgClienti';
 
 interface TenantFormModalProps {
   isOpen: boolean;
@@ -11,25 +17,70 @@ interface TenantFormModalProps {
   onSave: (form: TenantInput) => Promise<void>;
   isSaving: boolean;
   item: Tenant | null; // null = creazione
+  /** Solo in creazione: valori iniziali (es. dal cliente in Anagrafiche) */
+  initial?: Partial<TenantInput>;
+  /** UUID dei clienti già collegati ad ALTRI tenant: non si ripropongono */
+  takenClienti?: ReadonlySet<string>;
 }
 
-const EMPTY_FORM: TenantInput = { name: '', slug: '', defaultLocale: 'it', isActive: true };
+// Radix Select non ammette un valore vuoto: sentinella per "nessun cliente"
+const NO_CLIENTE = '__none__';
+
+const EMPTY_FORM: TenantInput = {
+  name: '',
+  slug: '',
+  clienteUuid: null,
+  defaultLocale: 'it',
+  isActive: true,
+};
 
 /** kebab-case: stessa regola applicata da Joi lato backend (tenantSchemas). */
 const SLUG_PATTERN = '^[a-z0-9]+(-[a-z0-9]+)*$';
 
-const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSave, isSaving, item }) => {
+const TenantFormModal: React.FC<TenantFormModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  isSaving,
+  item,
+  initial,
+  takenClienti,
+}) => {
   const [form, setForm] = useState<TenantInput>(EMPTY_FORM);
   const isSystemTenant = item?.isSystem ?? false;
+  const { clienti, isLoading: clientiLoading, settoreOfCliente } = useEdgClienti(isOpen && !isSystemTenant);
+  // Il settore sta sul cliente (ADR059): qui si mostra soltanto
+  const settore = settoreOfCliente(form.clienteUuid);
+
+  // Clienti proponibili: non collegati ad altri tenant e attivi; quello già
+  // scelto resta comunque visibile, anche se nel frattempo disattivato
+  const clienteOptions: SelectOption[] = useMemo(
+    () => [
+      { value: NO_CLIENTE, label: 'Nessun cliente' },
+      ...clienti
+        .filter(c => c.uuidAnagrafica === form.clienteUuid || (c.isActive && !takenClienti?.has(c.uuidAnagrafica)))
+        .map(c => ({
+          value: c.uuidAnagrafica,
+          label: c.isActive ? c.ragioneSociale : `${c.ragioneSociale} (disattivato)`,
+        })),
+    ],
+    [clienti, form.clienteUuid, takenClienti]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
     setForm(
       item
-        ? { name: item.name, slug: item.slug, defaultLocale: item.defaultLocale, isActive: item.isActive }
-        : EMPTY_FORM
+        ? {
+            name: item.name,
+            slug: item.slug,
+            clienteUuid: item.clienteUuid ?? null,
+            defaultLocale: item.defaultLocale,
+            isActive: item.isActive,
+          }
+        : { ...EMPTY_FORM, ...initial }
     );
-  }, [isOpen, item]);
+  }, [isOpen, item, initial]);
 
   return (
     <Modal
@@ -53,7 +104,8 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSa
           <div className='flex items-center gap-2 rounded-md bg-bg-secondary px-3 py-2 text-sm text-text-secondary'>
             <Shield className='h-4 w-4 shrink-0' />
             <span>
-              Tenant di sistema (Express Delivery Group): non può essere eliminato né disattivato. Nome e slug restano modificabili.
+              Tenant di sistema (Express Delivery Group): non può essere eliminato né disattivato. Nome e slug restano
+              modificabili.
             </span>
           </div>
         )}
@@ -74,6 +126,20 @@ const TenantFormModal: React.FC<TenantFormModalProps> = ({ isOpen, onClose, onSa
           maxLength={64}
           required
         />
+        {!isSystemTenant && (
+          <Select
+            label='Cliente'
+            options={clienteOptions}
+            value={form.clienteUuid ?? NO_CLIENTE}
+            onValueChange={v => setForm(f => ({ ...f, clienteUuid: v === NO_CLIENTE ? null : v }))}
+            disabled={clientiLoading}
+            helperText={
+              form.clienteUuid
+                ? `Settore del cliente: ${settore ?? 'non indicato'} (si modifica in Anagrafiche)`
+                : "Cliente dell'anagrafica EDG a cui corrisponde il tenant. Facoltativo"
+            }
+          />
+        )}
         <Select
           label='Lingua di default'
           options={[...TENANT_LOCALE_OPTIONS]}

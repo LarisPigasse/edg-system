@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Button, Input, Select, Switch, TextArea, type SelectOption } from '@edg/ui';
 
 import { useTenantDirectory } from '../api/useTenantDirectory';
+import { useSettori } from '../api/useSettori';
 import type { Anagrafica, AnagraficaInput, TipoAnagrafica } from '../types';
 import { TIPO_ANAGRAFICA_LABELS } from '../types';
 
@@ -14,9 +15,13 @@ interface AnagraficaFormModalProps {
   item: Anagrafica | null; // null = creazione
 }
 
+// Radix Select non ammette un valore vuoto: sentinella per "nessun settore"
+const NO_SETTORE = '__none__';
+
 const emptyForm = (): AnagraficaInput => ({
   tipo: 'cliente',
   idTenant: 0,
+  idSettore: null,
   ragioneSociale: '',
   partitaIva: '',
   codiceFiscale: '',
@@ -49,6 +54,9 @@ const AnagraficaFormModal: React.FC<AnagraficaFormModalProps> = ({ isOpen, onClo
   const { tenants } = useTenantDirectory();
   const tenantOptions: SelectOption[] = tenants.map(t => ({ value: String(t.id), label: t.name }));
 
+  // Settore di attività (ADR059): dalla tabella di base, facoltativo
+  const { settoreOptions } = useSettori();
+
   useEffect(() => {
     if (!isOpen) return;
     setForm(
@@ -56,6 +64,7 @@ const AnagraficaFormModal: React.FC<AnagraficaFormModalProps> = ({ isOpen, onClo
         ? {
             tipo: item.tipo,
             idTenant: item.idTenant,
+            idSettore: item.idSettore ?? null,
             ragioneSociale: item.ragioneSociale,
             partitaIva: item.partitaIva ?? '',
             codiceFiscale: item.codiceFiscale ?? '',
@@ -104,15 +113,24 @@ const AnagraficaFormModal: React.FC<AnagraficaFormModalProps> = ({ isOpen, onClo
           />
         </div>
 
-        <Select
-          label='Tenant'
-          options={tenantOptions}
-          value={form.idTenant ? String(form.idTenant) : undefined}
-          onValueChange={v => set('idTenant', Number(v))}
-          placeholder='Seleziona il tenant'
-          required
-          helperText='Il tenant Express Delivery Group è per chi non ha un accesso proprio ed è gestito direttamente da EDG.'
-        />
+        <div className='grid grid-cols-2 gap-4'>
+          <Select
+            label='Tenant'
+            options={tenantOptions}
+            value={form.idTenant ? String(form.idTenant) : undefined}
+            onValueChange={v => set('idTenant', Number(v))}
+            placeholder='Seleziona il tenant'
+            required
+            helperText='Il tenant Express Delivery Group è per chi non ha un accesso proprio ed è gestito direttamente da EDG.'
+          />
+          <Select
+            label='Settore'
+            options={[{ value: NO_SETTORE, label: 'Nessun settore' }, ...settoreOptions(form.idSettore)]}
+            value={form.idSettore ? String(form.idSettore) : NO_SETTORE}
+            onValueChange={v => set('idSettore', v === NO_SETTORE ? null : Number(v))}
+            helperText='Attività dell’azienda. I settori si gestiscono in Tabelle di base'
+          />
+        </div>
 
         <div className='grid grid-cols-2 gap-4'>
           <Input

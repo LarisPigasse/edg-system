@@ -1,5 +1,5 @@
 // src/features/sistema/pages/TenantPage.tsx
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   PageHeader,
   Table,
@@ -8,13 +8,16 @@ import {
   ExportPdfAction,
   Select,
   Badge,
+  Puzzle,
   exportTableToPdf,
   type TableColumn,
 } from '@edg/ui';
 import { useAuth } from '@edg/auth';
 
 import { authApi } from '../api/authApi';
+import { TenantModulesModal } from '../components/tenant';
 import TenantFormModal from '../components/TenantFormModal';
+import { useEdgClienti } from '../api/useEdgClienti';
 import { useEntityCrud, type StatusFilter } from '../../../shared/hooks/useEntityCrud';
 import { STATUS_FILTER_OPTIONS } from '../../../shared/constants';
 import { TENANT_LOCALE_OPTIONS } from '../types';
@@ -23,7 +26,10 @@ import type { Tenant, TenantInput } from '../types';
 const TenantPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   // ADR049-050: l'admin EDG crea e modifica i tenant, ma l'eliminazione resta a root
-  const { isRoot } = useAuth();
+  const { isRoot, hasPermission } = useAuth();
+  const canManageModules = hasPermission('sistema.moduli');
+  // Moduli del tenant (ADR048): finestra larga sopra la lista
+  const [modulesOf, setModulesOf] = useState<Tenant | null>(null);
 
   const { items, isLoading, isSaving, refetch, create, update, remove } = useEntityCrud<Tenant>({
     api: authApi,
@@ -35,6 +41,17 @@ const TenantPage: React.FC = () => {
   const [modalItem, setModalItem] = useState<Tenant | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toDelete, setToDelete] = useState<Tenant | null>(null);
+
+  // Clienti dell'anagrafica EDG collegati (ADR058): nome in tabella e, nel
+  // form, esclusione di quelli già collegati ad altri tenant
+  const { clienteName, settoreOfCliente } = useEdgClienti();
+  const takenClienti = useMemo(
+    () =>
+      new Set(
+        items.filter(t => t.clienteUuid && t.id !== modalItem?.id).map(t => t.clienteUuid as string)
+      ),
+    [items, modalItem]
+  );
 
   const openCreate = () => {
     setModalItem(null);
@@ -56,6 +73,13 @@ const TenantPage: React.FC = () => {
   const columns: TableColumn<Tenant>[] = [
     { header: 'Nome', accessor: 'name', sortable: true },
     { header: 'Slug', accessor: 'slug', sortable: true },
+    // Settore del cliente collegato (ADR059): sta sull'anagrafica, non sul tenant
+    { header: 'Settore', accessor: item => settoreOfCliente(item.clienteUuid) ?? '—' },
+    {
+      header: 'Cliente',
+      accessor: item =>
+        item.clienteUuid ? (clienteName(item.clienteUuid) ?? <span className='text-text-secondary'>non in anagrafica</span>) : '—',
+    },
     { header: 'Lingua', accessor: item => localeLabel(item.defaultLocale) },
     {
       header: 'Stato',
@@ -74,6 +98,7 @@ const TenantPage: React.FC = () => {
       columns: [
         { header: 'Nome', accessor: item => item.name },
         { header: 'Slug', accessor: item => item.slug },
+        { header: 'Cliente', accessor: item => clienteName(item.clienteUuid) ?? '—' },
         { header: 'Lingua', accessor: item => localeLabel(item.defaultLocale) },
         { header: 'Stato', accessor: item => (item.isActive ? 'Attivo' : 'Disattivo') },
         { header: 'Sistema', accessor: item => (item.isSystem ? 'Sì' : 'No') },
@@ -120,10 +145,26 @@ const TenantPage: React.FC = () => {
               getItemName: item => item.name,
             },
           },
+          actions: item =>
+            canManageModules ? [{ id: 'modules', label: 'Moduli', icon: <Puzzle className='w-4 h-4' />, onClick: () => setModulesOf(item) }] : [],
         }}
       />
 
-      <TenantFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} isSaving={isSaving} item={modalItem} />
+      <TenantModulesModal
+        isOpen={!!modulesOf}
+        onClose={() => setModulesOf(null)}
+        tenant={modulesOf}
+        settore={settoreOfCliente(modulesOf?.clienteUuid)}
+      />
+
+      <TenantFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSave}
+        isSaving={isSaving}
+        item={modalItem}
+        takenClienti={takenClienti}
+      />
 
       <ConfirmModal
         isOpen={!!toDelete}

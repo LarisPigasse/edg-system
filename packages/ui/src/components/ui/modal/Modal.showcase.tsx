@@ -58,6 +58,8 @@ export const ModalShowcase: React.FC = () => {
             <Button onClick={() => openModal("md")}>Medium (Default)</Button>
             <Button onClick={() => openModal("lg")}>Large</Button>
             <Button onClick={() => openModal("xl")}>Extra Large</Button>
+            <Button onClick={() => openModal("xxl")}>XXL</Button>
+            <Button onClick={() => openModal("xxxl")}>XXXL</Button>
             <Button onClick={() => openModal("full")}>Full Screen</Button>
           </div>
           <div className="pt-4">

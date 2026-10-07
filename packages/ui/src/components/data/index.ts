@@ -1,7 +1,7 @@
 // Table
 export { default as Table } from './table/Table';
 export { tableData } from './table/Table.data';
-export type { TableColumn, TableSize, TableRowActions } from './table/Table';
+export type { TableColumn, TableSize, TableRowActions, TableRowAction } from './table/Table';
 
 // Table capabilities (Dati tecnici automatici per root — vedi ADR021/022)
 export { TableCapabilitiesProvider, useTableCapabilities } from './table/TableCapabilities';

@@ -8,4 +8,5 @@ export { default as LastAlertCard } from './LastAlertCard';
 export { default as AlertTitle } from './AlertTitle';
 export { RulesTab } from './rules';
 export { HistoryTab } from './history';
+export { GuideTab } from './guide';
 export { default as JobsSection } from './JobsSection';

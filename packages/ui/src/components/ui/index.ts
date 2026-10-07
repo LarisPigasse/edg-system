@@ -6,7 +6,7 @@ export type { AvatarSize, AvatarShape, AvatarVariant, AvatarStatus, AvatarStatus
 // Accordion
 export { default as Accordion } from './accordion/Accordion';
 export { accordionData } from './accordion/Accordion.data';
-export type { AccordionType, AccordionVariant, AccordionSize } from './accordion/Accordion';
+export type { AccordionType, AccordionVariant, AccordionSize, AccordionItem } from './accordion/Accordion';
 
 // Button
 export { default as Button } from './button/Button';

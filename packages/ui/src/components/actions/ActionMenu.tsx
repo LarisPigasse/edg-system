@@ -1,4 +1,11 @@
 // src/core/components/actions/ActionMenu.tsx
+//
+// Regola dei menu a tendina: icone su TUTTE le voci o su NESSUNA. Un menu
+// con alcune voci senza icona non si allinea e sembra incompleto. Qui:
+//   - se nessuna voce ha icona, il menu si mostra senza la colonna icone;
+//   - se solo alcune l'hanno, in sviluppo compare un avviso in console.
+// Le voci di Table (rowActions.actions) l'icona la devono avere per tipo
+// (TableRowAction), perché Modifica, Elimina e Dati tecnici ce l'hanno.
 import React from 'react';
 
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
@@ -40,7 +47,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
   disabled = false,
 }) => {
   // Icone predefinite per azioni comuni
-  const getDefaultIcon = (id: string) => {
+  const getDefaultIcon = (id: string): React.ReactNode => {
     switch (id) {
       case 'edit':
         return <Edit className='h-4 w-4' />;
@@ -52,6 +59,16 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
         return null;
     }
   };
+
+  const iconOf = (action: Action): React.ReactNode => action.icon || getDefaultIcon(action.id);
+  const withIcon = actions.filter(a => iconOf(a)).length;
+  const showIcons = withIcon > 0;
+  if (import.meta.env.DEV && showIcons && withIcon < actions.length) {
+    console.warn(
+      '[ActionMenu] icone su tutte le voci o su nessuna; senza icona:',
+      actions.filter(a => !iconOf(a)).map(a => a.label)
+    );
+  }
 
   // Classi per dimensioni trigger button
   const sizeClasses = {
@@ -127,8 +144,8 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
                     }
                   }}
                 >
-                  <span className='flex items-center'>{action.icon || getDefaultIcon(action.id)}</span>
-                  <span className='ml-2'>{action.label}</span>
+                  {showIcons && <span className='mr-2 flex items-center'>{iconOf(action)}</span>}
+                  <span>{action.label}</span>
                 </DropdownMenu.Item>
 
                 {action.divider && index < actions.length - 1 && (

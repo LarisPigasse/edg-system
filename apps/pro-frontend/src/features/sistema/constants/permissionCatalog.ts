@@ -26,8 +26,6 @@
 export interface PermissionAction {
   value: string;
   label: string;
-  /** Spiegazione breve sotto la voce (facoltativa) */
-  description?: string;
 }
 
 export interface PermissionModuleDef {
@@ -99,14 +97,14 @@ export const PERMISSION_CATALOG: PermissionModuleDef[] = [
     // ADR051: tutti i 'sistema.*' sono verificati insieme al tenant di sistema
     // (auth-service con requireSystemTenant, log-service con systemTenant nel JWT)
     note:
-      'Valgono solo per gli account del tenant di sistema (personale EDG): un ruolo con questi permessi, assegnato a un account di un cliente, non ne ottiene nessuno.',
+      'Valgono solo per il personale EDG (account del tenant di sistema).',
     actions: [
-      { value: 'account', label: 'Account', description: 'Gestione account, blocco e sblocco (mai root)' },
-      { value: 'tenant', label: 'Tenant', description: 'Creazione e modifica dei tenant' },
-      { value: 'moduli', label: 'Attivazioni moduli', description: 'Prove e attivazioni per tenant' },
-      { value: 'logs', label: 'Log azioni', description: 'Registro delle azioni sulla piattaforma' },
-      { value: 'info', label: 'Salute e riepilogo', description: 'Stato dei servizi e riepilogo giornaliero' },
-      { value: 'alert', label: 'Allarmi', description: 'Regole, destinatari e storico' },
+      { value: 'account', label: 'Account' },
+      { value: 'tenant', label: 'Tenant' },
+      { value: 'moduli', label: 'Attivazioni moduli' },
+      { value: 'logs', label: 'Log azioni' },
+      { value: 'info', label: 'Salute e riepilogo' },
+      { value: 'alert', label: 'Allarmi' },
     ],
   },
 ];

@@ -32,6 +32,7 @@ const OperatoriPage = lazy(() => import('./features/base').then(m => ({ default:
 
 // SISTEMA: gestione di account, permessi e tenant (ADR024) — solo root
 const TenantPage = lazy(() => import('./features/sistema').then(m => ({ default: m.TenantPage })));
+const ModuliPage = lazy(() => import('./features/sistema').then(m => ({ default: m.ModuliPage })));
 const AccountPage = lazy(() => import('./features/sistema').then(m => ({ default: m.AccountPage })));
 const SessioniPage = lazy(() => import('./features/sistema').then(m => ({ default: m.SessioniPage })));
 const RuoliPage = lazy(() => import('./features/sistema').then(m => ({ default: m.RuoliPage })));
@@ -205,6 +206,15 @@ const App: React.FC = () => {
                                   element={
                                     <PrivateRoute requiredPermission='sistema.tenant'>
                                       <TenantPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                {/* Catalogo moduli (ADR048): solo root */}
+                                <Route
+                                  path={ROUTES.SISTEMA_MODULI}
+                                  element={
+                                    <PrivateRoute requiredPermission='*'>
+                                      <ModuliPage />
                                     </PrivateRoute>
                                   }
                                 />

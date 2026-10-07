@@ -1,0 +1,31 @@
+/* =============================================================================
+   Tavolozza garantita per l'identità visiva dei moduli (ADR054)
+   =============================================================================
+   Le classi dei testi di icona, logo e titolo stanno nel catalogo (database),
+   non nei sorgenti: Tailwind non le vedrebbe e non le genererebbe. Queste
+   righe le generano comunque. Classi fuori tavolozza si possono salvare, ma
+   funzionano solo se compaiono anche nel codice: l'editor del catalogo lo
+   segnala guardando il CSS caricato (findMissingClasses), senza ripetere
+   questa lista.
+   Costo: circa 1.600 regole in più nel CSS, poche decine di KB compressi. */
+
+/* Colori: testo, sfondo, bordo e sfumature, su tutta la scala */
+@source inline("{text,bg,border,from,via,to}-{red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,slate,gray,zinc,neutral,stone}-{50,{100..900..100},950}");
+@source inline("{text,bg,border,from,via,to}-{white,black,transparent}");
+
+/* Sfumature e testo "riempito" dalla sfumatura (bg-clip-text text-transparent) */
+@source inline("bg-linear-to-{t,tr,r,br,b,bl,l,tl}");
+@source inline("bg-clip-text");
+
+/* Tipografia */
+@source inline("text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,8xl,9xl}");
+@source inline("font-{thin,extralight,light,normal,medium,semibold,bold,extrabold,black}");
+@source inline("font-{sans,serif,mono}");
+@source inline("{italic,not-italic,uppercase,lowercase,capitalize,underline}");
+@source inline("tracking-{tighter,tight,normal,wide,wider,widest}");
+
+/* Forma */
+@source inline("rounded{,-sm,-md,-lg,-xl,-2xl,-3xl,-full,-none}");
+@source inline("shadow{,-sm,-md,-lg,-xl,-2xl,-none}");
+@source inline("border{,-2,-4,-8}");
+@source inline("{p,px,py}-{0,1,2,4,8}");
