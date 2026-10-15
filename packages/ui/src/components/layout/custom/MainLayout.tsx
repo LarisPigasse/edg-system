@@ -1,5 +1,5 @@
 // src/core/components/layout/custom/MainLayout.tsx
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { Header, Footer } from '..';
@@ -33,6 +33,12 @@ interface MainLayoutProps {
  *
  * Il disegno vero e proprio vive in `PageBackground`, condiviso anche dalle
  * pagine fuori dal layout (login, password dimenticata, reset password).
+ *
+ * ─── Barre fisse delle pagine ───────────────────────────────────────────────
+ * Il footer del desktop resta fisso in basso: la sua altezza (0 se nascosto o
+ * su mobile, dove scorre con la pagina) è pubblicata nella variabile CSS
+ * `--edg-footer-h`, così una barra di azioni `sticky` di una pagina può
+ * fermarsi appena sopra: `bottom-[var(--edg-footer-h,0px)]`.
  */
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { footerVisible } = useUISettings();
@@ -41,6 +47,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
 
   const isHome = isHomeActive(pathname);
+
+  const footerRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const el = footerRef.current;
+    const pubblica = () => root.style.setProperty('--edg-footer-h', `${el ? el.offsetHeight : 0}px`);
+    pubblica();
+    if (!el) return;
+    const osserva = new ResizeObserver(pubblica);
+    osserva.observe(el);
+    return () => {
+      osserva.disconnect();
+      root.style.setProperty('--edg-footer-h', '0px');
+    };
+  }, [footerVisible, isMobile]);
 
   /** Immagine a tutta finestra + velo sulle pagine interne. */
   const background = <PageBackground veil={!isHome} />;
@@ -79,7 +100,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </main>
 
         {footerVisible && (
-          <footer className='sticky bottom-0 z-40 col-span-full'>
+          <footer ref={footerRef} className='sticky bottom-0 z-40 col-span-full'>
             <Footer showVersionInfo={true} />
           </footer>
         )}

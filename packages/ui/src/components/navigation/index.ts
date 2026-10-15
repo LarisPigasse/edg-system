@@ -16,3 +16,8 @@ export type { NavigationLink, NavigationGroup, NavigationMenuItem } from './navi
 export { default as Tabs } from './tabs/Tabs';
 export { tabsData } from './tabs/Tabs.data';
 export type { TabItem, TabsVariant, TabsSize } from './tabs/Tabs';
+
+// Stepper (procedura a passi)
+export { default as Stepper } from './stepper/Stepper';
+export { stepperData } from './stepper/Stepper.data';
+export type { StepperStep } from './stepper/Stepper';

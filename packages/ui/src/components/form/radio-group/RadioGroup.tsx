@@ -45,9 +45,9 @@ export const RadioGroup = React.forwardRef<React.ElementRef<typeof RadioGroupPri
     const hasError = !!error;
 
     const sizeClasses = {
-      sm: { radio: "h-4 w-4", indicator: "h-2 w-2", text: "text-sm", gap: "gap-2" },
-      md: { radio: "h-5 w-5", indicator: "h-2.5 w-2.5", text: "text-base", gap: "gap-3" },
-      lg: { radio: "h-6 w-6", indicator: "h-3 w-3", text: "text-lg", gap: "gap-3" },
+      sm: { radio: "h-4 w-4", indicator: "after:h-2 after:w-2", text: "text-sm", gap: "gap-2" },
+      md: { radio: "h-5 w-5", indicator: "after:h-2.5 after:w-2.5", text: "text-base", gap: "gap-3" },
+      lg: { radio: "h-6 w-6", indicator: "after:h-3 after:w-3", text: "text-lg", gap: "gap-3" },
     };
     const sizes = sizeClasses[size];
 
@@ -62,6 +62,7 @@ export const RadioGroup = React.forwardRef<React.ElementRef<typeof RadioGroupPri
       "data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed data-[disabled]:hover:border-border-default"
     );
 
+    // il pallino è lo pseudo-elemento ::after: la misura va a lui, non allo span
     const indicatorClasses = cn(
       "flex items-center justify-center w-full h-full relative after:content-[''] after:block after:rounded-full after:bg-text-link",
       sizes.indicator,

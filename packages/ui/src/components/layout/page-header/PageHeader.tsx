@@ -16,6 +16,8 @@ interface PageHeaderProps {
   isLoading?: boolean;
   /** Area centrale, tra titolo e refresh (es. StatTile, pulsante "Crea", …) — su schermi stretti scende sotto il titolo, mentre il refresh resta sempre alla sua destra */
   actions?: React.ReactNode;
+  /** A destra, subito prima del refresh (es. un pulsante "Elenco soggetti" nelle pagine di dettaglio) */
+  trailingActions?: React.ReactNode;
 }
 
 /**
@@ -29,7 +31,7 @@ interface PageHeaderProps {
  *
  * Senza `actions`, la griglia si riduce a titolo + refresh su un'unica riga.
  */
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, onRefresh, isLoading = false, actions }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, onRefresh, isLoading = false, actions, trailingActions }) => {
   const hasActions = !!actions;
 
   return (
@@ -53,14 +55,17 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, onRefre
       {/* ── Area centrale: azioni — su schermi stretti scende su una riga propria ── */}
       {hasActions && <div className='flex flex-wrap items-center gap-1 [grid-area:stats]'>{actions}</div>}
 
-      {/* ── Refresh: sempre alla destra del titolo, non scende mai con le azioni ── */}
-      {onRefresh && (
-        <div className='justify-self-end [grid-area:refresh]'>
-          <Tooltip content='Aggiorna' side='bottom'>
-            <Button variant='secondary' size='md' onClick={onRefresh} disabled={isLoading}>
-              <iconMap.refresh className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-          </Tooltip>
+      {/* ── Refresh (con le eventuali azioni alla sua sinistra): sempre alla destra del titolo, non scende mai con le azioni ── */}
+      {(onRefresh || trailingActions) && (
+        <div className='flex items-center gap-2 justify-self-end [grid-area:refresh]'>
+          {trailingActions}
+          {onRefresh && (
+            <Tooltip content='Aggiorna' side='bottom'>
+              <Button variant='secondary' size='md' onClick={onRefresh} disabled={isLoading}>
+                <iconMap.refresh className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+              </Button>
+            </Tooltip>
+          )}
         </div>
       )}
     </div>

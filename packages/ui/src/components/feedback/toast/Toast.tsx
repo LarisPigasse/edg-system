@@ -49,6 +49,8 @@ const ToastComponent: React.FC<RadixToast.ToastProps & ToastItem> = ({
   return (
     <RadixToast.Root
       {...props}
+      // con un'azione (es. "Annulla") resta di più, così c'è il tempo di usarla
+      duration={props.duration ?? (action ? 8000 : undefined)}
       className={cn(
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out",
         "data-[state=closed]:fade-out-80 data-[state=open]:fade-in-0",
@@ -80,9 +82,12 @@ const ToastComponent: React.FC<RadixToast.ToastProps & ToastItem> = ({
           )}
           {action && (
             <div className="mt-3">
-              <Button variant="link" size="sm" onClick={action.onClick}>
-                {action.label}
-              </Button>
+              {/* Action di Radix: dopo il clic il toast si chiude */}
+              <RadixToast.Action asChild altText={action.label}>
+                <Button variant="link" size="sm" onClick={action.onClick}>
+                  {action.label}
+                </Button>
+              </RadixToast.Action>
             </div>
           )}
         </div>

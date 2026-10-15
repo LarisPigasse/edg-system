@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+/* animate-in/out, fade-*, zoom-*, slide-in-from-* usati dai componenti Radix
+   (Sheet, Modal, Tooltip, Toast, menu…): senza, comparivano di colpo */
+@import 'tw-animate-css';
 @import './globals.css';
 @import './typography.css';
 @import './lazy-loading.css';
@@ -52,6 +55,7 @@
   --color-home-app-bg: var(--home-app-bg);
   --color-home-app-border: var(--home-app-border);
   --color-home-module-bg: var(--home-module-bg);
+  --color-home-module-bg-hover: var(--home-module-bg-hover);
   --color-home-module-border: var(--home-module-border);
   --color-home-module-border-hover: var(--home-module-border-hover);
 

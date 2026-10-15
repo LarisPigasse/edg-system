@@ -35,6 +35,8 @@ import { navigationMenuData } from '../components/navigation/navigation-menu/Nav
 import { NavigationMenuShowcase } from '../components/navigation/navigation-menu/NavigationMenu.showcase';
 import { tabsData } from '../components/navigation/tabs/Tabs.data';
 import { TabsShowcase } from '../components/navigation/tabs/Tabs.showcase';
+import { stepperData } from '../components/navigation/stepper/Stepper.data';
+import { StepperShowcase } from '../components/navigation/stepper/Stepper.showcase';
 
 // FORM Components
 import { checkboxData } from '../components/form/checkbox/Checkbox.data';
@@ -213,6 +215,10 @@ const RESTRUCTURED_COMPONENTS: Record<string, RestructuredComponent> = {
   statTile: {
     data: statTileData,
     showcase: StatTileShowcase,
+  },
+  stepper: {
+    data: stepperData,
+    showcase: StepperShowcase,
   },
   switch: {
     data: switchData,

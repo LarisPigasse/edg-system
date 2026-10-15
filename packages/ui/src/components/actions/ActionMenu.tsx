@@ -26,6 +26,11 @@ export interface Action {
 interface ActionMenuProps {
   actions: Action[];
   menuButton?: React.ReactNode;
+  /**
+   * Un elemento intero come pulsante del menu (es. <Button>Azioni</Button>),
+   * al posto di quello a icona: riceve lui apertura, focus e aria (asChild).
+   */
+  trigger?: React.ReactElement;
   align?: 'start' | 'center' | 'end';
   side?: 'top' | 'right' | 'bottom' | 'left';
   size?: 'sm' | 'md' | 'lg';
@@ -40,6 +45,7 @@ interface ActionMenuProps {
 const ActionMenu: React.FC<ActionMenuProps> = ({
   actions,
   menuButton,
+  trigger,
   align = 'end',
   side = 'bottom',
   size = 'md',
@@ -102,6 +108,11 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
 
   return (
     <DropdownMenu.Root modal={false}>
+      {trigger ? (
+        <DropdownMenu.Trigger asChild disabled={disabled}>
+          {trigger}
+        </DropdownMenu.Trigger>
+      ) : (
       <DropdownMenu.Trigger asChild disabled={disabled}>
         <button
           className={cn(
@@ -117,6 +128,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
           {menuButton || <MoreVertical className='h-5 w-5' />}
         </button>
       </DropdownMenu.Trigger>
+      )}
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content

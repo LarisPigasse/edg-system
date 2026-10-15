@@ -15,5 +15,21 @@ export const vigiloModule: AppModuleManifest = {
   label: 'VIGILO',
   basePath: '/vigilo',
   icon: Clock,
-  pages: [{ path: '', component: lazy(() => import('./pages/VigiloHome')) }],
+  pages: [
+    { path: '', component: lazy(() => import('./pages/VigiloHome')) },
+    // Procedura di avvio e, dopo, "Aggiungi dalla libreria" (ADR076)
+    { path: 'scadenze', component: lazy(() => import('./pages/ScadenzePage')) },
+    { path: 'soggetti', component: lazy(() => import('./pages/SoggettiPage')) },
+    { path: 'soggetti/nuovo', component: lazy(() => import('./pages/NuovoSoggettoPage')) },
+    { path: 'soggetti/:id', component: lazy(() => import('./pages/SoggettoPage')) },
+    { path: 'avvio', component: lazy(() => import('./pages/AvvioPage')), permission: 'vigilo.config' },
+    { path: 'configurazione', component: lazy(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
+  ],
+  // Le altre voci (Calendario, Fornitori…) arrivano con le loro pagine
+  menu: [
+    { id: 'dashboard', label: 'Dashboard', path: '' },
+    { id: 'scadenze', label: 'Scadenze', path: 'scadenze' },
+    { id: 'soggetti', label: 'Soggetti', path: 'soggetti' },
+    { id: 'configurazione', label: 'Configurazione', path: 'configurazione', permission: 'vigilo.config' },
+  ],
 };

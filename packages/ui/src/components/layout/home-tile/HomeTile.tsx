@@ -21,14 +21,14 @@ import { cn } from '../../../utils';
 export type HomeTileTone = 'default' | 'highlight' | 'active' | 'muted';
 
 const TONE_CLASSES: Record<HomeTileTone, string> = {
-  default: 'border border-surface-border bg-surface-1',
-  highlight: 'border border-home-app-border bg-home-app-bg',
-  active: 'border border-home-module-border bg-home-module-bg',
-  muted: 'border border-dashed border-surface-border bg-home-module-bg',
+  default: 'border-2 border-surface-border bg-surface-1 shadow-md',
+  highlight: 'border-2 border-home-app-border shadow-md',
+  active: 'border-2 border-home-module-border shadow-md',
+  muted: 'border border-dashed border-surface-border ',
 };
 
 /** Effetto "sollevamento" dei moduli utilizzabili */
-const LIFT_CLASSES = 'transition duration-200 hover:-translate-y-0.5 hover:border-home-module-border-hover hover:shadow-md';
+const LIFT_CLASSES = 'transition duration-200 hover:border-home-module-border-hover hover:bg-home-module-bg-hover';
 
 export interface HomeTileProps {
   children: React.ReactNode;

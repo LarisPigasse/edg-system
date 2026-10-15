@@ -107,11 +107,12 @@
   /* ── Riquadri della home (ADR055) ──────────────────────────────────────
      Il primo (nome del frontend) bianco con bordo scuro; i moduli su grigio
      chiarissimo, bordo sky che diventa violet al passaggio del mouse. */
-  --home-app-bg: #ffffff; /* grigio molto chiaro */
-  --home-app-border: #d4d4d8; /* stone-300 */
-  --home-module-bg: #f3f4f6; /* gray-100 */
-  --home-module-border: #d4d4d8; /* zinc-400 */
-  --home-module-border-hover: #a78bfa; /* violet-400 */
+  --home-app-bg: #ffffff; /* bianco */
+  --home-app-border: #ffffff; /* bianco */
+  --home-module-bg: #f6f7f9; /* gray-100 */
+  --home-module-bg-hover: #f9f6f1; /* bianco */
+  --home-module-border: #ffffff; /* zinc-400 */
+  --home-module-border-hover: #ffffff; /* grigio chiaro */
 
   /* ── Testo semantico — sul chiaro scurisce, sullo scuro schiarisce ───── */
   --text-danger: #dc2626;
@@ -225,6 +226,7 @@
   --home-app-bg: #1c1917; /* stone-900 */
   --home-app-border: #a8a29e; /* stone-400 */
   --home-module-bg: #292524; /* stone-800 */
+  --home-module-bg-hover: #222222; /* bianco */
   --home-module-border: #38bdf8; /* sky-400 */
   --home-module-border-hover: #8b5cf6; /* violet-500 */
 

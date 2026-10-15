@@ -24,6 +24,8 @@ interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: TabsSize;
   onTabChange?: (tabId: string) => void;
   className?: string;
+  /** A destra, sulla riga delle schede (es. un menu "Azioni"): resta visibile qualunque scheda sia aperta */
+  actions?: React.ReactNode;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -34,6 +36,7 @@ export const Tabs: React.FC<TabsProps> = ({
   size: _size = "md",
   onTabChange,
   className = "",
+  actions,
   ...props
 }) => {
   const [activeTab, setActiveTab] = useState(defaultTab || (items.length > 0 ? items[0].id : ""));
@@ -78,8 +81,9 @@ export const Tabs: React.FC<TabsProps> = ({
 
   return (
     <div className={cn("w-full", className)} {...props}>
-      {/* Tab List */}
-      <div className={cn("flex overflow-x-auto overflow-y-hidden scrollbar-hide", variantClasses[variant])}>
+      {/* Tab List (con le eventuali azioni a destra, fuori dallo scorrimento) */}
+      <div className={cn("flex items-center gap-3", variantClasses[variant])}>
+      <div className="flex min-w-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide">
         {items.map((item) => (
           <button
             key={item.id}
@@ -95,6 +99,8 @@ export const Tabs: React.FC<TabsProps> = ({
             {item.label}
           </button>
         ))}
+      </div>
+      {actions && <div className="shrink-0 pb-1">{actions}</div>}
       </div>
 
       {/* Tab Content */}

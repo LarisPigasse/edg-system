@@ -19,12 +19,10 @@ interface SelectProps extends Omit<SelectPrimitive.SelectProps, 'size'> {
   fullWidth?: boolean;
   className?: string;
   /**
-   * Dimensione del testo delle voci nel menu a tendina (non tocca il
-   * trigger chiuso, solo le opzioni della lista) — 'sm' per i filtri con
-   * poco spazio orizzontale, dove il popup è vincolato alla stessa
-   * larghezza del campo chiuso (vedi width: var(--radix-select-trigger-
-   * width) qui sotto) e le etichette lunghe non ci stanno comode a
-   * dimensione piena. Default 'md', invariato per tutti gli usi esistenti.
+   * Dimensione del testo, nel campo chiuso e nelle voci del menu: 'sm'
+   * (14px) per i filtri sopra elenchi e tabelle, dove sta accanto al campo
+   * di ricerca della stessa misura; 'md' (16px, predefinito) nei moduli,
+   * allineato agli Input. Il menu si allarga comunque per le voci lunghe.
    */
   optionSize?: 'sm' | 'md';
 }
@@ -118,7 +116,9 @@ export const Select = React.forwardRef<any, SelectProps>(
               position='popper'
               sideOffset={4}
               onCloseAutoFocus={e => e.preventDefault()}
-              className='z-50 w-[var(--radix-select-trigger-width)] bg-bg-primary rounded-lg border border-border-default shadow-lg'
+              // Almeno largo quanto il campo, ma si allarga per le etichette lunghe
+              // (fino a 32rem): le voci restano su una riga sola.
+              className='z-50 w-max min-w-[var(--radix-select-trigger-width)] max-w-[min(32rem,calc(100vw-2rem))] bg-bg-primary rounded-lg border border-border-default shadow-lg'
             >
               <SelectPrimitive.Viewport className='p-1'>
                 {options.map(option => (
@@ -127,7 +127,8 @@ export const Select = React.forwardRef<any, SelectProps>(
                     value={option.value}
                     disabled={option.disabled}
                     className={cn(
-                      'relative flex items-center px-3 py-2 rounded-md cursor-pointer',
+                      // pr-9: spazio per la spunta, che non copre più il testo
+                      'relative flex items-center py-2 pl-3 pr-9 rounded-md cursor-pointer',
                       optionSize === 'sm' ? 'text-sm' : 'text-base',
                       'focus:bg-bg-hover focus:outline-none',
                       'data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed'
