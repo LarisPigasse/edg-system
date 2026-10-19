@@ -9,10 +9,9 @@ import { Link } from 'react-router-dom';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { Categoria } from '../../types/configurazione';
 import { TIPI_SOGGETTO, type TipoSoggetto } from '../../types/valori';
+import { maiuscola } from '../../utils/testo';
 import { Riquadro } from '../Riquadro';
 import { Scelta } from './Scelta';
-
-const maiuscola = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 const controlli = (n?: number) => (n === undefined ? undefined : n === 0 ? 'Nessun controllo automatico' : n === 1 ? '1 controllo' : `${n} controlli`);
 
@@ -21,10 +20,12 @@ interface Props {
   onTipo: (t: TipoSoggetto) => void;
   categorie: Categoria[];
   categoria: string | null;
+  /** false finché l'utente non sceglie (nemmeno "Nessuna categoria" è predefinita) */
+  categoriaScelta: boolean;
   onCategoria: (c: string | null) => void;
 }
 
-export const PassoTipo: React.FC<Props> = ({ tipo, onTipo, categorie, categoria, onCategoria }) => (
+export const PassoTipo: React.FC<Props> = ({ tipo, onTipo, categorie, categoria, categoriaScelta, onCategoria }) => (
   <div className='space-y-6'>
     <Riquadro titolo='Che cosa aggiungi?'>
       <div className='grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-3'>
@@ -45,11 +46,11 @@ export const PassoTipo: React.FC<Props> = ({ tipo, onTipo, categorie, categoria,
               key={c.uuid}
               titolo={c.nome}
               dettaglio={[controlli(c.controlli), c.descrizione].filter(Boolean).join(' · ')}
-              scelto={categoria === c.uuid}
+              scelto={categoriaScelta && categoria === c.uuid}
               onScegli={() => onCategoria(c.uuid)}
             />
           ))}
-          <Scelta titolo='Nessuna categoria' dettaglio='Nessun controllo automatico: le scadenze le aggiungi tu.' scelto={categoria === null} onScegli={() => onCategoria(null)} />
+          <Scelta titolo='Nessuna categoria' dettaglio='Nessun controllo automatico: le scadenze le aggiungi tu.' scelto={categoriaScelta && categoria === null} onScegli={() => onCategoria(null)} />
         </div>
         {categorie.length === 0 && (
           <p className='mt-4 text-sm text-text-secondary'>

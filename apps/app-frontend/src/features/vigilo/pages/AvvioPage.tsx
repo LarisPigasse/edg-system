@@ -12,6 +12,7 @@ import { PassoRiepilogo } from '../components/avvio/PassoRiepilogo';
 import { PassoSettori } from '../components/avvio/PassoSettori';
 import { PassoVoci } from '../components/avvio/PassoVoci';
 import { PASSI, useAvvio, type Passo } from '../hooks/useAvvio';
+import { useInCima } from '../hooks/useInCima';
 
 const STEPS: StepperStep[] = [
   { id: 'settori', label: 'Settori', description: 'In che cosa lavora l’azienda' },
@@ -34,6 +35,7 @@ const AvvioPage: React.FC = () => {
   const [daZero, setDaZero] = useState(false);
   const indice = PASSI.indexOf(a.passo);
   const vai = (p: Passo) => a.setPasso(p);
+  useInCima(a.passo);
 
   const titolo = a.primoAvvio ? 'Prepariamo Vigilo' : 'Aggiungi dalla libreria';
   const sottotitolo = a.primoAvvio
@@ -43,7 +45,12 @@ const AvvioPage: React.FC = () => {
   return (
     <div className='space-y-6'>
       <PageHeader title={titolo} subtitle={sottotitolo} />
-      <Stepper steps={STEPS} current={indice} onStepClick={a.passo === 'fatto' ? undefined : i => vai(PASSI[i])} />
+      {/* a procedura finita tutti i passi sono fatti */}
+      <Stepper
+        steps={STEPS}
+        current={a.passo === 'fatto' ? STEPS.length : indice}
+        onStepClick={a.passo === 'fatto' ? undefined : i => vai(PASSI[i])}
+      />
 
       {a.errore && (
         <Alert variant='danger' title='Impossibile aprire la procedura'>
@@ -73,7 +80,7 @@ const AvvioPage: React.FC = () => {
               onPredefiniti={a.setPredefiniti}
             />
           )}
-          {a.passo === 'fatto' && a.esito && <PassoFatto esito={a.esito} onContinua={() => navigate('/vigilo')} />}
+          {a.passo === 'fatto' && a.esito && <PassoFatto esito={a.esito} onVai={percorso => navigate(percorso)} />}
 
           {a.passo !== 'fatto' && (
             <footer className='sticky bottom-[var(--edg-footer-h,0px)] z-30 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-border-default bg-bg-base/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6'>
@@ -82,6 +89,9 @@ const AvvioPage: React.FC = () => {
                   <Button variant='secondary' onClick={() => vai(PASSI[indice - 1])} disabled={a.inCorso}>
                     Indietro
                   </Button>
+                )}
+                {a.passo === 'riepilogo' && a.nienteDaFare && (
+                  <span className='text-sm text-text-secondary'>Niente di nuovo da aggiungere</span>
                 )}
                 {a.passo === 'settori' && a.primoAvvio && (
                   <Button variant='link' onClick={() => setDaZero(true)} disabled={a.inCorso}>
@@ -96,7 +106,7 @@ const AvvioPage: React.FC = () => {
               )}
               {a.passo === 'voci' && <Button onClick={() => vai('riepilogo')}>Avanti</Button>}
               {a.passo === 'riepilogo' && (
-                <Button onClick={() => a.invia()} isLoading={a.inCorso} loadingText='Creo le voci…'>
+                <Button onClick={() => a.invia()} isLoading={a.inCorso} loadingText='Creo le voci…' disabled={a.nienteDaFare}>
                   {a.primoAvvio ? 'Avvia Vigilo' : 'Aggiungi le voci'}
                 </Button>
               )}

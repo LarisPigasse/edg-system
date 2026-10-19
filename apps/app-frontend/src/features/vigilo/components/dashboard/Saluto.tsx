@@ -31,9 +31,11 @@ interface Props {
   nome: string | null;
   oggi: string | null;
   conteggi: Conteggi | null;
+  /** Nessun soggetto ancora: la sintesi invita a cominciare */
+  vuota?: boolean;
 }
 
-export const Saluto: React.FC<Props> = ({ nome, oggi, conteggi }) => {
+export const Saluto: React.FC<Props> = ({ nome, oggi, conteggi, vuota }) => {
   const giorno = oggi ? giornoEsteso(oggi).replace(/ \d{4}$/, '') : null;
   return (
     <>
@@ -42,7 +44,7 @@ export const Saluto: React.FC<Props> = ({ nome, oggi, conteggi }) => {
         {nome ? ` ${nome}` : ''}.
       </span>{' '}
       {giorno && `Oggi è ${giorno}. `}
-      {conteggi ? sintesi(conteggi) : ''}
+      {vuota ? 'Vigilo è pronto: per cominciare, inserisci i soggetti da tenere sotto controllo.' : conteggi ? sintesi(conteggi) : ''}
     </>
   );
 };

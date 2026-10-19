@@ -1,7 +1,8 @@
 // src/core/components/ui/tabs/Tabs.tsx
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 
+import { useScrollEdges, type ScrollEdges } from "../../../hooks/useScrollEdges";
 import { cn } from "../../../utils";
 
 export interface TabItem {
@@ -28,6 +29,19 @@ interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
   actions?: React.ReactNode;
 }
 
+/** Larghezza della sfumatura ai bordi quando le schede non stanno nella riga */
+const FADE_PX = 32;
+
+/**
+ * Maschera del contenitore che scorre: sfuma solo i lati dove c'è altro.
+ * Una maschera, non un velo colorato: funziona su qualunque sfondo e tema.
+ */
+const fadeMask = ({ start, end }: ScrollEdges): React.CSSProperties | undefined => {
+  if (!start && !end) return undefined;
+  const g = `linear-gradient(to right, ${start ? "transparent" : "#000"} 0, #000 ${start ? FADE_PX : 0}px, #000 calc(100% - ${end ? FADE_PX : 0}px), ${end ? "transparent" : "#000"} 100%)`;
+  return { maskImage: g, WebkitMaskImage: g };
+};
+
 export const Tabs: React.FC<TabsProps> = ({
   items,
   defaultTab,
@@ -40,6 +54,29 @@ export const Tabs: React.FC<TabsProps> = ({
   ...props
 }) => {
   const [activeTab, setActiveTab] = useState(defaultTab || (items.length > 0 ? items[0].id : ""));
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef(new Map<string, HTMLButtonElement>());
+  const edges = useScrollEdges(scrollRef, items.length);
+  const primoScorrimento = useRef(true);
+
+  // La scheda scelta resta visibile per intero, fuori dalla sfumatura (anche
+  // aprendo la pagina su una scheda lontana). Solo in orizzontale: la pagina
+  // non scorre. La prima volta senza animazione.
+  useEffect(() => {
+    const contenitore = scrollRef.current;
+    const scheda = tabRefs.current.get(activeTab);
+    if (!contenitore || !scheda) return;
+    const c = contenitore.getBoundingClientRect();
+    const s = scheda.getBoundingClientRect();
+    const margine = contenitore.scrollWidth > contenitore.clientWidth ? FADE_PX : 0;
+    const delta =
+      s.left < c.left + margine ? s.left - c.left - margine : s.right > c.right - margine ? s.right - c.right + margine : 0;
+    if (delta) {
+      const calmo = primoScorrimento.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      contenitore.scrollBy({ left: delta, behavior: calmo ? "auto" : "smooth" });
+    }
+    primoScorrimento.current = false;
+  }, [activeTab]);
 
   const handleTabClick = (tabId: string) => {
     setActiveTab(tabId);
@@ -83,14 +120,19 @@ export const Tabs: React.FC<TabsProps> = ({
     <div className={cn("w-full", className)} {...props}>
       {/* Tab List (con le eventuali azioni a destra, fuori dallo scorrimento) */}
       <div className={cn("flex items-center gap-3", variantClasses[variant])}>
-      <div className="flex min-w-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide">
+      <div ref={scrollRef} className="flex min-w-0 flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide" style={fadeMask(edges)}>
+        {/* anello di focus solo da tastiera e interno: il contenitore che scorre taglierebbe quello esterno */}
         {items.map((item) => (
           <button
             key={item.id}
+            ref={(el) => {
+              if (el) tabRefs.current.set(item.id, el);
+              else tabRefs.current.delete(item.id);
+            }}
             onClick={() => !item.disabled && handleTabClick(item.id)}
             disabled={item.disabled}
             className={cn(
-              "inline-flex items-center gap-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-action-primary focus:ring-offset-1 rounded-sm",
+              "inline-flex items-center gap-2 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-action-primary rounded-sm",
               tabClasses[variant](activeTab === item.id),
               item.disabled && "opacity-50 cursor-not-allowed"
             )}

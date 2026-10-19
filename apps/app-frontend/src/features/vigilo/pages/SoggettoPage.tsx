@@ -1,15 +1,15 @@
 // src/features/vigilo/pages/SoggettoPage.tsx
 //
 // La scheda di un soggetto (B7d-2): titolo "Soggetto › Nome", sotto tipo,
-// identificativo e categoria; a destra "Elenco soggetti" (non "indietro": da
-// un link esterno, es. un'email, non c'è un indietro). Poi i riquadri di
+// identificativo e categoria; a destra il ritorno all'elenco (TornaAllElenco)
+// e il refresh. Poi i riquadri di
 // riepilogo con le azioni sullo stato accanto, e
 // le schede Scadenze (con il pannello delle azioni), Storico, Contatori,
 // Assegnazioni e Dati. Modifica nel pannello laterale (B7d-3). I documenti
 // arriveranno con gli allegati (B9).
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, ArrowLeft, Button, ChevronRight, PageHeader, Skeleton, Tabs, Tooltip, type TabItem } from '@edg/ui';
+import { useParams } from 'react-router-dom';
+import { Alert, ChevronRight, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
 
 import { AssegnazioniSoggetto } from '../components/soggetto/AssegnazioniSoggetto';
 import { AzioniSoggetto } from '../components/soggetto/AzioniSoggetto';
@@ -18,6 +18,7 @@ import { DatiSoggetto } from '../components/soggetto/DatiSoggetto';
 import { RiepilogoSoggetto } from '../components/soggetto/RiepilogoSoggetto';
 import { ScadenzeSoggetto } from '../components/soggetto/ScadenzeSoggetto';
 import { StoricoSoggetto } from '../components/soggetto/StoricoSoggetto';
+import { TornaAllElenco } from '../components/TornaAllElenco';
 import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
 import { useSoggetto } from '../hooks/useSoggetto';
 
@@ -42,7 +43,6 @@ const Conteggio: React.FC<{ testo: string; n: number }> = ({ testo, n }) => (
 
 const SoggettoPage: React.FC = () => {
   const { id = '' } = useParams();
-  const navigate = useNavigate();
   const { profilo } = useProfiloVigilo();
   const x = useSoggetto(id);
   const s = x.soggetto;
@@ -91,14 +91,7 @@ const SoggettoPage: React.FC = () => {
       ]
     : [];
 
-  // largo come il refresh: icona e tooltip (non "indietro": da un link esterno sarebbe ambiguo)
-  const elenco = (
-    <Tooltip content="Torna all'elenco dei soggetti" side='bottom'>
-      <Button variant='secondary' aria-label="Torna all'elenco dei soggetti" onClick={() => navigate(`/vigilo/soggetti${s ? `?tipo=${s.tipo}` : ''}`)}>
-        <ArrowLeft className='h-5 w-5' />
-      </Button>
-    </Tooltip>
-  );
+  const elenco = <TornaAllElenco tipo={s?.tipo} />;
 
   return (
     <div className='space-y-6'>

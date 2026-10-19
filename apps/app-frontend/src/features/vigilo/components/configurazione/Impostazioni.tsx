@@ -9,8 +9,13 @@ import type { StatoAvvio } from '../../types/avvio';
 /** "32, 8 e 1": come le frasi del servizio */
 const elenco = (xs: number[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} e ${xs[xs.length - 1]}`);
 
-const giorni = (g: number[]) =>
-  g.length ? `avvisi a ${elenco(g)} ${g.length === 1 && g[0] === 1 ? 'giorno' : 'giorni'}` : 'nessun preavviso';
+/** Dal più lontano; il nome si accorda con l'ultimo numero: "a 32, 8 e 1 giorno" */
+const giorni = (g: number[]) => {
+  const ordinati = [...g].sort((a, b) => b - a);
+  return ordinati.length
+    ? `avvisi a ${elenco(ordinati)} ${ordinati[ordinati.length - 1] === 1 ? 'giorno' : 'giorni'}`
+    : 'nessun preavviso';
+};
 
 export const Impostazioni: React.FC<{ stato: StatoAvvio }> = ({ stato }) => {
   const applicati = stato.modelli.filter(m => m.applicato).map(m => m.nome);

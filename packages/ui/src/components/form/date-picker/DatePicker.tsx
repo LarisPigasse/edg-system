@@ -256,6 +256,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             if ((e.key === 'Enter' || e.key === 'ArrowDown') && !isOpen) {
               e.preventDefault();
               openPanel();
+            } else if (e.key === 'Enter' && isOpen) {
+              // data scritta a mano: Invio la conferma e chiude il calendario
+              e.preventDefault();
+              setIsOpen(false);
             }
           }}
           placeholder={placeholder}

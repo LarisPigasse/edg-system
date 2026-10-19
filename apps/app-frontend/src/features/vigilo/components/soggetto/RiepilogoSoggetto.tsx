@@ -11,6 +11,7 @@ import { STATI_SOGGETTO, etichettaStato } from '../../constants/statiSoggetto';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { Soggetto } from '../../types/soggetti';
 import { giornoBreve } from '../../utils/giorni';
+import { maiuscola } from '../../utils/testo';
 import { SituazioneSoggetto } from '../soggetti/SituazioneSoggetto';
 
 const Voce: React.FC<{ etichetta: string; children: React.ReactNode }> = ({ etichetta, children }) => (
@@ -19,8 +20,6 @@ const Voce: React.FC<{ etichetta: string; children: React.ReactNode }> = ({ etic
     <div className='mt-1 truncate text-sm text-text-primary'>{children}</div>
   </div>
 );
-
-const maiuscola = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 /** "Targa FT456CD · Autocarri oltre 3,5 t e trattori stradali" */
 const descrizione = (s: Soggetto) =>

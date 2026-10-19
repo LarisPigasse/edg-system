@@ -35,6 +35,8 @@ export function useNuovoSoggetto(tipoIniziale: TipoSoggetto | null, r: Riferimen
   const [passo, setPasso] = useState<PassoNuovo>('tipo');
   const [tipo, setTipoStato] = useState<TipoSoggetto | null>(tipoIniziale);
   const [valori, setValori] = useState<ValoriSoggetto>(valoriIniziali());
+  /** La categoria va scelta apposta: "Nessuna categoria" non è predefinita (niente scadenze automatiche per distrazione) */
+  const [categoriaScelta, setCategoriaScelta] = useState(false);
   const [creato, setCreato] = useState<Soggetto | null>(null);
   const [scadenze, setScadenze] = useState<Scadenza[]>([]);
   const [completamenti, setCompletamenti] = useState<Record<string, Completamento>>({});
@@ -44,9 +46,13 @@ export function useNuovoSoggetto(tipoIniziale: TipoSoggetto | null, r: Riferimen
   const setTipo = useCallback((t: TipoSoggetto) => {
     setTipoStato(t);
     setValori(valoriIniziali());
+    setCategoriaScelta(false);
   }, []);
 
-  const setCategoria = useCallback((c: string | null) => setValori(v => ({ ...v, categoria: c, campi: {} })), []);
+  const setCategoria = useCallback((c: string | null) => {
+    setValori(v => ({ ...v, categoria: c, campi: {} }));
+    setCategoriaScelta(true);
+  }, []);
 
   const crea = useCallback(async () => {
     if (!tipo) return;
@@ -88,7 +94,7 @@ export function useNuovoSoggetto(tipoIniziale: TipoSoggetto | null, r: Riferimen
         const soglia = intero(c.soglia);
         await completaScadenza(s.uuid, { scadeIl: c.scadeIl || null, ...(s.contatore ? { sogliaUso: Number.isNaN(soglia) ? null : soglia } : {}) });
       }
-      toast?.({ title: cambiate.length === 1 ? '1 scadenza completata' : `${cambiate.length} scadenze completate` });
+      toast?.({ title: cambiate.length === 1 ? 'Data inserita' : `Date inserite per ${cambiate.length} scadenze` });
       return true;
     } catch (e) {
       toast?.danger({ title: 'Date non salvate', description: (e as Error).message });
@@ -98,7 +104,7 @@ export function useNuovoSoggetto(tipoIniziale: TipoSoggetto | null, r: Riferimen
     }
   }, [completamenti, scadenze, toast]);
 
-  return { passo, setPasso, tipo, setTipo, setCategoria, valori, setValori, crea, creato, scadenze, completamenti, completa, salvaDate, inCorso };
+  return { passo, setPasso, tipo, setTipo, setCategoria, categoriaScelta, valori, setValori, crea, creato, scadenze, completamenti, completa, salvaDate, inCorso };
 }
 
 export type StatoNuovoSoggetto = ReturnType<typeof useNuovoSoggetto>;

@@ -8,6 +8,7 @@ import { lazy } from 'react';
 import { Clock } from '@edg/ui';
 
 import type { AppModuleManifest } from '../../core/modules/types';
+import { dopoAvvio } from './components/dopoAvvio';
 
 export const vigiloModule: AppModuleManifest = {
   key: 'vigilo',
@@ -15,15 +16,18 @@ export const vigiloModule: AppModuleManifest = {
   label: 'VIGILO',
   basePath: '/vigilo',
   icon: Clock,
+  // Prima della procedura di avvio si aprono solo la home (che porta alla
+  // procedura o dice che Vigilo è in preparazione) e la procedura stessa;
+  // le altre pagine passano da dopoAvvio.
   pages: [
     { path: '', component: lazy(() => import('./pages/VigiloHome')) },
     // Procedura di avvio e, dopo, "Aggiungi dalla libreria" (ADR076)
-    { path: 'scadenze', component: lazy(() => import('./pages/ScadenzePage')) },
-    { path: 'soggetti', component: lazy(() => import('./pages/SoggettiPage')) },
-    { path: 'soggetti/nuovo', component: lazy(() => import('./pages/NuovoSoggettoPage')) },
-    { path: 'soggetti/:id', component: lazy(() => import('./pages/SoggettoPage')) },
     { path: 'avvio', component: lazy(() => import('./pages/AvvioPage')), permission: 'vigilo.config' },
-    { path: 'configurazione', component: lazy(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
+    { path: 'scadenze', component: dopoAvvio(() => import('./pages/ScadenzePage')) },
+    { path: 'soggetti', component: dopoAvvio(() => import('./pages/SoggettiPage')) },
+    { path: 'soggetti/nuovo', component: dopoAvvio(() => import('./pages/NuovoSoggettoPage')) },
+    { path: 'soggetti/:id', component: dopoAvvio(() => import('./pages/SoggettoPage')) },
+    { path: 'configurazione', component: dopoAvvio(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
   ],
   // Le altre voci (Calendario, Fornitori…) arrivano con le loro pagine
   menu: [

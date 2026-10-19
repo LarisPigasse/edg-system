@@ -3,8 +3,7 @@
 // Un valore dei dati del soggetto (dati del tipo o campi della categoria)
 // come testo da leggere; null se non c'è.
 import { giornoEsteso } from './giorni';
-
-const maiuscola = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+import { etichettaOpzione } from './testo';
 
 export function testoDato(valore: unknown, formato: 'testo' | 'numero' | 'data' | 'elenco' | 'si-no' | 'email'): string | null {
   if (valore === undefined || valore === null || valore === '') return null;
@@ -18,6 +17,6 @@ export function testoDato(valore: unknown, formato: 'testo' | 'numero' | 'data' 
     case 'email':
       return String(valore);
     default:
-      return maiuscola(String(valore));
+      return etichettaOpzione(String(valore));
   }
 }

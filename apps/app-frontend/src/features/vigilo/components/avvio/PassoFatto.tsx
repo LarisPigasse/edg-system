@@ -1,6 +1,8 @@
 // src/features/vigilo/components/avvio/PassoFatto.tsx
 //
-// Passo 4: l'esito e il passo successivo naturale.
+// Passo 4: l'esito e il passo successivo naturale. Al primo avvio è il primo
+// soggetto (la dashboard resterebbe vuota); dopo "Aggiungi dalla libreria"
+// si torna alla Configurazione.
 import React from 'react';
 import { Button, CheckCircle } from '@edg/ui';
 
@@ -8,10 +10,11 @@ import type { EsitoAvvio } from '../../types/avvio';
 
 interface Props {
   esito: EsitoAvvio;
-  onContinua: () => void;
+  /** Percorso da aprire */
+  onVai: (percorso: string) => void;
 }
 
-export const PassoFatto: React.FC<Props> = ({ esito, onContinua }) => {
+export const PassoFatto: React.FC<Props> = ({ esito, onVai }) => {
   const vuoto = esito.categorieCreate === 0 && esito.controlliCreati === 0;
   const voci = [
     esito.categorieCreate > 0 && `${esito.categorieCreate} ${esito.categorieCreate === 1 ? 'categoria' : 'categorie'}`,
@@ -35,12 +38,25 @@ export const PassoFatto: React.FC<Props> = ({ esito, onContinua }) => {
         {esito.scadenzeCreate > 0 &&
           ` Sono già state create ${esito.scadenzeCreate} scadenze per ciò che avevi inserito.`}
       </p>
-      <p className='text-sm text-text-secondary'>
-        Il passo successivo è inserire i soggetti da tenere sotto controllo: veicoli, persone, sedi…
-      </p>
-      <Button size='lg' onClick={onContinua}>
-        Vai a Vigilo
-      </Button>
+      {esito.primoAvvio && (
+        <p className='text-sm text-text-secondary'>
+          Il passo successivo è inserire i soggetti da tenere sotto controllo: veicoli, persone, sedi…
+        </p>
+      )}
+      <div className='flex flex-wrap items-center justify-center gap-3'>
+        <Button size='lg' variant='secondary' onClick={() => onVai('/vigilo')}>
+          Vai alla Dashboard
+        </Button>
+        {esito.primoAvvio ? (
+          <Button size='lg' onClick={() => onVai('/vigilo/soggetti/nuovo')}>
+            Aggiungi il primo soggetto
+          </Button>
+        ) : (
+          <Button size='lg' onClick={() => onVai('/vigilo/configurazione')}>
+            Vai alla Configurazione
+          </Button>
+        )}
+      </div>
     </section>
   );
 };

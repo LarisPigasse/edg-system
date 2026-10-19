@@ -22,6 +22,7 @@ import { BarraVista } from './BarraVista';
 import { DaFare } from './DaFare';
 import { FatteInTempo } from './FatteInTempo';
 import { PerControllo } from './PerControllo';
+import { PrimiPassi } from './PrimiPassi';
 import { ProssimiMesi } from './ProssimiMesi';
 import { RiquadriStato } from './RiquadriStato';
 import { Saluto } from './Saluto';
@@ -48,6 +49,10 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
     setPannello(true);
   }, []);
 
+  // Nessun soggetto e nessun promemoria (senza filtri): niente da sorvegliare ancora
+  const vuota =
+    !!d.dati && !d.filtriAttivi && d.dati.conteggi.totale === 0 && d.dati.soggetti.every(s => s.n === 0);
+
   useEffect(() => {
     leggiSedi()
       .then(setSedi)
@@ -59,13 +64,18 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
       <PageHeader
         title='Dashboard'
         subtitle={
-          <Saluto nome={nomeDi(profilo, getDisplayName())} oggi={d.dati?.oggi ?? null} conteggi={d.dati?.conteggi ?? null} />
+          <Saluto
+            nome={nomeDi(profilo, getDisplayName())}
+            oggi={d.dati?.oggi ?? null}
+            conteggi={d.dati?.conteggi ?? null}
+            vuota={vuota}
+          />
         }
         onRefresh={d.ricarica}
         isLoading={d.caricamento}
       />
 
-      <BarraVista vista={vista} onVista={setVista} testo={d.testo} onTesto={d.setTesto} />
+      {!vuota && <BarraVista vista={vista} onVista={setVista} testo={d.testo} onTesto={d.setTesto} />}
 
       {d.errore && (
         <Alert variant='danger' title='Impossibile leggere le scadenze'>
@@ -73,7 +83,9 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
         </Alert>
       )}
 
-      {vista === 'spese' ? (
+      {vuota ? (
+        <PrimiPassi capacita={profilo.capacita} />
+      ) : vista === 'spese' ? (
         <VistaSpese />
       ) : (
         <>

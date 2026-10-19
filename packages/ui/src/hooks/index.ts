@@ -18,6 +18,8 @@ export {
 
 export { default as useClickOutside } from './useClickOutside';
 
+export { default as useScrollEdges, type ScrollEdges } from './useScrollEdges';
+
 // Esporta anche altri hooks futuri
 // export { default as useLocalStorage } from './useLocalStorage';
 // export { default as useDebounce } from './useDebounce';

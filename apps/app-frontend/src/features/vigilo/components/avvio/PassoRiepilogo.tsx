@@ -68,14 +68,14 @@ export const PassoRiepilogo: React.FC<Props> = ({ perTipo, giaPresenti, predefin
         </p>
         <div className='space-y-4'>
           <div className='space-y-2'>
-            <span className='text-sm font-medium text-text-label'>Avvisi prima della scadenza</span>
+            <span className='text-sm font-medium text-text-secondary'>Avvisi prima della scadenza</span>
             <PreavvisiEditor
               giorni={predefiniti.preavvisi.giorni}
               onChange={giorni => onPredefiniti({ ...predefiniti, preavvisi: { ...predefiniti.preavvisi, giorni } })}
             />
           </div>
           <label className='flex flex-wrap items-center gap-2 text-sm'>
-            <span className='font-medium text-text-label'>Tolleranza dopo la scadenza</span>
+            <span className='font-medium text-text-secondary'>Tolleranza dopo la scadenza</span>
             <input
               type='number'
               min={0}

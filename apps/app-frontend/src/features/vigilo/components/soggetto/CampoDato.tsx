@@ -8,9 +8,9 @@ import { DatePicker, Input, Select, Switch } from '@edg/ui';
 
 import { aGiorno, daGiorno } from '../../utils/giorni';
 import type { ValoreCampo } from '../../utils/formSoggetto';
+import { etichettaOpzione } from '../../utils/testo';
 
 const NESSUNO = '__nessuno';
-const maiuscola = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 interface Props {
   etichetta: string;
@@ -34,7 +34,7 @@ export const CampoDato: React.FC<Props> = ({ etichetta, formato, opzioni = [], o
           label={etichetta}
           value={testo || NESSUNO}
           onValueChange={v => onCambia(v === NESSUNO ? '' : v)}
-          options={[{ value: NESSUNO, label: obbligatorio ? 'Scegli…' : '—' }, ...opzioni.map(o => ({ value: o, label: maiuscola(o) }))]}
+          options={[{ value: NESSUNO, label: obbligatorio ? 'Scegli…' : '—' }, ...opzioni.map(o => ({ value: o, label: etichettaOpzione(o) }))]}
         />
       );
     case 'si-no':

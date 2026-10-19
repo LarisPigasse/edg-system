@@ -88,6 +88,9 @@ export const FloatingFieldShell = React.forwardRef<HTMLInputElement, FloatingFie
     },
     ref
   ) => {
+    // label collegata al campo (nome accessibile per i lettori di schermo)
+    const autoId = React.useId();
+    const id = inputProps.id ?? autoId;
     const config = SIZE_CONFIG[size];
     const hasValue = Boolean(value);
     const isFloating = isFocused || hasValue;
@@ -106,6 +109,7 @@ export const FloatingFieldShell = React.forwardRef<HTMLInputElement, FloatingFie
         <div className={cn('relative', config.minH, disabled && 'opacity-60')}>
           <input
             ref={ref}
+            id={id}
             value={value}
             disabled={disabled}
             className={cn(
@@ -122,6 +126,7 @@ export const FloatingFieldShell = React.forwardRef<HTMLInputElement, FloatingFie
           />
 
           <label
+            htmlFor={id}
             className={cn(
               'absolute left-0 pointer-events-none select-none transition-all duration-200 ease-out',
               isFloating

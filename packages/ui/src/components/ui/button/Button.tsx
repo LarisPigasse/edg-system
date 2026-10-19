@@ -33,10 +33,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // 🎨 Base classes con CSS custom properties
+    // 🎨 Base classes con CSS custom properties. L'anello di focus compare solo
+    // da tastiera (focus-visible): dopo un clic del mouse non resta acceso.
     const baseClasses = `
       inline-flex items-center justify-center rounded-md font-medium 
-      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary
       transition-all duration-200 ease-in-out
       disabled:cursor-not-allowed
     `
@@ -56,7 +57,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const variantClasses = {
       primary: `
         border border-transparent bg-action-primary text-action-primary-text
-        hover:bg-action-primary-hover focus:ring-action-primary
+        hover:bg-action-primary-hover focus-visible:ring-action-primary
         disabled:opacity-50
       `
         .replace(/\s+/g, ' ')
@@ -64,7 +65,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
       secondary: `
         border border-transparent bg-action-secondary text-action-secondary-text
-        hover:bg-action-secondary-hover focus:ring-action-primary
+        hover:bg-action-secondary-hover focus-visible:ring-action-primary
         disabled:opacity-50
       `
         .replace(/\s+/g, ' ')
@@ -72,7 +73,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
       outline: `
         border border-border-default bg-bg-primary text-text-primary
-        hover:bg-bg-hover focus:ring-action-primary
+        hover:bg-bg-hover focus-visible:ring-action-primary
         disabled:opacity-50
       `
         .replace(/\s+/g, ' ')
@@ -80,7 +81,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
       danger: `
         border border-transparent bg-action-danger text-action-danger-text
-        hover:bg-action-danger-hover focus:ring-action-danger
+        hover:bg-action-danger-hover focus-visible:ring-action-danger
         disabled:opacity-50
       `
         .replace(/\s+/g, ' ')
@@ -88,7 +89,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
       success: `
         border border-transparent bg-action-success text-action-success-text
-        hover:bg-action-success-hover focus:ring-action-success
+        hover:bg-action-success-hover focus-visible:ring-action-success
         disabled:opacity-50
       `
         .replace(/\s+/g, ' ')
@@ -96,7 +97,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
       warning: `
         border border-transparent bg-action-warning text-action-warning-text
-        hover:bg-action-warning-hover focus:ring-action-warning
+        hover:bg-action-warning-hover focus-visible:ring-action-warning
         disabled:opacity-50
       `
         .replace(/\s+/g, ' ')
@@ -104,7 +105,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
       info: `
         border border-transparent bg-action-info text-action-info-text
-        hover:bg-action-info-hover focus:ring-action-info
+        hover:bg-action-info-hover focus-visible:ring-action-info
         disabled:opacity-50
       `
         .replace(/\s+/g, ' ')
@@ -116,7 +117,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       link: `
         border border-transparent bg-transparent text-text-link
         hover:bg-bg-primary hover:text-text-link-hover
-        focus:ring-action-primary
+        focus-visible:ring-action-primary
         disabled:text-text-disabled disabled:bg-transparent disabled:opacity-70
       `
         .replace(/\s+/g, ' ')

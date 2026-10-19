@@ -47,7 +47,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, current, onStepClick, c
                   'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors',
                   done && 'border-action-primary bg-action-primary text-action-primary-text',
                   active && 'border-action-primary bg-bg-primary text-text-link',
-                  !done && !active && 'border-border-default bg-bg-primary text-text-disabled',
+                  !done && !active && 'border-border-default bg-bg-primary text-text-label',
                   clickable && 'group-hover:bg-action-primary-hover'
                 )}
               >
@@ -56,7 +56,8 @@ export const Stepper: React.FC<StepperProps> = ({ steps, current, onStepClick, c
               <span
                 className={cn(
                   'text-xs font-medium sm:text-sm',
-                  active ? 'text-text-primary' : done ? 'text-text-secondary' : 'text-text-disabled',
+                  // i passi futuri restano leggibili: li distingue il cerchio, non il testo sbiadito
+                  active ? 'text-text-primary' : 'text-text-secondary',
                   !active && 'hidden sm:block'
                 )}
               >

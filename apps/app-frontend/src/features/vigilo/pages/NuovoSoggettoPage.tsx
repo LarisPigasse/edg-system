@@ -10,7 +10,9 @@ import { Alert, Button, PageHeader, Skeleton, Stepper, type StepperStep } from '
 import { FormSoggetto } from '../components/soggetto/FormSoggetto';
 import { PassoScadenze } from '../components/nuovo-soggetto/PassoScadenze';
 import { PassoTipo } from '../components/nuovo-soggetto/PassoTipo';
+import { TornaAllElenco } from '../components/TornaAllElenco';
 import { TIPI } from '../constants/tipiSoggetto';
+import { useInCima } from '../hooks/useInCima';
 import { PASSI_NUOVO, useNuovoSoggetto } from '../hooks/useNuovoSoggetto';
 import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
 import { useRiferimenti } from '../hooks/useRiferimenti';
@@ -32,10 +34,10 @@ const NuovoSoggettoPage: React.FC = () => {
   const tipoIniziale = tipoDa(parametri.get('tipo'));
   const riferimenti = useRiferimenti();
   const n = useNuovoSoggetto(tipoIniziale, riferimenti);
+  useInCima(n.passo);
 
   const indice = PASSI_NUOVO.indexOf(n.passo);
   const daCompilare = mancanti(n.valori, campiDi(riferimenti.tutteLeCategorie, n.valori.categoria));
-  const elenco = () => navigate(`/vigilo/soggetti${n.tipo ? `?tipo=${n.tipo}` : ''}`);
 
   const fine = async () => {
     if (n.creato && (await n.salvaDate())) navigate(`/vigilo/soggetti/${n.creato.uuid}`);
@@ -60,7 +62,7 @@ const NuovoSoggettoPage: React.FC = () => {
       <PageHeader
         title={titolo}
         subtitle='Vigilo crea da solo le scadenze dei controlli della categoria: alla fine inserisci le date che conosci.'
-        trailingActions={<Button onClick={elenco}>Elenco soggetti</Button>}
+        trailingActions={<TornaAllElenco tipo={n.tipo} />}
       />
       <Stepper steps={STEPS} current={indice} onStepClick={n.creato ? undefined : i => i < indice && n.setPasso(PASSI_NUOVO[i])} />
 
@@ -70,6 +72,7 @@ const NuovoSoggettoPage: React.FC = () => {
           onTipo={n.setTipo}
           categorie={riferimenti.categorieDel(n.tipo)}
           categoria={n.valori.categoria}
+          categoriaScelta={n.categoriaScelta}
           onCategoria={n.setCategoria}
         />
       )}
@@ -78,6 +81,7 @@ const NuovoSoggettoPage: React.FC = () => {
 
       <footer className='sticky bottom-[var(--edg-footer-h,0px)] z-30 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t border-border-default bg-bg-base/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6'>
         <div className='flex items-center gap-3'>
+          {n.passo === 'tipo' && n.tipo && !n.categoriaScelta && <span className='text-sm text-text-secondary'>Manca: categoria</span>}
           {n.passo === 'dati' && (
             <Button variant='secondary' onClick={() => n.setPasso('tipo')} disabled={n.inCorso}>
               Indietro
@@ -86,7 +90,7 @@ const NuovoSoggettoPage: React.FC = () => {
           {n.passo === 'dati' && daCompilare.length > 0 && <span className='text-sm text-text-secondary'>Manca: {daCompilare.join(', ')}</span>}
         </div>
         {n.passo === 'tipo' && (
-          <Button onClick={() => n.setPasso('dati')} disabled={!n.tipo}>
+          <Button onClick={() => n.setPasso('dati')} disabled={!n.tipo || !n.categoriaScelta}>
             Avanti
           </Button>
         )}

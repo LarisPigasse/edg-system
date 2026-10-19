@@ -89,6 +89,19 @@ export function useAvvio() {
   );
   const perTipo = useMemo(() => (proposta ? conteggi(proposta, selezione) : []), [proposta, selezione]);
 
+  /**
+   * "Aggiungi dalla libreria" senza voci nuove, con gli stessi settori e gli
+   * stessi predefiniti: inviare non cambierebbe nulla.
+   */
+  const nienteDaFare = useMemo(() => {
+    if (!stato || primoAvvio) return false;
+    const nienteDiNuovo = perTipo.every(t => t.nuoviControlli === 0 && t.nuoveCategorie === 0);
+    const applicati = stato.modelli.filter(m => m.applicato).map(m => m.chiave);
+    const stessiSettori = applicati.length === chiaviModelli.length && applicati.every(k => modelli.has(k));
+    const stessiPredefiniti = JSON.stringify(predefiniti) === JSON.stringify(stato.predefiniti);
+    return nienteDiNuovo && stessiSettori && stessiPredefiniti;
+  }, [stato, primoAvvio, perTipo, chiaviModelli, modelli, predefiniti]);
+
   // --- passi 3-4: invio ----------------------------------------------------------
   const invia = useCallback(
     async (daZero = false) => {
@@ -130,6 +143,7 @@ export function useAvvio() {
     categorie,
     controlli,
     perTipo,
+    nienteDaFare,
     predefiniti,
     setPredefiniti,
     invia,

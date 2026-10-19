@@ -12,9 +12,8 @@ import { TIPI } from '../../constants/tipiSoggetto';
 import type { StatoSoggetti } from '../../hooks/useSoggetti';
 import type { Soggetto } from '../../types/soggetti';
 import { giornoBreve } from '../../utils/giorni';
+import { maiuscola } from '../../utils/testo';
 import { SituazioneSoggetto } from './SituazioneSoggetto';
-
-const maiuscola = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 function colonne(s: StatoSoggetti): TableColumn<Soggetto>[] {
   const t = s.tipo;
