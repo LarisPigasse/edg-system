@@ -20,6 +20,7 @@ export type {
   EdgModuleConfig,
   EdgSubMenuItem,
   EdgLayoutConfig,
+  EdgUser,
 } from './config';
 
 // --- Stato UI condiviso (tema, footer, menu) ---

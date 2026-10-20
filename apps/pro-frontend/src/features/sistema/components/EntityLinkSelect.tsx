@@ -2,7 +2,7 @@
 import React from 'react';
 import { Select, type SelectOption } from '@edg/ui';
 
-import { useEntityDirectory } from '../api/useEntityDirectory';
+import type { useEntityDirectory } from '../api/useEntityDirectory';
 
 // Radix Select non ammette un Item con value="": serve un sentinel per
 // l'opzione "nessun collegamento", tradotto in null/entityId reale al
@@ -23,10 +23,13 @@ interface EntityLinkSelectProps {
    * l'eventuale collegamento dell'account corrente da questo insieme, cosi'
    * l'opzione già selezionata resta comunque visibile e selezionabile. */
   excludeEntityIds?: ReadonlySet<string>;
+  /** Elenchi di operatori e anagrafiche, caricati da chi usa il selettore
+   * (AccountFormModal li usa anche per copiare nome e cognome). */
+  directory: ReturnType<typeof useEntityDirectory>;
 }
 
-const EntityLinkSelect: React.FC<EntityLinkSelectProps> = ({ accountType, value, onChange, excludeEntityIds }) => {
-  const { isLoading, getLabel, operatoreOptions, anagraficaOptions } = useEntityDirectory();
+const EntityLinkSelect: React.FC<EntityLinkSelectProps> = ({ accountType, value, onChange, excludeEntityIds, directory }) => {
+  const { isLoading, getLabel, operatoreOptions, anagraficaOptions } = directory;
 
   const resourceKnown = accountType === 'operatore' || accountType === 'cliente';
 

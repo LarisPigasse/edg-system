@@ -30,14 +30,11 @@ import { Soggetti } from './Soggetti';
 import { useDashboard } from '../../hooks/useDashboard';
 import { VistaSpese } from './VistaSpese';
 
-/** Il nome per il saluto: la persona collegata in Vigilo, altrimenti dall'account */
-const nomeDi = (profilo: ProfiloVigilo, daAccount: string) => {
-  const nome = profilo.persona?.nome ?? (daAccount === 'Utente' ? '' : daAccount);
-  return nome.split(' ')[0] || null;
-};
+/** Il nome per il saluto: la persona collegata in Vigilo, altrimenti il nome dell'account (ADR081) */
+const nomeDi = (profilo: ProfiloVigilo, daAccount: string) => (profilo.persona?.nome.split(' ')[0] ?? daAccount) || null;
 
 export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => {
-  const { getDisplayName } = useAuth();
+  const { getFirstName } = useAuth();
   const d = useDashboard();
   const [vista, setVista] = useState<VistaDashboard>('fare');
   const [sedi, setSedi] = useState<RiferimentoSoggetto[]>([]);
@@ -65,7 +62,7 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
         title='Dashboard'
         subtitle={
           <Saluto
-            nome={nomeDi(profilo, getDisplayName())}
+            nome={nomeDi(profilo, getFirstName())}
             oggi={d.dati?.oggi ?? null}
             conteggi={d.dati?.conteggi ?? null}
             vuota={vuota}

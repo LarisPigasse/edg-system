@@ -295,14 +295,19 @@ export function useAuth() {
   // ============================================================================
 
   /**
-   * Ritorna le iniziali dell'utente per l'avatar.
-   * Estrae dalla parte dell'email prima della @.
+   * Ritorna le iniziali dell'utente per l'avatar: da nome e cognome (ADR081),
+   * altrimenti dalla parte dell'email prima della @.
    *
    * @example
    * // mario.rossi@edg.it -> "MR"
    * // admin@edg.it -> "AD"
    */
   const getUserInitials = useCallback((): string => {
+    const nome = account?.firstName?.trim();
+    const cognome = account?.lastName?.trim();
+    if (nome && cognome) return (nome[0] + cognome[0]).toUpperCase();
+    if (nome || cognome) return (nome || cognome)!.slice(0, 2).toUpperCase();
+
     if (!account?.email) return '??';
 
     const emailPart = account.email.split('@')[0];
@@ -320,14 +325,20 @@ export function useAuth() {
   }, [account]);
 
   /**
-   * Ritorna il nome visualizzabile dell'utente.
-   * Formatta la parte dell'email prima della @.
+   * Ritorna il nome visualizzabile dell'utente: "Nome Cognome" (ADR081),
+   * altrimenti formatta la parte dell'email prima della @.
    *
    * @example
    * // mario.rossi@edg.it -> "Mario Rossi"
    * // admin@edg.it -> "Admin"
    */
   const getDisplayName = useCallback((): string => {
+    const completo = [account?.firstName, account?.lastName]
+      .map(p => p?.trim())
+      .filter(Boolean)
+      .join(' ');
+    if (completo) return completo;
+
     if (!account?.email) return 'Utente';
 
     const emailPart = account.email.split('@')[0];
@@ -338,6 +349,17 @@ export function useAuth() {
       .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join(' ');
   }, [account]);
+
+  /**
+   * Il nome di battesimo, per i saluti ("Buongiorno Mario"): il nome
+   * dell'account, altrimenti la prima parola del nome visualizzabile.
+   */
+  const getFirstName = useCallback((): string => {
+    const nome = account?.firstName?.trim();
+    if (nome) return nome;
+    const visualizzato = getDisplayName();
+    return visualizzato === 'Utente' ? '' : visualizzato.split(' ')[0];
+  }, [account, getDisplayName]);
 
   // ============================================================================
   // RETURN - Interfaccia pubblica dell'hook
@@ -378,6 +400,7 @@ export function useAuth() {
     // Helper display
     getUserInitials,
     getDisplayName,
+    getFirstName,
   };
 }
 

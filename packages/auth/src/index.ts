@@ -89,7 +89,7 @@ export {
 // HOOKS - Interfaccia semplificata per i componenti
 // ============================================================================
 
-export { useAuth } from './hooks';
+export { useAuth, useEdgUser } from './hooks';
 
 // ============================================================================
 // COMPONENTS - Elementi UI riusabili

@@ -198,12 +198,16 @@ const AccountPage: React.FC = () => {
   // "Bloccato" e' uno stato distinto da "Disattivo": stessa disattivazione,
   // ma con motivo/durata registrati (vedi isAccountBlocked). Un unico punto
   // di verita' per tabella, PDF e scelta delle azioni riga.
+  // ADR081: nome e cognome della persona; vuoto = non ancora inseriti
+  const nomeAccount = (item: Account): string => [item.firstName, item.lastName].filter(Boolean).join(' ') || '—';
+
   const accountStatusLabel = (item: Account): string => {
     if (isAccountBlocked(item)) return 'Bloccato';
     return item.isActive ? 'Attivo' : 'Disattivo';
   };
 
   const columns: TableColumn<Account>[] = [
+    { header: 'Nome', accessor: nomeAccount },
     { header: 'Email', accessor: 'email', sortable: true },
     { header: 'Tipo', accessor: item => accountTypeLabel(item.accountType) },
     { header: 'Tenant', accessor: item => item.tenant?.name ?? '—' },
@@ -224,6 +228,7 @@ const AccountPage: React.FC = () => {
       filename: 'account',
       title: 'Account',
       columns: [
+        { header: 'Nome', accessor: nomeAccount },
         { header: 'Email', accessor: item => item.email },
         { header: 'Tipo', accessor: item => accountTypeLabel(item.accountType) },
         { header: 'Tenant', accessor: item => item.tenant?.name ?? '—' },

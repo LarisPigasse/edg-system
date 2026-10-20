@@ -184,12 +184,14 @@ export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
   const refreshResponse = await authApi.refreshToken(stored.refreshToken);
 
   if (refreshResponse.success && refreshResponse.data) {
-    // Aggiorna token nello storage (mantiene rememberMe)
-    updateTokensInStorage(refreshResponse.data.accessToken, refreshResponse.data.refreshToken, stored.account);
+    // Aggiorna token e account nello storage (mantiene rememberMe): il
+    // refresh restituisce i dati aggiornati, es. il nome (ADR081)
+    const account = refreshResponse.data.account ?? stored.account;
+    updateTokensInStorage(refreshResponse.data.accessToken, refreshResponse.data.refreshToken, account);
 
     return {
       isAuthenticated: true,
-      account: stored.account,
+      account,
       accessToken: refreshResponse.data.accessToken,
       refreshToken: refreshResponse.data.refreshToken,
     };
@@ -256,9 +258,10 @@ export const refreshAccessToken = createAsyncThunk('auth/refreshToken', async (_
     return rejectWithValue(response.error || 'Refresh token fallito');
   }
 
-  // Aggiorna storage
-  if (account) {
-    updateTokensInStorage(response.data.accessToken, response.data.refreshToken, account);
+  // Aggiorna storage (con l'account aggiornato, se il servizio lo restituisce)
+  const aggiornato = response.data.account ?? account;
+  if (aggiornato) {
+    updateTokensInStorage(response.data.accessToken, response.data.refreshToken, aggiornato);
   }
 
   return response.data;
@@ -360,6 +363,7 @@ const authSlice = createSlice({
     // --- refreshAccessToken ---
     builder
       .addCase(refreshAccessToken.fulfilled, (state, action) => {
+        if (action.payload.account) state.account = action.payload.account;
         state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
         apiService.setAuthToken(action.payload.accessToken);

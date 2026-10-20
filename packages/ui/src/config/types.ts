@@ -41,9 +41,9 @@ export interface EdgModuleConfig {
   /** Permesso richiesto per vedere il modulo. Assente = sempre visibile. */
   permission?: string;
   /**
-   * Titolo del modulo nell'header, quando si è dentro il modulo: prende il
-   * posto del nome dell'app accanto all'icona (es. il titolo di ADR054 reso
-   * con ModuleBrand). Assente = nome dell'app.
+   * Titolo del modulo nell'header, quando si è dentro il modulo: compare a
+   * sinistra nella seconda riga, sotto il logo dell'app (es. il titolo di
+   * ADR054 reso con ModuleBrand). Assente = nessun titolo.
    */
   brand?: ReactNode;
 }
@@ -78,12 +78,26 @@ export interface EdgLayoutConfig {
   footerEnabled: boolean;
 }
 
+/**
+ * L'utente collegato, come lo mostra l'header (ADR081): nome della persona e,
+ * sotto, l'entità a cui appartiene (il tenant). Lo calcola l'applicazione
+ * (es. con @edg/auth): @edg/ui non conosce l'autenticazione.
+ */
+export interface EdgUser {
+  name: string;
+  entity?: string | null;
+  /** Iniziali per l'avatar */
+  initials: string;
+}
+
 /** Configurazione completa che l'applicazione consegna a @edg/ui. */
 export interface EdgConfig {
   app: EdgAppConfig;
   routes: EdgRoutes;
   modules: EdgModuleConfig[];
   layout: EdgLayoutConfig;
+  /** Utente collegato; assente o null = nessuno (es. prima del login) */
+  user?: EdgUser | null;
 }
 
 /** Valore restituito da `useEdgConfig`: la configurazione più gli helper derivati. */

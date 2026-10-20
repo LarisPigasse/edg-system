@@ -77,6 +77,9 @@ export interface Account {
   id: number;
   uuid: string;
   email: string;
+  /** ADR081: nome e cognome della persona (null = non ancora inseriti) */
+  firstName: string | null;
+  lastName: string | null;
   accountType: string;
   entityId: string | null;
   tenantId: number | null;
@@ -94,6 +97,8 @@ export interface Account {
 
 export interface AccountInput {
   email: string;
+  firstName?: string | null;
+  lastName?: string | null;
   /** Presente solo in creazione, o in modifica quando root sceglie di reimpostarla. */
   password?: string;
   roleId: number;

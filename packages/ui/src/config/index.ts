@@ -9,4 +9,5 @@ export type {
   EdgModuleConfig,
   EdgSubMenuItem,
   EdgLayoutConfig,
+  EdgUser,
 } from './types';

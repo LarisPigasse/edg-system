@@ -27,6 +27,9 @@ export type AccountType = 'operatore' | 'cliente';
 export interface AuthAccount {
   id: number;
   email: string;
+  /** ADR081: nome e cognome della persona; null = nome ricavato dall'email */
+  firstName?: string | null;
+  lastName?: string | null;
   accountType: AccountType;
   tenantId: number; // ADR009
   roleId: number;
@@ -108,6 +111,8 @@ export interface LoginResponse {
 export interface RefreshTokenResponse {
   accessToken: string;
   refreshToken: string;
+  /** Dati aggiornati dell'account (es. nome cambiato dalla gestione account) */
+  account?: AuthAccount;
 }
 
 // ============================================================================

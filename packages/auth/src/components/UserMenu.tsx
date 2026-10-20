@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUISettings, useEdgConfig } from '@edg/ui';
 import { useAuth } from '../hooks';
 import { UserAvatar } from '@edg/ui';
-import { User, Settings, LogOut, Mail, Shield, Lock, iconMap } from '@edg/ui';
+import { User, Settings, LogOut, Lock, iconMap } from '@edg/ui';
 
 interface UserMenuProps {
   className?: string;
@@ -81,7 +81,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const userInitials = getUserInitials();
   const userName = getDisplayName();
   const userEmail = account?.email || '';
-  const userRole = account?.roleName || 'Utente';
+  const roleName = account?.roleName || 'utente';
+  const userRole = roleName.charAt(0).toUpperCase() + roleName.slice(1);
 
   return (
     <>
@@ -97,10 +98,11 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
       />
 
       {/* Dropdown Menu */}
-      <div className='fixed top-14 right-4 z-50'>
+      {/* sotto l'header, qualunque sia la sua altezza (una o due righe: --edg-header-h) */}
+      <div className='fixed top-[calc(var(--edg-header-h,40px)+8px)] right-4 z-50'>
         <div
           className={`
-            w-72 shadow-xl rounded-lg border border-border-default bg-bg-primary transform transition-all duration-300 ease-out
+            w-max min-w-72 max-w-[min(24rem,calc(100vw-2rem))] shadow-xl rounded-lg border border-border-default bg-bg-primary transform transition-all duration-300 ease-out
             ${userMenuOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 -translate-y-2'}
             ${className}
           `}
@@ -111,14 +113,11 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
               <UserAvatar initials={userInitials} size='lg' variant='primary' />
               <div className='flex-1 min-w-0'>
                 <span className='text-text-primary font-semibold truncate block'>{userName}</span>
-                <span className='text-text-secondary text-sm truncate flex items-center'>
-                  <Mail className='w-3 h-3 mr-1' />
+                {/* ADR081: menu largo quanto serve all'email (fino a 384 px), ruolo in grassetto senza icone */}
+                <span className='text-text-secondary text-sm truncate block' title={userEmail}>
                   {userEmail}
                 </span>
-                <span className='text-text-secondary text-xs flex items-center mt-1'>
-                  <Shield className='w-3 h-3 mr-1' />
-                  {userRole}
-                </span>
+                <span className='text-text-primary text-xs font-semibold block mt-1'>{userRole}</span>
               </div>
               <button
                 onClick={closeUserMenu}

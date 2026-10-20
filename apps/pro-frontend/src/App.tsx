@@ -15,6 +15,7 @@ import {
   PrivateRoute,
   UserMenu,
   useAuth,
+  useEdgUser,
 } from '@edg/auth';
 
 import store from './app/store';
@@ -76,7 +77,9 @@ const AppTableCapabilities: React.FC<{ children: React.ReactNode }> = ({ childre
  */
 const AppConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { hasPermission } = useAuth();
-  const config = useMemo(() => ({ ...EDG_CONFIG, modules: getModules(hasPermission) }), [hasPermission]);
+  // L'utente collegato per l'header: nome e tenant (ADR081)
+  const user = useEdgUser();
+  const config = useMemo(() => ({ ...EDG_CONFIG, modules: getModules(hasPermission), user }), [hasPermission, user]);
   return <EdgConfigProvider config={config}>{children}</EdgConfigProvider>;
 };
 

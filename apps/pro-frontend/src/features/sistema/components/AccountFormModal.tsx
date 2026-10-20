@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Button, Input, Select, Switch, RefreshCw, Copy, Check, type SelectOption } from '@edg/ui';
 
 import { authApi } from '../api/authApi';
+import { useEntityDirectory } from '../api/useEntityDirectory';
 import { generateSecurePassword } from '../../../shared/utils/generatePassword';
 import { ACCOUNT_TYPE_OPTIONS, ROLE_ACCOUNT_TYPE_RESTRICTIONS, ROLES_REQUIRING_SYSTEM_TENANT } from '../types';
 import type { Account, AccountInput, AccountRole, Tenant } from '../types';
@@ -22,6 +23,8 @@ interface AccountFormModalProps {
 
 const emptyForm = (): AccountInput => ({
   email: '',
+  firstName: '',
+  lastName: '',
   password: generateSecurePassword(),
   roleId: 0,
   tenantId: 0,
@@ -37,6 +40,8 @@ const AccountFormModal: React.FC<AccountFormModalProps> = ({ isOpen, onClose, on
   const [roleOptions, setRoleOptions] = useState<SelectOption[]>([]);
   const [resetPassword, setResetPassword] = useState(false);
   const [copied, setCopied] = useState(false);
+  // Operatori e anagrafiche: per il selettore dell'entità e per copiare nome e cognome
+  const directory = useEntityDirectory();
 
   // Tenant e ruoli per i selettori: caricati una volta all'apertura del modal
   // (@edg/ui Select non supporta opzioni async native).
@@ -60,6 +65,8 @@ const AccountFormModal: React.FC<AccountFormModalProps> = ({ isOpen, onClose, on
       item
         ? {
             email: item.email,
+            firstName: item.firstName ?? '',
+            lastName: item.lastName ?? '',
             roleId: item.roleId,
             tenantId: item.tenantId ?? 0,
             accountType: item.accountType,
@@ -96,6 +103,27 @@ const AccountFormModal: React.FC<AccountFormModalProps> = ({ isOpen, onClose, on
   const takenEntityIds = new Set(
     accounts.filter(a => a.entityId && a.id !== item?.id).map(a => a.entityId as string)
   );
+
+  // ADR081: un account operatore collegato prende nome e cognome dall'operatore
+  // (campi bloccati, "Aggiorna dall'operatore" li ricopia se l'operatore cambia)
+  const operatoreCollegato =
+    form.accountType === 'operatore' && form.entityId
+      ? directory.operatori.find(o => o.uuidOperatore === form.entityId)
+      : undefined;
+  const nomeAllineato =
+    !!operatoreCollegato &&
+    (form.firstName ?? '') === operatoreCollegato.nome &&
+    (form.lastName ?? '') === operatoreCollegato.cognome;
+
+  const aggiornaDallOperatore = () => {
+    if (!operatoreCollegato) return;
+    setForm(f => ({ ...f, firstName: operatoreCollegato.nome, lastName: operatoreCollegato.cognome }));
+  };
+
+  const handleEntityChange = (entityId: string | null) => {
+    const operatore = form.accountType === 'operatore' && entityId ? directory.operatori.find(o => o.uuidOperatore === entityId) : undefined;
+    setForm(f => ({ ...f, entityId, ...(operatore ? { firstName: operatore.nome, lastName: operatore.cognome } : {}) }));
+  };
 
   const handleAccountTypeChange = (accountType: string) => {
     setForm(f => {
@@ -196,12 +224,47 @@ const AccountFormModal: React.FC<AccountFormModalProps> = ({ isOpen, onClose, on
           />
         </div>
 
-        <EntityLinkSelect
-          accountType={form.accountType}
-          value={form.entityId}
-          onChange={entityId => setForm(f => ({ ...f, entityId }))}
-          excludeEntityIds={takenEntityIds}
-        />
+        {/* ADR081: gli account cliente non si collegano a un'anagrafica (il tenant è già il cliente) */}
+        {form.accountType === 'operatore' && (
+          <EntityLinkSelect
+            accountType={form.accountType}
+            value={form.entityId}
+            onChange={handleEntityChange}
+            excludeEntityIds={takenEntityIds}
+            directory={directory}
+          />
+        )}
+
+        <div className='flex flex-wrap items-end gap-4'>
+          <div className='grid min-w-0 flex-1 grid-cols-2 gap-4'>
+            <Input
+              label='Nome'
+              value={form.firstName ?? ''}
+              onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
+              maxLength={64}
+              disabled={!!operatoreCollegato}
+            />
+            <Input
+              label='Cognome'
+              value={form.lastName ?? ''}
+              onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
+              maxLength={64}
+              disabled={!!operatoreCollegato}
+            />
+          </div>
+          {operatoreCollegato && !nomeAllineato && (
+            <Button type='button' variant='outline' onClick={aggiornaDallOperatore}>
+              Aggiorna dall&apos;operatore
+            </Button>
+          )}
+        </div>
+        {operatoreCollegato && (
+          <p className='-mt-2 text-xs text-text-secondary'>
+            {nomeAllineato
+              ? 'Nome e cognome dell’operatore collegato.'
+              : 'Nome e cognome diversi da quelli dell’operatore collegato: aggiornali per allinearli.'}
+          </p>
+        )}
 
         <Select
           label='Ruolo'

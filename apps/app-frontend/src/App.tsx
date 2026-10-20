@@ -14,6 +14,7 @@ import {
   PrivateRoute,
   UserMenu,
   useAuth,
+  useEdgUser,
 } from '@edg/auth';
 
 import store from './app/store';
@@ -45,12 +46,15 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AppConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { hasModule, hasPermission, permissions } = useAuth();
   const { byKey } = useMyModules();
+  // L'utente collegato per l'header: nome e tenant (ADR081)
+  const user = useEdgUser();
   const config = useMemo(
     () => ({
       ...EDG_CONFIG,
       modules: getModules({ hasModule, hasPermission, permissions, myModules: byKey, images: moduleImages }),
+      user,
     }),
-    [hasModule, hasPermission, permissions, byKey]
+    [hasModule, hasPermission, permissions, byKey, user]
   );
   return <EdgConfigProvider config={config}>{children}</EdgConfigProvider>;
 };
