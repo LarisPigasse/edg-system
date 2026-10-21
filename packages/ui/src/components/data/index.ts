@@ -17,6 +17,21 @@ export { default as StatCard } from './stat-card/StatCard';
 export { statCardData } from './stat-card/StatCard.data';
 export type { StatCardProps } from './stat-card/StatCard';
 
+// MonthCalendar (calendario mensile generico, ADR083)
+export { default as MonthCalendar } from './month-calendar/MonthCalendar';
+export { monthCalendarData } from './month-calendar/MonthCalendar.data';
+export type { MonthCalendarProps, MonthCalendarDayInfo } from './month-calendar/MonthCalendar';
+export {
+  monthGrid,
+  monthRange,
+  monthTitle,
+  dayTitle,
+  addMonths,
+  monthOf,
+  isMonth,
+  todayLocal,
+} from './month-calendar/monthCalendar.utils';
+
 // StatTile
 export { default as StatTile } from './stat-tile/StatTile';
 export { statTileData } from './stat-tile/StatTile.data';

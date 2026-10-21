@@ -18,6 +18,8 @@ import { TableLinkShowcase } from '../components/data/table-link/TableLink.showc
 import { statCardData } from '../components/data/stat-card/StatCard.data';
 import { StatCardShowcase } from '../components/data/stat-card/StatCard.showcase';
 import { statTileData } from '../components/data/stat-tile/StatTile.data';
+import { monthCalendarData } from '../components/data/month-calendar/MonthCalendar.data';
+import { MonthCalendarShowcase } from '../components/data/month-calendar/MonthCalendar.showcase';
 import { StatTileShowcase } from '../components/data/stat-tile/StatTile.showcase';
 
 // LAYOUT Components
@@ -171,6 +173,10 @@ const RESTRUCTURED_COMPONENTS: Record<string, RestructuredComponent> = {
   modal: {
     data: modalData,
     showcase: ModalShowcase,
+  },
+  monthCalendar: {
+    data: monthCalendarData,
+    showcase: MonthCalendarShowcase,
   },
   multiSelect: {
     data: multiSelectData,

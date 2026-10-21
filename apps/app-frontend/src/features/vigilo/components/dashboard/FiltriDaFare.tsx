@@ -1,7 +1,8 @@
 // src/features/vigilo/components/dashboard/FiltriDaFare.tsx
 //
 // Tipo, natura, sede e ordinamento delle cose "Da fare" (la ricerca sta
-// in testa alla pagina). Valgono anche per i numeri della dashboard.
+// in testa alla pagina). Valgono anche per i numeri della dashboard. Li usa
+// anche il calendario, senza l'ordinamento.
 import React from 'react';
 import { Select, cn } from '@edg/ui';
 
@@ -17,8 +18,9 @@ interface Props {
   filtri: Omit<FiltriScadenze, 'testo'>;
   onFiltri: (f: Omit<FiltriScadenze, 'testo'>) => void;
   sedi: RiferimentoSoggetto[];
-  ordina: Ordina;
-  onOrdina: (o: Ordina) => void;
+  /** Assenti = niente scelta dell'ordine (es. nel calendario) */
+  ordina?: Ordina;
+  onOrdina?: (o: Ordina) => void;
   filtriAttivi: boolean;
   onAzzera: () => void;
 }
@@ -55,19 +57,21 @@ export const FiltriDaFare: React.FC<Props> = ({ filtri, onFiltri, sedi, ordina, 
           />
         </div>
       )}
-      <div className='flex h-10 items-center rounded-lg border border-border-default p-0.5 text-sm' role='group' aria-label='Ordina'>
-        {(['urgenza', 'soggetto'] as const).map(r => (
-          <button
-            key={r}
-            type='button'
-            aria-pressed={ordina === r}
-            onClick={() => onOrdina(r)}
-            className={cn('h-full rounded-md px-3 transition-colors', ordina === r ? 'bg-action-primary text-action-primary-text' : 'text-text-secondary hover:bg-bg-hover')}
-          >
-            Per {r}
-          </button>
-        ))}
-      </div>
+      {ordina && onOrdina && (
+        <div className='flex h-10 items-center rounded-lg border border-border-default p-0.5 text-sm' role='group' aria-label='Ordina'>
+          {(['urgenza', 'soggetto'] as const).map(r => (
+            <button
+              key={r}
+              type='button'
+              aria-pressed={ordina === r}
+              onClick={() => onOrdina(r)}
+              className={cn('h-full rounded-md px-3 transition-colors', ordina === r ? 'bg-action-primary text-action-primary-text' : 'text-text-secondary hover:bg-bg-hover')}
+            >
+              Per {r}
+            </button>
+          ))}
+        </div>
+      )}
       {filtriAttivi && (
         <button type='button' onClick={onAzzera} className='inline-flex h-10 items-center gap-1 px-2 text-sm text-text-link hover:underline'>
           Azzera filtri

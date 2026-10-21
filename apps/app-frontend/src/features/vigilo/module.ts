@@ -27,13 +27,15 @@ export const vigiloModule: AppModuleManifest = {
     { path: 'soggetti', component: dopoAvvio(() => import('./pages/SoggettiPage')) },
     { path: 'soggetti/nuovo', component: dopoAvvio(() => import('./pages/NuovoSoggettoPage')) },
     { path: 'soggetti/:id', component: dopoAvvio(() => import('./pages/SoggettoPage')) },
+    { path: 'calendario', component: dopoAvvio(() => import('./pages/CalendarioPage')) },
     { path: 'configurazione', component: dopoAvvio(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
   ],
-  // Le altre voci (Calendario, Fornitori…) arrivano con le loro pagine
+  // Le altre voci (Fornitori…) arrivano con le loro pagine
   menu: [
     { id: 'dashboard', label: 'Dashboard', path: '' },
     { id: 'scadenze', label: 'Scadenze', path: 'scadenze' },
     { id: 'soggetti', label: 'Soggetti', path: 'soggetti' },
+    { id: 'calendario', label: 'Calendario', path: 'calendario' },
     { id: 'configurazione', label: 'Configurazione', path: 'configurazione', permission: 'vigilo.config' },
   ],
 };

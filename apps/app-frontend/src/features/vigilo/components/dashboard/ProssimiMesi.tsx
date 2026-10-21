@@ -1,8 +1,10 @@
 // src/features/vigilo/components/dashboard/ProssimiMesi.tsx
 //
 // Quante scadenze cadono nei prossimi 12 mesi: una tessera per mese, più
-// scura dove il lavoro è di più (azzurro, dal chiaro allo scuro).
+// scura dove il lavoro è di più (azzurro, dal chiaro allo scuro). Ogni
+// tessera apre il calendario su quel mese (ADR083).
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '@edg/ui';
 
 import { Riquadro } from '../Riquadro';
@@ -42,13 +44,19 @@ export const ProssimiMesi: React.FC<{ perMese: Dashboard['perMese'] }> = ({ perM
           const [anno, mese] = m.mese.split('-');
           const etichetta = `${MESI[Number(mese) - 1]}${anno !== annoCorrente ? ` ${anno.slice(2)}` : ''}`;
           return (
-            <li
-              key={m.mese}
-              title={`${m.n} ${m.n === 1 ? 'scadenza' : 'scadenze'} in ${MESI[Number(mese) - 1]} ${anno}`}
-              className={cn('flex flex-col items-center gap-0.5 rounded-lg px-1 py-3', tinta(m.n))}
-            >
-              <span className='text-xs font-semibold capitalize'>{etichetta}</span>
-              <span className='text-xl font-bold tabular-nums'>{m.n}</span>
+            <li key={m.mese}>
+              <Link
+                to={`/vigilo/calendario?mese=${m.mese}`}
+                title={`${m.n} ${m.n === 1 ? 'scadenza' : 'scadenze'} in ${MESI[Number(mese) - 1]} ${anno}: apri il calendario`}
+                className={cn(
+                  'flex flex-col items-center gap-0.5 rounded-lg px-1 py-3 transition-shadow hover:shadow-md',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary',
+                  tinta(m.n)
+                )}
+              >
+                <span className='text-xs font-semibold capitalize'>{etichetta}</span>
+                <span className='text-xl font-bold tabular-nums'>{m.n}</span>
+              </Link>
             </li>
           );
         })}
