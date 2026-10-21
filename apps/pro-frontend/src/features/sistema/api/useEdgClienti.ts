@@ -18,6 +18,8 @@ export interface EdgCliente {
   ragioneSociale: string;
   /** Settore di attività (ADR059): il tenant collegato lo ricava da qui */
   idSettore: number | null;
+  /** Operatore EDG che segue il cliente (ADR086) */
+  idOperatoreReferente?: number | null;
   isActive: boolean;
 }
 
@@ -63,5 +65,9 @@ export function useEdgClienti(enabled = true) {
   const clienteName = (uuid: string | null | undefined): string | null =>
     clienti.find(c => c.uuidAnagrafica === uuid)?.ragioneSociale ?? null;
 
-  return { clienti, isLoading, clienteName, settoreOfCliente };
+  /** Operatore EDG che segue il cliente collegato a un tenant (ADR086), o null */
+  const seguitoDaOfCliente = (uuid: string | null | undefined): number | null =>
+    clienti.find(c => c.uuidAnagrafica === uuid)?.idOperatoreReferente ?? null;
+
+  return { clienti, isLoading, clienteName, settoreOfCliente, seguitoDaOfCliente };
 }

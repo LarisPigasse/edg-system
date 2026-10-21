@@ -14,6 +14,7 @@
 // serio (non una normale transizione di pagina), non per pigrizia.
 
 import { AUTH_STORAGE_KEYS } from '../types';
+import { ASSISTENZA_PATHS, clearAssistenza, isAssistedTab } from './tokenStore';
 
 const SESSION_ENDED_PATH = '/sessione-terminata';
 
@@ -41,7 +42,18 @@ let handling = false;
 export function handleSessionInvalid(reason?: string): void {
   if (handling) return;
   if (window.location.pathname === SESSION_ENDED_PATH) return;
+  if (window.location.pathname === ASSISTENZA_PATHS.TERMINATA) return;
+  if (window.location.pathname === ASSISTENZA_PATHS.INGRESSO) return;
   handling = true;
+
+  // ADR085: nella scheda assistita finisce solo l'assistenza; la sessione
+  // normale dell'operatore (nelle altre schede) resta com'è
+  if (isAssistedTab()) {
+    clearAssistenza();
+    const motivo = (reason ?? '').toLowerCase().includes('assistenza') ? 'chiusa' : 'scaduta';
+    window.location.href = `${ASSISTENZA_PATHS.TERMINATA}?motivo=${motivo}`;
+    return;
+  }
 
   clearAuthStorage();
 

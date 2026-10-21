@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUISettings, useEdgConfig } from '@edg/ui';
-import { useAuth } from '../hooks';
+import { useAuth, useAssistenza } from '../hooks';
 import { UserAvatar } from '@edg/ui';
 import { User, Settings, LogOut, Lock, iconMap } from '@edg/ui';
 
@@ -14,7 +14,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const { routes } = useEdgConfig();
   const navigate = useNavigate();
   const { userMenuOpen, closeUserMenu } = useUISettings();
-  const { logout, loading, account, getUserInitials, getDisplayName } = useAuth();
+  const { logout, loading, account, assistenza, getUserInitials, getDisplayName } = useAuth();
+  const { esci } = useAssistenza();
 
   // Chiudi menu con ESC key
   useEffect(() => {
@@ -45,6 +46,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   // Attende la risposta del backend prima di reindirizzare
   // ============================================================================
   const handleLogout = async () => {
+    // ADR085: nella scheda assistita si esce dall'assistenza, non dalla sessione normale
+    if (assistenza) {
+      closeUserMenu();
+      await esci();
+      return;
+    }
     try {
       // Chiama logout (attende il backend)
       await logout();
@@ -99,7 +106,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
 
       {/* Dropdown Menu */}
       {/* sotto l'header, qualunque sia la sua altezza (una o due righe: --edg-header-h) */}
-      <div className='fixed top-[calc(var(--edg-header-h,40px)+8px)] right-4 z-50'>
+      <div className='fixed top-[calc(var(--edg-banner-h,0px)+var(--edg-header-h,40px)+8px)] right-4 z-50'>
         <div
           className={`
             w-max min-w-72 max-w-[min(24rem,calc(100vw-2rem))] shadow-xl rounded-lg border border-border-default bg-bg-primary transform transition-all duration-300 ease-out
@@ -132,31 +139,36 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
 
           {/* Menu Items */}
           <div className='py-2'>
-            {/* Profilo */}
-            <button
-              className='w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed'
-              onClick={handleProfile}
-              disabled={loading}
-            >
-              <User className='w-4 h-4 text-text-secondary' />
-              <div>
-                <span className='text-text-primary font-medium block'>Il mio profilo</span>
-                <span className='text-text-secondary text-sm block'>Dati account, ruolo e permessi</span>
-              </div>
-            </button>
+            {/* Profilo e password: non nella scheda assistita (ADR085), sarebbero dell'operatore */}
+            {!assistenza && (
+              <>
+              {/* Profilo */}
+              <button
+                className='w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed'
+                onClick={handleProfile}
+                disabled={loading}
+              >
+                <User className='w-4 h-4 text-text-secondary' />
+                <div>
+                  <span className='text-text-primary font-medium block'>Il mio profilo</span>
+                  <span className='text-text-secondary text-sm block'>Dati account, ruolo e permessi</span>
+                </div>
+              </button>
 
-            {/* Cambia password */}
-            <button
-              className='w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed'
-              onClick={handleChangePassword}
-              disabled={loading}
-            >
-              <Lock className='w-4 h-4 text-text-secondary' />
-              <div>
-                <span className='text-text-primary font-medium block'>Cambia password</span>
-                <span className='text-text-secondary text-sm block'>Aggiorna la tua password</span>
-              </div>
-            </button>
+              {/* Cambia password */}
+              <button
+                className='w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed'
+                onClick={handleChangePassword}
+                disabled={loading}
+              >
+                <Lock className='w-4 h-4 text-text-secondary' />
+                <div>
+                  <span className='text-text-primary font-medium block'>Cambia password</span>
+                  <span className='text-text-secondary text-sm block'>Aggiorna la tua password</span>
+                </div>
+              </button>
+              </>
+            )}
 
             {/* Preferenze */}
             <button
@@ -183,10 +195,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
               <LogOut className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <div>
                 <span className='font-medium text-red-600 dark:text-red-400 block'>
-                  {loading ? 'Logout in corso...' : 'Logout'}
+                  {loading ? 'Uscita in corso...' : assistenza ? "Esci dall'assistenza" : 'Logout'}
                 </span>
                 <span className='text-sm text-red-500 dark:text-red-500 block'>
-                  {loading ? 'Attendi...' : "Esci dall'applicazione"}
+                  {loading ? 'Attendi...' : assistenza ? 'La tua sessione in EDG Pro resta com’è' : "Esci dall'applicazione"}
                 </span>
               </div>
             </button>

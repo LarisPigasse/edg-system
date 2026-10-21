@@ -9,6 +9,7 @@ import {
   Select,
   Badge,
   Puzzle,
+  ExternalLink,
   exportTableToPdf,
   type TableColumn,
 } from '@edg/ui';
@@ -17,6 +18,7 @@ import { useAuth } from '@edg/auth';
 import { authApi } from '../api/authApi';
 import { TenantModulesModal } from '../components/tenant';
 import TenantFormModal from '../components/TenantFormModal';
+import AssistenzaModal from '../components/AssistenzaModal';
 import { useEdgClienti } from '../api/useEdgClienti';
 import { useEntityCrud, type StatusFilter } from '../../../shared/hooks/useEntityCrud';
 import { STATUS_FILTER_OPTIONS } from '../../../shared/constants';
@@ -28,6 +30,9 @@ const TenantPage: React.FC = () => {
   // ADR049-050: l'admin EDG crea e modifica i tenant, ma l'eliminazione resta a root
   const { isRoot, hasPermission } = useAuth();
   const canManageModules = hasPermission('sistema.moduli');
+  // ADR085: accesso assistito nei tenant dei clienti (attivi, mai quello di sistema)
+  const canAssist = hasPermission('sistema.assistenza');
+  const [assistOf, setAssistOf] = useState<Tenant | null>(null);
   // Moduli del tenant (ADR048): finestra larga sopra la lista
   const [modulesOf, setModulesOf] = useState<Tenant | null>(null);
 
@@ -44,7 +49,7 @@ const TenantPage: React.FC = () => {
 
   // Clienti dell'anagrafica EDG collegati (ADR058): nome in tabella e, nel
   // form, esclusione di quelli già collegati ad altri tenant
-  const { clienteName, settoreOfCliente } = useEdgClienti();
+  const { clienteName, settoreOfCliente, seguitoDaOfCliente } = useEdgClienti();
   const takenClienti = useMemo(
     () =>
       new Set(
@@ -145,8 +150,14 @@ const TenantPage: React.FC = () => {
               getItemName: item => item.name,
             },
           },
-          actions: item =>
-            canManageModules ? [{ id: 'modules', label: 'Moduli', icon: <Puzzle className='w-4 h-4' />, onClick: () => setModulesOf(item) }] : [],
+          actions: item => [
+            ...(canManageModules
+              ? [{ id: 'modules', label: 'Moduli', icon: <Puzzle className='w-4 h-4' />, onClick: () => setModulesOf(item) }]
+              : []),
+            ...(canAssist && item.isActive && !item.isSystem
+              ? [{ id: 'assistenza', label: 'Accesso assistito', icon: <ExternalLink className='w-4 h-4' />, onClick: () => setAssistOf(item) }]
+              : []),
+          ],
         }}
       />
 
@@ -155,7 +166,10 @@ const TenantPage: React.FC = () => {
         onClose={() => setModulesOf(null)}
         tenant={modulesOf}
         settore={settoreOfCliente(modulesOf?.clienteUuid)}
+        seguitoDa={seguitoDaOfCliente(modulesOf?.clienteUuid)}
       />
+
+      <AssistenzaModal tenant={assistOf} onClose={() => setAssistOf(null)} />
 
       <TenantFormModal
         isOpen={isModalOpen}

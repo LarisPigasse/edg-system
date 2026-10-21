@@ -21,6 +21,7 @@ export const ROUTES = {
   SISTEMA_MODULI: '/sistema/moduli', // catalogo moduli, solo root (ADR048)
   SISTEMA_ACCOUNT: '/sistema/account',
   SISTEMA_SESSIONI: '/sistema/sessioni',
+  SISTEMA_ASSISTENZE: '/sistema/assistenze', // accesso assistito (ADR085)
   SISTEMA_RUOLI: '/sistema/ruoli',
   SISTEMA_LOGS: '/sistema/logs',
   SISTEMA_INFO: '/sistema/info',

@@ -9,6 +9,8 @@
  * - Environment-based base URL
  */
 
+import { readRefreshToken } from './tokenStore';
+
 export interface ApiResponse<T = unknown> {
   data: T;
   status: number;
@@ -171,7 +173,8 @@ class ApiService {
       REMEMBER_ME: 'edg_remember_me',
     };
 
-    const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) || sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    // null nella scheda assistita: l'assistenza non si rinnova (ADR085)
+    const refreshToken = readRefreshToken();
 
     if (!refreshToken) return null;
 

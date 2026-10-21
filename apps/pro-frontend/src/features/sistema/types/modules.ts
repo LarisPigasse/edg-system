@@ -99,6 +99,8 @@ export interface ActivationCreateInput {
   startsAt?: string;
   endsAt?: string | null;
   notes?: string | null;
+  /** Impostazioni del modulo (ADR087), es. chi prepara Vigilo */
+  config?: Record<string, unknown> | null;
 }
 
 export interface ActivationUpdateInput {
@@ -106,6 +108,7 @@ export interface ActivationUpdateInput {
   startsAt?: string;
   endsAt?: string | null;
   notes?: string | null;
+  config?: Record<string, unknown> | null;
 }
 
 /** Esito di una modifica: i moduli caduti per dipendenza (es. sospendo spedizioni → cade tracking) */

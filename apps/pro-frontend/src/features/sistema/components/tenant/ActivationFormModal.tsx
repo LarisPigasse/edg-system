@@ -5,6 +5,8 @@
 //   activate    attiva (nuovo modulo, o prova che diventa contratto)
 //   reactivate  riattiva un modulo sospeso o scaduto (prova o attivo)
 //   edit        proroga o modifica periodo, stato e note
+// Se il modulo ha impostazioni proprie (registro in ./config, ADR087), il suo
+// editor compare sotto il periodo e il risultato va in tenant_modules.config.
 // Si scelgono giorni, non orari: la fine vale per tutto il giorno scelto
 // (vedi utils/activationDates). Le regole vere le applica auth-service.
 import React, { useEffect, useMemo, useState } from 'react';
@@ -12,6 +14,7 @@ import { Modal, Button, Input, Select, Switch, DatePicker } from '@edg/ui';
 
 import type { ActivationStatus, TenantModuleView } from '../../types/modules';
 import { addDays, endOfDay, formatDate, startOfDay } from '../../utils/activationDates';
+import { moduleConfigDef, type ModuleConfig } from './config';
 
 export type ActivationMode = 'trial' | 'activate' | 'reactivate' | 'edit';
 
@@ -21,6 +24,8 @@ export interface ActivationFormResult {
   startsAt: string;
   endsAt: string | null;
   notes: string | null;
+  /** Impostazioni del modulo (ADR087): solo per i moduli che ne hanno */
+  config?: ModuleConfig;
 }
 
 interface ActivationFormModalProps {
@@ -30,6 +35,8 @@ interface ActivationFormModalProps {
   isSaving: boolean;
   mode: ActivationMode;
   view: TenantModuleView | null;
+  /** Operatore EDG che segue il cliente collegato al tenant (ADR086): proposto dagli editor */
+  seguitoDa?: number | null;
 }
 
 const TITLES: Record<ActivationMode, string> = {
@@ -60,13 +67,15 @@ function initialStatus(mode: ActivationMode, current: ActivationStatus | undefin
   return current === 'scaduto' || !current ? 'attivo' : current;
 }
 
-const ActivationFormModal: React.FC<ActivationFormModalProps> = ({ isOpen, onClose, onSubmit, isSaving, mode, view }) => {
+const ActivationFormModal: React.FC<ActivationFormModalProps> = ({ isOpen, onClose, onSubmit, isSaving, mode, view, seguitoDa }) => {
   const [status, setStatus] = useState<ActivationFormResult['status']>('prova');
   const [start, setStart] = useState<Date | undefined>(undefined);
   const [end, setEnd] = useState<Date | undefined>(undefined);
   const [hasEnd, setHasEnd] = useState(true);
   const [notes, setNotes] = useState('');
   const [touched, setTouched] = useState(false);
+  const configDef = moduleConfigDef(view?.module.key);
+  const [config, setConfig] = useState<ModuleConfig>({});
 
   const trialDays = view?.module.trialDays ?? 32;
   const activation = view?.activation ?? null;
@@ -92,6 +101,7 @@ const ActivationFormModal: React.FC<ActivationFormModalProps> = ({ isOpen, onClo
     setHasEnd(nextStatus === 'prova' || !!e);
     setNotes(mode === 'edit' || mode === 'reactivate' ? (activation?.notes ?? '') : '');
     setTouched(false);
+    setConfig(configDef ? configDef.initial(activation?.config ?? null, { seguitoDa }) : {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, view, mode]);
 
@@ -115,14 +125,18 @@ const ActivationFormModal: React.FC<ActivationFormModalProps> = ({ isOpen, onClo
     return null;
   }, [start, end, needsEnd, granting]);
 
+  // Errore delle impostazioni del modulo: lo mostra l'editor accanto al campo
+  const configError = configDef?.validate(config) ?? null;
+
   const submit = () => {
     setTouched(true);
-    if (error || !start) return;
+    if (error || configError || !start) return;
     void onSubmit({
       status,
       startsAt: startOfDay(start).toISOString(),
       endsAt: needsEnd && end ? endOfDay(end).toISOString() : null,
       notes: notes.trim() || null,
+      ...(configDef ? { config } : {}),
     });
   };
 
@@ -133,7 +147,7 @@ const ActivationFormModal: React.FC<ActivationFormModalProps> = ({ isOpen, onClo
       isOpen={isOpen}
       onClose={onClose}
       title={`${TITLES[mode]} — ${view?.module.name ?? ''}`}
-      size='md'
+      size={configDef ? 'lg' : 'md'}
       footer={
         <div className='flex justify-end gap-3'>
           <Button variant='outline' onClick={onClose} disabled={isSaving}>
@@ -187,6 +201,8 @@ const ActivationFormModal: React.FC<ActivationFormModalProps> = ({ isOpen, onClo
             }}
           />
         )}
+
+        {configDef && <configDef.Editor value={config} onChange={setConfig} showErrors={touched} />}
 
         <Input
           label='Note'

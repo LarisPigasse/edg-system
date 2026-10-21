@@ -91,6 +91,11 @@ export interface Anagrafica {
   telefono: string | null;
   email: string | null;
   referente: string | null;
+  /** ADR086: contatti del referente presso il cliente (email = dell'azienda) */
+  telefonoReferente: string | null;
+  emailReferente: string | null;
+  /** ADR086: "Seguito da", l'operatore EDG che segue il cliente */
+  idOperatoreReferente: number | null;
   note: string | null;
   isActive: boolean;
   createdAt: string;
@@ -111,6 +116,9 @@ export interface AnagraficaInput {
   telefono?: string | null;
   email?: string | null;
   referente?: string | null;
+  telefonoReferente?: string | null;
+  emailReferente?: string | null;
+  idOperatoreReferente?: number | null;
   note?: string | null;
   isActive?: boolean;
 }

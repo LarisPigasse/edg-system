@@ -12,6 +12,7 @@
 
 import apiService from './apiService';
 import { handleSessionInvalid } from './sessionGuard';
+import { readAccessToken, readRefreshToken } from './tokenStore';
 
 // ─── Costanti storage (allineate con authSlice.ts) ───────────────────────────
 
@@ -27,8 +28,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 // ─── Helpers storage ─────────────────────────────────────────────────────────
 
-export const getAuthToken = (): string | null =>
-  localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || null;
+// ADR085: punto unico (tokenStore), la sessione assistita della scheda ha la precedenza
+export const getAuthToken = (): string | null => readAccessToken();
 
 export const getAuthHeaders = (): Record<string, string> => {
   const token = getAuthToken();
@@ -46,7 +47,8 @@ export const getAuthHeaders = (): Record<string, string> => {
  * Ritorna il nuovo access token oppure null.
  */
 async function tryRefreshToken(): Promise<string | null> {
-  const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) || sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+  // null nella scheda assistita: l'assistenza non si rinnova (ADR085)
+  const refreshToken = readRefreshToken();
 
   if (!refreshToken) return null;
 

@@ -16,6 +16,11 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   CHANGE_PASSWORD: '/change-password',
+  SESSION_ENDED: '/sessione-terminata',
+
+  // Accesso assistito (ADR085): stessi path di ASSISTENZA_PATHS in @edg/auth
+  ASSISTENZA: '/assistenza',
+  ASSISTENZA_TERMINATA: '/assistenza/terminata',
 
   // User menu
   SETTINGS: '/settings',

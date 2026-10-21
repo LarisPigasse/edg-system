@@ -34,6 +34,9 @@ export type {
   LoginResponse,
   RefreshTokenResponse,
   AuthState,
+  AssistenzaInfo,
+  ModoAssistenza,
+  IngressoAssistenzaResponse,
 } from './types';
 
 export { AUTH_STORAGE_KEYS } from './types';
@@ -53,6 +56,9 @@ export { apiFetch, getAuthToken, getAuthHeaders } from './services/apiFetch';
 // richiesta autenticata): pulisce lo storage e forza il redirect dedicato.
 // Riusabile da un futuro controllo periodico (polling) lato app.
 export { handleSessionInvalid, clearAuthStorage } from './services/sessionGuard';
+
+// Accesso assistito (ADR085): punto unico dei token e pagine dell'assistenza
+export { ASSISTENZA_PATHS, isAssistedTab } from './services/tokenStore';
 
 // ============================================================================
 // STORE - Redux slice per stato globale
@@ -83,23 +89,33 @@ export {
   selectPermissions,
   selectModules,
   selectTenantId,
+  selectAssistenza,
 } from './store';
 
 // ============================================================================
 // HOOKS - Interfaccia semplificata per i componenti
 // ============================================================================
 
-export { useAuth, useEdgUser } from './hooks';
+export { useAuth, useEdgUser, useAssistenza, MINUTI_AVVISO_ASSISTENZA } from './hooks';
 
 // ============================================================================
 // COMPONENTS - Elementi UI riusabili
 // ============================================================================
 
-export { UserMenu, ConnectionStatus } from './components';
+export { UserMenu, ConnectionStatus, AssistenzaBar } from './components';
 export { PrivateRoute, LoginForm } from './components';
 
 // ============================================================================
 // PAGES - Pagine complete
 // ============================================================================
 
-export { LoginPage, ForgotPasswordPage, ResetPasswordPage, ChangePasswordPage, ProfilePage, SessioneTerminataPage } from './pages';
+export {
+  LoginPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
+  ChangePasswordPage,
+  ProfilePage,
+  SessioneTerminataPage,
+  AssistenzaIngressoPage,
+  AssistenzaTerminataPage,
+} from './pages';

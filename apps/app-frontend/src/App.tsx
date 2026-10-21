@@ -15,6 +15,10 @@ import {
   UserMenu,
   useAuth,
   useEdgUser,
+  SessioneTerminataPage,
+  AssistenzaIngressoPage,
+  AssistenzaTerminataPage,
+  AssistenzaBar,
 } from '@edg/auth';
 
 import store from './app/store';
@@ -93,13 +97,18 @@ const App: React.FC = () => {
                       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
                       <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
                       <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
+                      <Route path={ROUTES.SESSION_ENDED} element={<SessioneTerminataPage />} />
+                      {/* Accesso assistito (ADR085): ingresso dal codice di EDG Pro e fine */}
+                      <Route path={ROUTES.ASSISTENZA} element={<AssistenzaIngressoPage destinazione={ROUTES.HOME} />} />
+                      <Route path={ROUTES.ASSISTENZA_TERMINATA} element={<AssistenzaTerminataPage />} />
 
                       {/* Tutto il resto dentro il layout */}
                       <Route
                         path='*'
                         element={
                           <div className='App'>
-                            <MainLayout>
+                            {/* La barra dell'accesso assistito si mostra solo nella scheda assistita */}
+                            <MainLayout banner={<AssistenzaBar />}>
                               <Routes>
                                 <Route
                                   path={ROUTES.HOME}

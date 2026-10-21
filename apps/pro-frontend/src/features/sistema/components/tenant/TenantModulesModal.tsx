@@ -29,9 +29,11 @@ interface TenantModulesModalProps {
   tenant: Tenant | null;
   /** Settore del cliente collegato (ADR059), se c'è */
   settore?: string | null;
+  /** Operatore EDG che segue il cliente collegato (ADR086), se c'è */
+  seguitoDa?: number | null;
 }
 
-const TenantModulesModal: React.FC<TenantModulesModalProps> = ({ isOpen, onClose, tenant, settore }) => {
+const TenantModulesModal: React.FC<TenantModulesModalProps> = ({ isOpen, onClose, tenant, settore, seguitoDa }) => {
   // Carica solo a finestra aperta: a ogni apertura i dati sono freschi
   const { data, isLoading, isSaving, activate, update } = useTenantModules(isOpen && tenant ? tenant.id : null);
 
@@ -81,6 +83,7 @@ const TenantModulesModal: React.FC<TenantModulesModalProps> = ({ isOpen, onClose
           startsAt: result.startsAt,
           endsAt: result.endsAt,
           notes: result.notes,
+          ...(result.config ? { config: result.config } : {}),
         });
     if (ok) setForm(null);
   };
@@ -165,6 +168,7 @@ const TenantModulesModal: React.FC<TenantModulesModalProps> = ({ isOpen, onClose
         isSaving={isSaving}
         mode={form?.mode ?? 'trial'}
         view={form?.view ?? null}
+        seguitoDa={seguitoDa}
       />
 
       <ConfirmModal

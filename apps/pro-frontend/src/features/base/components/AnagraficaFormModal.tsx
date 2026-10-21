@@ -4,6 +4,7 @@ import { Modal, Button, Input, Select, Switch, TextArea, type SelectOption } fro
 
 import { useTenantDirectory } from '../api/useTenantDirectory';
 import { useSettori } from '../api/useSettori';
+import { useOperatoriEdg } from '../api/useOperatoriEdg';
 import type { Anagrafica, AnagraficaInput, TipoAnagrafica } from '../types';
 import { TIPO_ANAGRAFICA_LABELS } from '../types';
 
@@ -17,6 +18,8 @@ interface AnagraficaFormModalProps {
 
 // Radix Select non ammette un valore vuoto: sentinella per "nessun settore"
 const NO_SETTORE = '__none__';
+// Stessa sentinella per "Seguito da: nessuno" (ADR086)
+const NESSUNO = '__none__';
 
 const emptyForm = (): AnagraficaInput => ({
   tipo: 'cliente',
@@ -32,6 +35,9 @@ const emptyForm = (): AnagraficaInput => ({
   telefono: '',
   email: '',
   referente: '',
+  telefonoReferente: '',
+  emailReferente: '',
+  idOperatoreReferente: null,
   note: '',
   isActive: true,
 });
@@ -57,6 +63,9 @@ const AnagraficaFormModal: React.FC<AnagraficaFormModalProps> = ({ isOpen, onClo
   // Settore di attività (ADR059): dalla tabella di base, facoltativo
   const { settoreOptions } = useSettori();
 
+  // ADR086: "Seguito da", l'operatore EDG che segue il cliente
+  const { operatoreOptions } = useOperatoriEdg();
+
   useEffect(() => {
     if (!isOpen) return;
     setForm(
@@ -75,6 +84,9 @@ const AnagraficaFormModal: React.FC<AnagraficaFormModalProps> = ({ isOpen, onClo
             telefono: item.telefono ?? '',
             email: item.email ?? '',
             referente: item.referente ?? '',
+            telefonoReferente: item.telefonoReferente ?? '',
+            emailReferente: item.emailReferente ?? '',
+            idOperatoreReferente: item.idOperatoreReferente ?? null,
             note: item.note ?? '',
             isActive: item.isActive,
           }
@@ -176,7 +188,31 @@ const AnagraficaFormModal: React.FC<AnagraficaFormModalProps> = ({ isOpen, onClo
           />
         </div>
 
-        <Input label='Referente' value={form.referente ?? ''} onChange={e => set('referente', e.target.value)} maxLength={64} />
+        {/* ADR086: il referente presso il cliente e i suoi contatti */}
+        <div className='grid grid-cols-3 gap-4'>
+          <Input label='Referente' value={form.referente ?? ''} onChange={e => set('referente', e.target.value)} maxLength={64} />
+          <Input
+            label='Telefono del referente'
+            value={form.telefonoReferente ?? ''}
+            onChange={e => set('telefonoReferente', e.target.value)}
+            maxLength={64}
+          />
+          <Input
+            label='Email del referente'
+            type='email'
+            value={form.emailReferente ?? ''}
+            onChange={e => set('emailReferente', e.target.value)}
+            maxLength={64}
+          />
+        </div>
+
+        <Select
+          label='Seguito da'
+          options={[{ value: NESSUNO, label: 'Nessuno' }, ...operatoreOptions(form.idOperatoreReferente)]}
+          value={form.idOperatoreReferente ? String(form.idOperatoreReferente) : NESSUNO}
+          onValueChange={v => set('idOperatoreReferente', v === NESSUNO ? null : Number(v))}
+          helperText='L’operatore EDG che segue il cliente. Gli operatori si gestiscono in BASE › Operatori'
+        />
         <TextArea label='Note' value={form.note ?? ''} onChange={e => set('note', e.target.value)} rows={2} />
 
         <Switch label='Attivo' checked={form.isActive ?? true} onCheckedChange={v => set('isActive', v)} />

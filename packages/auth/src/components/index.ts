@@ -6,3 +6,4 @@ export { ChangePasswordForm } from './ChangePasswordForm';
 
 export { default as UserMenu } from './UserMenu';
 export { default as ConnectionStatus } from './ConnectionStatus';
+export { AssistenzaBar } from './AssistenzaBar';

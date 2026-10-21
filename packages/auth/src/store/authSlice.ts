@@ -17,8 +17,10 @@ import { createSlice, createAsyncThunk, createSelector, type PayloadAction } fro
 // che `authReducer` sia montato sotto la chiave `auth`, come fa uiSlice in @edg/ui.
 type AuthRootState = { auth: AuthState };
 import { authApi } from '../api';
-import type { AuthState, AuthAccount, LoginRequest, LoginResponse } from '../types';
+import type { AuthState, AuthAccount, AssistenzaInfo, LoginRequest, LoginResponse } from '../types';
 import apiService from '../services/apiService';
+import { handleSessionInvalid } from '../services/sessionGuard';
+import { ASSISTENZA_PATHS, clearAssistenza, isAssistedTab, msRimasti, readAssistenza, saveAssistenzaAccount } from '../services/tokenStore';
 
 // ============================================================================
 // STORAGE HELPERS
@@ -152,6 +154,7 @@ const initialState: AuthState = {
   loading: false,
   initializing: true,
   error: null,
+  assistenza: null,
 };
 
 // ============================================================================
@@ -162,6 +165,25 @@ const initialState: AuthState = {
  * Inizializza l'autenticazione all'avvio dell'app.
  */
 export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
+  // ADR085: la scheda assistita usa solo la sessione assistita, senza refresh
+  const assistita = readAssistenza();
+  if (assistita) {
+    const valida = msRimasti(assistita.assistenza) > 0 && (await authApi.getCurrentAccount()).success;
+    if (valida) {
+      return {
+        isAuthenticated: true,
+        account: assistita.account,
+        accessToken: assistita.accessToken,
+        refreshToken: null,
+        assistenza: assistita.assistenza as AssistenzaInfo | null,
+      };
+    }
+    // Sulla pagina d'ingresso una sessione vecchia si toglie e basta: sta per arrivarne una nuova
+    if (window.location.pathname === ASSISTENZA_PATHS.INGRESSO) clearAssistenza();
+    else handleSessionInvalid(msRimasti(assistita.assistenza) > 0 ? 'Sessione di assistenza terminata' : 'scaduta');
+    return { isAuthenticated: false, account: null };
+  }
+
   const stored = loadAuthFromStorage();
 
   if (!stored) {
@@ -230,6 +252,13 @@ export const login = createAsyncThunk('auth/login', async ({ credentials, rememb
  * Esegue il logout.
  */
 export const logout = createAsyncThunk('auth/logout', async () => {
+  // ADR085: nella scheda assistita "esci" chiude l'assistenza, non la sessione normale
+  if (isAssistedTab()) {
+    await authApi.esciAssistenza();
+    clearAssistenza();
+    return null;
+  }
+
   const response = await authApi.logout();
 
   if (!response.success) {
@@ -246,6 +275,11 @@ export const logout = createAsyncThunk('auth/logout', async () => {
 export const refreshAccessToken = createAsyncThunk('auth/refreshToken', async (_, { getState, rejectWithValue }) => {
   const state = getState() as { auth: AuthState };
   const { refreshToken, account } = state.auth;
+
+  // ADR085: la sessione assistita non si rinnova
+  if (isAssistedTab()) {
+    return rejectWithValue('La sessione di assistenza non si rinnova');
+  }
 
   if (!refreshToken) {
     return rejectWithValue('Nessun refresh token disponibile');
@@ -282,13 +316,19 @@ const authSlice = createSlice({
     updateAccount(state, action: PayloadAction<Partial<AuthAccount>>) {
       if (state.account) {
         state.account = { ...state.account, ...action.payload };
-        const storage = getActiveStorage();
-        storage.setItem(STORAGE_KEYS.ACCOUNT, JSON.stringify(state.account));
+        if (isAssistedTab()) {
+          saveAssistenzaAccount(state.account);
+        } else {
+          const storage = getActiveStorage();
+          storage.setItem(STORAGE_KEYS.ACCOUNT, JSON.stringify(state.account));
+        }
       }
     },
 
     resetAuth(state) {
-      clearAuthFromStorage();
+      // ADR085: nella scheda assistita si toglie solo l'assistenza
+      if (isAssistedTab()) clearAssistenza();
+      else clearAuthFromStorage();
       Object.assign(state, { ...initialState, initializing: false });
     },
   },
@@ -305,6 +345,7 @@ const authSlice = createSlice({
         state.account = action.payload.account || null;
         state.accessToken = action.payload.accessToken || null;
         state.refreshToken = action.payload.refreshToken || null;
+        state.assistenza = ('assistenza' in action.payload ? action.payload.assistenza : null) ?? null;
         if (action.payload.accessToken) {
           apiService.setAuthToken(action.payload.accessToken);
         }
@@ -350,6 +391,7 @@ const authSlice = createSlice({
         state.accessToken = null;
         state.refreshToken = null;
         state.error = null;
+        state.assistenza = null;
         apiService.removeAuthToken();
       })
       .addCase(logout.rejected, state => {
@@ -398,6 +440,8 @@ export const selectPermissions = createSelector([selectAccount], account => acco
 // ADR009: moduli attivi del tenant, solo per UX (menu/route visibili)
 export const selectModules = createSelector([selectAccount], account => account?.modules || []);
 export const selectTenantId = (state: AuthRootState) => state.auth.account?.tenantId ?? null;
+// ADR085: sessione assistita della scheda (null nelle sessioni normali)
+export const selectAssistenza = (state: AuthRootState) => state.auth.assistenza;
 
 export const authReducer = authSlice.reducer;
 export default authSlice.reducer;

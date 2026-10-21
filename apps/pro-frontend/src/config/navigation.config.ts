@@ -79,6 +79,8 @@ export function getModules(can: PermissionCheck = () => false): EdgModuleConfig[
           // Catalogo moduli: solo root; le attivazioni per tenant stanno nella pagina del tenant
           { id: 'moduli', label: 'Moduli', href: ROUTES.SISTEMA_MODULI, permission: ROOT_ONLY },
           { id: 'sessioni', label: 'Sessioni', href: ROUTES.SISTEMA_SESSIONI, permission: ROOT_ONLY },
+          // Accesso assistito (ADR085): chi ha 'sistema.assistenza' vede e chiude gli accessi
+          { id: 'assistenze', label: 'Assistenze', href: ROUTES.SISTEMA_ASSISTENZE, permission: 'sistema.assistenza' },
           // 'sistema.logs' e' gia' un permesso assegnabile (permissionCatalog.ts), ma la
           // voce resta a root finche' non si decide di delegarla
           { id: 'logs', label: 'Logs', href: ROUTES.SISTEMA_LOGS, permission: ROOT_ONLY },

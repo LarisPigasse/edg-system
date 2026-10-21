@@ -36,6 +36,7 @@ import { useEntityCrud, type StatusFilter } from '../../../shared/hooks/useEntit
 import { systemApi } from '../api/systemApi';
 import { useTenantDirectory } from '../api/useTenantDirectory';
 import { useSettori } from '../api/useSettori';
+import { useOperatoriEdg } from '../api/useOperatoriEdg';
 import type { Anagrafica, AnagraficaInput, TipoAnagrafica } from '../types';
 import { TIPO_ANAGRAFICA_LABELS } from '../types';
 
@@ -46,12 +47,14 @@ const TIPO_FILTER_OPTIONS: SelectOption[] = [
 
 const TENANT_FILTER_ALL = 'tutti';
 const SETTORE_FILTER_ALL = 'tutti';
+const SEGUITO_FILTER_ALL = 'tutti';
 
 const AnagrafichePage: React.FC = () => {
   const [tipoFilter, setTipoFilter] = useState<string>('tutti');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [tenantFilter, setTenantFilter] = useState<string>(TENANT_FILTER_ALL);
   const [settoreFilter, setSettoreFilter] = useState<string>(SETTORE_FILTER_ALL);
+  const [seguitoFilter, setSeguitoFilter] = useState<string>(SEGUITO_FILTER_ALL);
 
   // Settore di attività (ADR059)
   const { settori, settoreName } = useSettori();
@@ -59,6 +62,10 @@ const AnagrafichePage: React.FC = () => {
     { value: SETTORE_FILTER_ALL, label: 'Tutti i settori' },
     ...settori.map(s => ({ value: String(s.idSettore), label: s.settore })),
   ];
+
+  // "Seguito da" (ADR086): l'operatore EDG che segue il cliente
+  const { operatoreName, operatoreOptions } = useOperatoriEdg();
+  const seguitoFilterOptions: SelectOption[] = [{ value: SEGUITO_FILTER_ALL, label: 'Tutti gli operatori' }, ...operatoreOptions()];
 
   const { tenants, allTenants, getTenant, tenantOfCliente, refetch: refetchTenants } = useTenantDirectory();
   const { hasPermission } = useAuth();
@@ -118,6 +125,7 @@ const AnagrafichePage: React.FC = () => {
   if (tipoFilter !== 'tutti') extraFilters.tipo = tipoFilter;
   if (tenantFilter !== TENANT_FILTER_ALL) extraFilters.idTenant = tenantFilter;
   if (settoreFilter !== SETTORE_FILTER_ALL) extraFilters.idSettore = settoreFilter;
+  if (seguitoFilter !== SEGUITO_FILTER_ALL) extraFilters.idOperatoreReferente = seguitoFilter;
 
   const { items, isLoading, isSaving, refetch, create, update, remove } = useEntityCrud<Anagrafica>({
     api: systemApi,
@@ -168,7 +176,16 @@ const AnagrafichePage: React.FC = () => {
       fields: [
         { label: 'Telefono', value: item.telefono },
         { label: 'Email', value: item.email },
+      ],
+    },
+    {
+      // ADR086: la persona di riferimento presso il cliente e chi lo segue in EDG
+      title: 'Referente',
+      fields: [
         { label: 'Referente', value: item.referente },
+        { label: 'Telefono del referente', value: item.telefonoReferente },
+        { label: 'Email del referente', value: item.emailReferente },
+        { label: 'Seguito da', value: operatoreName(item.idOperatoreReferente) },
       ],
     },
     {
@@ -201,6 +218,7 @@ const AnagrafichePage: React.FC = () => {
     ...(canManageTenants ? [{ header: 'Tenant collegato', accessor: (item: Anagrafica) => linkedTenant(item) }] : []),
     { header: 'Città', accessor: item => item.citta ?? '—' },
     { header: 'Referente', accessor: item => item.referente ?? '—' },
+    { header: 'Seguito da', accessor: item => operatoreName(item.idOperatoreReferente) ?? '—' },
     {
       header: 'Stato',
       accessor: item => <Badge variant={item.isActive ? 'success' : 'default'}>{item.isActive ? 'Attivo' : 'Disattivo'}</Badge>,
@@ -212,11 +230,12 @@ const AnagrafichePage: React.FC = () => {
     const statoLabel = STATUS_FILTER_OPTIONS.find(o => o.value === statusFilter)?.label ?? 'Tutti gli stati';
     const tenantLabel = tenantFilterOptions.find(o => o.value === tenantFilter)?.label ?? 'Tutti i tenant';
     const settoreLabel = settoreFilterOptions.find(o => o.value === settoreFilter)?.label ?? 'Tutti i settori';
+    const seguitoLabel = seguitoFilter === SEGUITO_FILTER_ALL ? null : `Seguiti da ${operatoreName(Number(seguitoFilter)) ?? '—'}`;
 
     exportTableToPdf({
       filename: 'anagrafiche',
       title: 'Anagrafiche',
-      subtitle: `${tipoLabel} · ${settoreLabel} · ${tenantLabel} · ${statoLabel}`,
+      subtitle: [tipoLabel, settoreLabel, tenantLabel, seguitoLabel, statoLabel].filter(Boolean).join(' · '),
       columns: [
         { header: 'Ragione sociale', accessor: item => item.ragioneSociale },
         { header: 'Tipo', accessor: item => TIPO_ANAGRAFICA_LABELS[item.tipo] },
@@ -227,6 +246,8 @@ const AnagrafichePage: React.FC = () => {
         { header: 'Prov.', accessor: item => item.provincia ?? '—' },
         { header: 'Telefono', accessor: item => item.telefono ?? '—' },
         { header: 'Email', accessor: item => item.email ?? '—' },
+        { header: 'Referente', accessor: item => item.referente ?? '—' },
+        { header: 'Seguito da', accessor: item => operatoreName(item.idOperatoreReferente) ?? '—' },
         { header: 'Stato', accessor: item => (item.isActive ? 'Attivo' : 'Disattivo') },
       ],
       data: items,
@@ -247,6 +268,9 @@ const AnagrafichePage: React.FC = () => {
           </div>
           <div className='w-56'>
             <Select label='Filtra per tenant' options={tenantFilterOptions} value={tenantFilter} onValueChange={setTenantFilter} />
+          </div>
+          <div className='w-56'>
+            <Select label='Seguito da' options={seguitoFilterOptions} value={seguitoFilter} onValueChange={setSeguitoFilter} />
           </div>
           <div className='w-48'>
             <Select

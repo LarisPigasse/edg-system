@@ -144,6 +144,37 @@ export interface AuthState {
 
   /** Messaggio di errore, null se nessun errore */
   error: string | null;
+
+  /** ADR085: sessione assistita di questa scheda, null nelle sessioni normali */
+  assistenza: AssistenzaInfo | null;
+}
+
+// ============================================================================
+// ACCESSO ASSISTITO (ADR085)
+// ============================================================================
+
+export type ModoAssistenza = 'preparazione' | 'assistenza';
+
+/**
+ * Le due identità della sessione assistita, come le firma auth-service nel
+ * token (campo `assistenza`): chi agisce davvero e in quale tenant.
+ */
+export interface AssistenzaInfo {
+  id: number;
+  modo: ModoAssistenza;
+  operatore: { id: number; email: string; nome: string };
+  tenant: { id: number; nome: string };
+  perConto?: { id: number; email: string } | null;
+  /** Scadenza in ISO 8601 (64 minuti dall'apertura, senza proroga) */
+  scade: string;
+}
+
+/** Risposta di POST /auth/assistenza/scambio */
+export interface IngressoAssistenzaResponse {
+  accessToken: string;
+  scade: string;
+  account: AuthAccount;
+  assistenza: AssistenzaInfo;
 }
 
 // ============================================================================

@@ -11,6 +11,12 @@ import { useEdgConfig } from '../../../config';
 
 interface MainLayoutProps {
   children: React.ReactNode;
+  /**
+   * Barra sopra l'header, sempre visibile (es. la barra dell'accesso
+   * assistito, ADR085). Un componente che non ha nulla da dire restituisce
+   * null: la sua altezza, 0 se vuota, è pubblicata in `--edg-banner-h`.
+   */
+  banner?: React.ReactNode;
 }
 
 /**
@@ -39,8 +45,13 @@ interface MainLayoutProps {
  * su mobile, dove scorre con la pagina) è pubblicata nella variabile CSS
  * `--edg-footer-h`, così una barra di azioni `sticky` di una pagina può
  * fermarsi appena sopra: `bottom-[var(--edg-footer-h,0px)]`.
+ *
+ * ─── Barra sopra l'header ───────────────────────────────────────────────────
+ * `banner` sta nello stesso blocco fisso dell'header; la sua altezza va in
+ * `--edg-banner-h`, così ciò che si posiziona sotto l'header (il menu utente)
+ * può sommarla a `--edg-header-h`.
  */
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({ children, banner }) => {
   const { footerVisible } = useUISettings();
   const { isHomeActive } = useEdgConfig();
   const isMobile = useIsMobile();
@@ -63,6 +74,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     };
   }, [footerVisible, isMobile]);
 
+  const bannerRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const el = bannerRef.current;
+    const pubblica = () => root.style.setProperty('--edg-banner-h', `${el ? el.offsetHeight : 0}px`);
+    pubblica();
+    if (!el) return;
+    const osserva = new ResizeObserver(pubblica);
+    osserva.observe(el);
+    return () => {
+      osserva.disconnect();
+      root.style.setProperty('--edg-banner-h', '0px');
+    };
+  }, [isMobile]);
+
   /** Immagine a tutta finestra + velo sulle pagine interne. */
   const background = <PageBackground veil={!isHome} />;
 
@@ -71,6 +97,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div className='min-h-screen flex flex-col relative'>
         {background}
 
+        <div ref={bannerRef} className='sticky top-0 z-40'>
+          {banner}
+        </div>
         <Header />
 
         <main className='flex-1'>
@@ -90,6 +119,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       <div className='grid grid-cols-1 grid-rows-[auto_1fr_auto] min-h-screen'>
         <header className='sticky top-0 z-40 col-span-full'>
+          <div ref={bannerRef}>{banner}</div>
           <Header />
         </header>
 

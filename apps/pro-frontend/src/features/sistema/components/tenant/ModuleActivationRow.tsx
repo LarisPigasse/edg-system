@@ -11,6 +11,7 @@ import { Badge, Button } from '@edg/ui';
 import type { TenantModuleView } from '../../types/modules';
 import { ACTIVATION_STATUS, MODULE_STATUS } from '../../utils/moduleFormat';
 import { formatDate, relativeDays } from '../../utils/activationDates';
+import { moduleConfigDef } from './config';
 
 export type ModuleIntent = 'trial' | 'activate' | 'reactivate' | 'edit' | 'suspend';
 
@@ -65,6 +66,7 @@ const ModuleActivationRow: React.FC<ModuleActivationRowProps> = ({ view, missing
           ? `Richiede ${missingDependencies.join(', ')}`
           : null;
   const reason = notInForceReason(view, missingDependencies);
+  const Summary = moduleConfigDef(module.key)?.Summary;
 
   const act = (intent: ModuleIntent) => () => onIntent(intent, view);
 
@@ -93,6 +95,12 @@ const ModuleActivationRow: React.FC<ModuleActivationRowProps> = ({ view, missing
         <p className='text-sm text-text-secondary'>{describe(view)}</p>
         {reason && <p className='text-xs text-text-warning'>{reason}</p>}
         {!activation && blockedBy && <p className='text-xs text-text-warning'>{blockedBy}</p>}
+        {/* Impostazioni del modulo in una riga (ADR087), es. chi prepara Vigilo */}
+        {activation && Summary && (
+          <p className='text-xs text-text-primary'>
+            <Summary value={activation.config ?? {}} />
+          </p>
+        )}
         {activation?.notes && <p className='text-xs italic text-text-secondary'>{activation.notes}</p>}
       </div>
 

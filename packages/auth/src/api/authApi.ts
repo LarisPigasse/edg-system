@@ -18,51 +18,19 @@ import type {
   ResetPasswordRequest,
   ConfirmResetPasswordRequest,
   AuthAccount,
+  IngressoAssistenzaResponse,
 } from '../types';
 import { handleSessionInvalid } from '../services/sessionGuard';
+import { readAccessToken, readRefreshToken } from '../services/tokenStore';
 
 // ============================================================================
 // STORAGE HELPER
 // ============================================================================
 
-/**
- * Recupera il token dal storage corretto (localStorage o sessionStorage).
- * Usa la stessa logica di authSlice per determinare quale storage è attivo.
- */
-function getAccessToken(): string | null {
-  // Prova prima localStorage
-  const localToken = localStorage.getItem('edg_access_token');
-  if (localToken) {
-    return localToken;
-  }
-
-  // Se non c'è in localStorage, prova sessionStorage
-  const sessionToken = sessionStorage.getItem('edg_access_token');
-  if (sessionToken) {
-    return sessionToken;
-  }
-
-  return null;
-}
-
-/**
- * Recupera il refresh token dal storage corretto (localStorage o sessionStorage).
- */
-function getRefreshToken(): string | null {
-  // Prova prima localStorage
-  const localToken = localStorage.getItem('edg_refresh_token');
-  if (localToken) {
-    return localToken;
-  }
-
-  // Se non c'è in localStorage, prova sessionStorage
-  const sessionToken = sessionStorage.getItem('edg_refresh_token');
-  if (sessionToken) {
-    return sessionToken;
-  }
-
-  return null;
-}
+// I token si leggono da un punto solo (services/tokenStore.ts, ADR085): la
+// sessione assistita della scheda ha la precedenza sulla sessione normale.
+const getAccessToken = readAccessToken;
+const getRefreshToken = readRefreshToken;
 
 // ============================================================================
 // CONFIGURAZIONE
@@ -89,7 +57,7 @@ const AUTH_ENDPOINT = `${API_BASE_URL}/auth`;
 //   un redirect "duro" da qui, che romperebbe il refresh silenzioso normale
 //   di un token semplicemente scaduto);
 // - le pagine di reset password: pubbliche, non richiedono una sessione.
-const SESSION_GUARD_EXCLUDED_SUFFIXES = ['/login', '/me', '/refresh', '/request-reset-password', '/reset-password'];
+const SESSION_GUARD_EXCLUDED_SUFFIXES = ['/login', '/me', '/refresh', '/request-reset-password', '/reset-password', '/assistenza/scambio', '/assistenza/fine'];
 
 /**
  * Wrapper per fetch che:
@@ -258,6 +226,25 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  },
+
+  /**
+   * POST /auth/assistenza/scambio (ADR085)
+   * Cambia il codice monouso ricevuto da EDG Pro con il token assistito.
+   */
+  scambiaAssistenza(codice: string): Promise<ApiResponse<IngressoAssistenzaResponse>> {
+    return fetchWithAuth<IngressoAssistenzaResponse>(`${AUTH_ENDPOINT}/assistenza/scambio`, {
+      method: 'POST',
+      body: JSON.stringify({ codice }),
+    });
+  },
+
+  /**
+   * POST /auth/assistenza/fine (ADR085)
+   * Chiude la sessione assistita della scheda (token assistito).
+   */
+  esciAssistenza(): Promise<ApiResponse<unknown>> {
+    return fetchWithAuth<unknown>(`${AUTH_ENDPOINT}/assistenza/fine`, { method: 'POST' });
   },
 };
 

@@ -13,6 +13,11 @@
 //   qui (i ruoli li hanno già) ma etichettati "non ancora attivo" per non
 //   promettere un effetto che oggi non esiste.
 //
+// - 'vigilo' (ADR084) e' verificato da vigilo-service: cinque capacita',
+//   non un CRUD per tabella (docs/vigilo/05-permessi.md). Scrittura e
+//   configurazione comprendono la lettura; 'own' e' il perimetro
+//   dell'addetto.
+//
 // - 'sistema' raccoglie i permessi della piattaforma (pagine sotto SISTEMA):
 //   ogni azione e' un permesso indipendente, verificato da auth-service o
 //   da log-service (ADR038, ADR048-050).
@@ -86,6 +91,19 @@ export const PERMISSION_CATALOG: PermissionModuleDef[] = [
     ],
   },
   {
+    module: 'vigilo',
+    label: 'Vigilo',
+    active: true,
+    note: 'Scrittura e configurazione comprendono la lettura.',
+    actions: [
+      { value: 'config', label: 'Configurazione' },
+      { value: 'write', label: 'Dati operativi' },
+      { value: 'read', label: 'Lettura' },
+      { value: 'costi', label: 'Costi e resoconti' },
+      { value: 'own', label: 'Solo il proprio (addetto)' },
+    ],
+  },
+  {
     // Permessi della piattaforma: non e' un modulo CRUD, ogni azione apre una
     // pagina o una funzione distinta sotto SISTEMA. Niente "Tutte le azioni":
     // 'sistema.*' darebbe in un colpo solo anche log, salute e allarmi di
@@ -105,6 +123,7 @@ export const PERMISSION_CATALOG: PermissionModuleDef[] = [
       { value: 'logs', label: 'Log azioni' },
       { value: 'info', label: 'Salute e riepilogo' },
       { value: 'alert', label: 'Allarmi' },
+      { value: 'assistenza', label: 'Accesso assistito' }, // ADR085
     ],
   },
 ];

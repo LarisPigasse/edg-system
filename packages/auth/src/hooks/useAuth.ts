@@ -39,6 +39,7 @@ import {
   selectAuthError,
   selectPermissions,
   selectModules,
+  selectAssistenza,
 } from '../store';
 import type { LoginRequest, ChangePasswordRequest, AccountType } from '../types';
 
@@ -65,6 +66,8 @@ export function useAuth() {
   const error = useSelector(selectAuthError);
   const permissions = useSelector(selectPermissions);
   const modules = useSelector(selectModules);
+  // ADR085: sessione assistita della scheda (null nelle sessioni normali)
+  const assistenza = useSelector(selectAssistenza);
 
   // ============================================================================
   // AZIONI - Funzioni che modificano lo stato
@@ -374,6 +377,7 @@ export function useAuth() {
     error,
     permissions,
     modules,
+    assistenza,
 
     // Stato changePassword (locale)
     changePasswordLoading,

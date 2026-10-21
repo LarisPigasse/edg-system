@@ -36,6 +36,7 @@ const TenantPage = lazy(() => import('./features/sistema').then(m => ({ default:
 const ModuliPage = lazy(() => import('./features/sistema').then(m => ({ default: m.ModuliPage })));
 const AccountPage = lazy(() => import('./features/sistema').then(m => ({ default: m.AccountPage })));
 const SessioniPage = lazy(() => import('./features/sistema').then(m => ({ default: m.SessioniPage })));
+const AssistenzePage = lazy(() => import('./features/sistema').then(m => ({ default: m.AssistenzePage })));
 const RuoliPage = lazy(() => import('./features/sistema').then(m => ({ default: m.RuoliPage })));
 const LogsPage = lazy(() => import('./features/sistema').then(m => ({ default: m.LogsPage })));
 const InfoPage = lazy(() => import('./features/sistema').then(m => ({ default: m.InfoPage })));
@@ -226,6 +227,15 @@ const App: React.FC = () => {
                                   element={
                                     <PrivateRoute requiredPermission='*'>
                                       <SessioniPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                {/* Accesso assistito (ADR085): stesso permesso del backend */}
+                                <Route
+                                  path={ROUTES.SISTEMA_ASSISTENZE}
+                                  element={
+                                    <PrivateRoute requiredPermission='sistema.assistenza'>
+                                      <AssistenzePage />
                                     </PrivateRoute>
                                   }
                                 />
