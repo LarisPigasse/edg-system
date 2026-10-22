@@ -8,13 +8,16 @@ import { lazy } from 'react';
 import { Clock } from '@edg/ui';
 
 import type { AppModuleManifest } from '../../core/modules/types';
+import { sorgenteAvvisi } from './api/avvisi';
 import { dopoAvvio } from './components/dopoAvvio';
+
+const BASE = '/vigilo';
 
 export const vigiloModule: AppModuleManifest = {
   key: 'vigilo',
   name: 'Vigilo',
   label: 'VIGILO',
-  basePath: '/vigilo',
+  basePath: BASE,
   icon: Clock,
   // Prima della procedura di avvio si aprono solo la home (che porta alla
   // procedura o dice che Vigilo è in preparazione) e la procedura stessa;
@@ -38,4 +41,6 @@ export const vigiloModule: AppModuleManifest = {
     { id: 'calendario', label: 'Calendario', path: 'calendario' },
     { id: 'configurazione', label: 'Configurazione', path: 'configurazione', permission: 'vigilo.config' },
   ],
+  // Avvisi delle scadenze nella campanella (ADR090-ADR091)
+  notifications: sorgenteAvvisi(BASE),
 };

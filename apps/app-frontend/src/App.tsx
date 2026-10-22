@@ -23,7 +23,8 @@ import {
 
 import store from './app/store';
 import { EDG_CONFIG, MODULE_MANIFESTS, ROUTES, getModules } from './config';
-import { MyModulesProvider, ModuleRoutes, useMyModules } from './core/modules';
+import { MyModulesProvider, ModuleRoutes, canOpenModule, useMyModules } from './core/modules';
+import { useModuleNotifications, type ActiveNotificationSource } from './core/notifications';
 import { moduleImages } from './assets/moduli';
 import { Dashboard } from './pages';
 
@@ -48,17 +49,31 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
  * autenticazione, moduli e configurazione del design system.
  */
 const AppConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { hasModule, hasPermission, permissions } = useAuth();
+  const { isAuthenticated, hasModule, hasPermission, permissions } = useAuth();
   const { byKey } = useMyModules();
   // L'utente collegato per l'header: nome e tenant (ADR081)
   const user = useEdgUser();
+  // Campanella: gli avvisi dei moduli che l'utente può aprire (ADR091)
+  const sorgenti = useMemo<ActiveNotificationSource[]>(
+    () =>
+      isAuthenticated
+        ? MODULE_MANIFESTS.filter(m => m.notifications && canOpenModule(m.key, { hasModule, permissions })).map(m => ({
+            key: m.key,
+            name: byKey.get(m.key)?.name ?? m.name,
+            source: m.notifications!,
+          }))
+        : [],
+    [isAuthenticated, hasModule, permissions, byKey]
+  );
+  const notifications = useModuleNotifications(sorgenti);
   const config = useMemo(
     () => ({
       ...EDG_CONFIG,
       modules: getModules({ hasModule, hasPermission, permissions, myModules: byKey, images: moduleImages }),
       user,
+      notifications,
     }),
-    [hasModule, hasPermission, permissions, byKey, user]
+    [hasModule, hasPermission, permissions, byKey, user, notifications]
   );
   return <EdgConfigProvider config={config}>{children}</EdgConfigProvider>;
 };

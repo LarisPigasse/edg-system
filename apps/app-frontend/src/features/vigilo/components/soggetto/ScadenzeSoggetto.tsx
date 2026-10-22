@@ -2,13 +2,15 @@
 //
 // Le scadenze aperte del soggetto, per urgenza, con le stesse schede
 // colorate della dashboard (sotto il titolo la natura, il soggetto è già
-// scritto in testa). Un clic apre il pannello con le azioni. "Aggiungi
-// scadenza" sta nel menu Azioni della pagina.
+// scritto in testa). Un clic apre il pannello con le azioni; ci si arriva
+// anche dalla campanella con ?scadenza= (ADR091). "Aggiungi scadenza" sta
+// nel menu Azioni della pagina.
 import React, { useCallback, useState } from 'react';
 
 import { NATURE_TESTO } from '../../constants/nature';
 import type { Capacita } from '../../types/io';
 import type { Scadenza } from '../../types/scadenze';
+import { useScadenzaDaIndirizzo } from '../../hooks/useScadenzaDaIndirizzo';
 import { fasciaDi } from '../../utils/fasce';
 import { oggiLocale } from '../../utils/giorni';
 import { SchedaScadenza } from '../dashboard/SchedaScadenza';
@@ -28,6 +30,7 @@ export const ScadenzeSoggetto: React.FC<Props> = ({ scadenze, capacita, onCambia
     setAperta(uuid);
     setPannello(true);
   }, []);
+  useScadenzaDaIndirizzo(apri);
 
   return (
     <>

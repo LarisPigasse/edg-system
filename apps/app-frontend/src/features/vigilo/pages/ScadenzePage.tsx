@@ -3,7 +3,8 @@
 // L'elenco completo delle scadenze (B7e): ricerca e filtri, tabella con lo
 // stato nel colore della dashboard, pannello laterale con le azioni, PDF di
 // ciò che i filtri trovano. I filtri possono arrivare dall'indirizzo
-// (?controllo=…&stato=…): ci si arriva da "Per controllo" della dashboard.
+// (?controllo=…&stato=…): ci si arriva da "Per controllo" della dashboard;
+// ?scadenza= apre il pannello (dalla campanella, ADR091).
 import React, { useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Alert, ExportPdfAction, PageHeader } from '@edg/ui';
@@ -14,6 +15,7 @@ import { TabellaScadenze } from '../components/scadenze/TabellaScadenze';
 import { FILTRI_STATO_SCADENZE } from '../constants/elencoScadenze';
 import { useElencoScadenze, type FiltriElenco as Filtri } from '../hooks/useElencoScadenze';
 import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
+import { useScadenzaDaIndirizzo } from '../hooks/useScadenzaDaIndirizzo';
 import type { FiltroStatoScadenze } from '../types/scadenze';
 
 /** I filtri iniziali dall'indirizzo (solo valori riconosciuti) */
@@ -35,6 +37,7 @@ const ScadenzePage: React.FC = () => {
     setAperta(uuid);
     setPannello(true);
   }, []);
+  useScadenzaDaIndirizzo(apri);
 
   return (
     <div className='space-y-6'>

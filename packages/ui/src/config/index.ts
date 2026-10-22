@@ -10,4 +10,7 @@ export type {
   EdgSubMenuItem,
   EdgLayoutConfig,
   EdgUser,
+  EdgNotification,
+  EdgNotifications,
+  EdgNotificationTone,
 } from './types';

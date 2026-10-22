@@ -90,6 +90,51 @@ export interface EdgUser {
   initials: string;
 }
 
+/** Colore di un avviso: il pallino e, se da leggere, il numero sulla campanella */
+export type EdgNotificationTone = 'default' | 'warning' | 'danger';
+
+/** Un avviso della campanella, già tradotto dall'applicazione (ADR091) */
+export interface EdgNotification {
+  /** Unico fra tutte le sorgenti (es. 'vigilo:<uuid>') */
+  id: string;
+  /** Prima riga (in grassetto se da leggere) */
+  text: string;
+  /** Seconda riga, facoltativa (es. soggetto e stato) */
+  detail?: string;
+  /** Da dove arriva (es. 'Vigilo'), sotto il testo */
+  source?: string;
+  tone?: EdgNotificationTone;
+  /** Da leggere */
+  unread: boolean;
+  /** Non serve più (es. scadenza già registrata): in grigio */
+  resolved?: boolean;
+  /** Quando è nato, ISO */
+  date: string;
+  /** Dove porta il clic; assente = il clic lo segna soltanto come letto */
+  href?: string;
+}
+
+/**
+ * La campanella dell'header. Dati e azioni li dà l'applicazione (es. unendo
+ * le sorgenti dei moduli); @edg/ui la disegna e, al clic su una voce, porta
+ * all'indirizzo della voce. Assente = nessuna campanella.
+ */
+export interface EdgNotifications {
+  items: EdgNotification[];
+  /** Da leggere in tutto (anche oltre le voci mostrate) */
+  unread: number;
+  loading?: boolean;
+  error?: string | null;
+  /** Il pannello si apre: occasione per rileggere */
+  onOpen?: () => void;
+  /** Clic su una voce (di norma: segnarla come letta) */
+  onSelect?: (item: EdgNotification) => void;
+  /** "Segna tutti come letti"; assente = nessun pulsante */
+  onReadAll?: () => void;
+  /** Collegamento in fondo al pannello (es. le preferenze degli avvisi) */
+  footer?: { label: string; href: string };
+}
+
 /** Configurazione completa che l'applicazione consegna a @edg/ui. */
 export interface EdgConfig {
   app: EdgAppConfig;
@@ -98,6 +143,8 @@ export interface EdgConfig {
   layout: EdgLayoutConfig;
   /** Utente collegato; assente o null = nessuno (es. prima del login) */
   user?: EdgUser | null;
+  /** Campanella degli avvisi; assente o null = nessuna campanella */
+  notifications?: EdgNotifications | null;
 }
 
 /** Valore restituito da `useEdgConfig`: la configurazione più gli helper derivati. */

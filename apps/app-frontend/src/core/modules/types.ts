@@ -11,6 +11,8 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
 import type { EdgModuleConfig, HomeModuleStatus, ModuleBranding } from '@edg/ui';
 
+import type { ModuleNotificationSource } from '../notifications/types';
+
 /** Una pagina del modulo, caricata a richiesta */
 export interface ModulePage {
   /** Percorso relativo alla base del modulo; '' = home del modulo */
@@ -43,6 +45,8 @@ export interface AppModuleManifest {
   pages: ModulePage[];
   /** Sottomenu; assente o vuoto = la voce porta alla home del modulo */
   menu?: ModuleMenuItem[];
+  /** Avvisi del modulo nella campanella dell'header (ADR091); assente = nessuno */
+  notifications?: ModuleNotificationSource;
 }
 
 /** Un modulo come lo restituisce GET /auth/me/modules (ADR061) */

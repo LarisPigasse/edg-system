@@ -17,6 +17,12 @@ export { default as Tabs } from './tabs/Tabs';
 export { tabsData } from './tabs/Tabs.data';
 export type { TabItem, TabsVariant, TabsSize } from './tabs/Tabs';
 
+// NotificationBell (campanella degli avvisi, ADR091)
+export { default as NotificationBell } from './notification-bell/NotificationBell';
+export { notificationBellData } from './notification-bell/NotificationBell.data';
+export type { NotificationBellProps } from './notification-bell/NotificationBell';
+export { badgeText, relativeTime } from './notification-bell/notificationBell.utils';
+
 // Stepper (procedura a passi)
 export { default as Stepper } from './stepper/Stepper';
 export { stepperData } from './stepper/Stepper.data';

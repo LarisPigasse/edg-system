@@ -21,6 +21,9 @@ export type {
   EdgSubMenuItem,
   EdgLayoutConfig,
   EdgUser,
+  EdgNotification,
+  EdgNotifications,
+  EdgNotificationTone,
 } from './config';
 
 // --- Stato UI condiviso (tema, footer, menu) ---

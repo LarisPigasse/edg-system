@@ -38,6 +38,8 @@ import { NavigationMenuShowcase } from '../components/navigation/navigation-menu
 import { tabsData } from '../components/navigation/tabs/Tabs.data';
 import { TabsShowcase } from '../components/navigation/tabs/Tabs.showcase';
 import { stepperData } from '../components/navigation/stepper/Stepper.data';
+import { notificationBellData } from '../components/navigation/notification-bell/NotificationBell.data';
+import { NotificationBellShowcase } from '../components/navigation/notification-bell/NotificationBell.showcase';
 import { StepperShowcase } from '../components/navigation/stepper/Stepper.showcase';
 
 // FORM Components
@@ -181,6 +183,10 @@ const RESTRUCTURED_COMPONENTS: Record<string, RestructuredComponent> = {
   multiSelect: {
     data: multiSelectData,
     showcase: MultiSelectShowcase,
+  },
+  notificationBell: {
+    data: notificationBellData,
+    showcase: NotificationBellShowcase,
   },
   navigationMenu: {
     data: navigationMenuData,

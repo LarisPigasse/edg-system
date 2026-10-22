@@ -14,9 +14,10 @@
 // dell'applicazione (EdgConfig.user, ADR081), non da props.
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Settings, Bell, ArrowLeft } from '../../../utils/icons';
+import { Menu, Settings, ArrowLeft } from '../../../utils/icons';
 
 import { UserAvatar, Logo } from '../../info';
+import NotificationBell from '../../navigation/notification-bell/NotificationBell';
 import { useUISettings } from '../../../state/hooks';
 import { useIsMobile } from '../../../hooks';
 import { useEdgConfig } from '../../../config';
@@ -30,7 +31,7 @@ const sottovoceAttiva = (voci: EdgSubMenuItem[], pathname: string): EdgSubMenuIt
 
 const Header: React.FC = () => {
   const { toggleSettingsMenu, toggleUserMenu, toggleMobileMenu } = useUISettings();
-  const { modules, routes, getActiveModule, user } = useEdgConfig();
+  const { modules, routes, getActiveModule, user, notifications } = useEdgConfig();
   const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
@@ -158,15 +159,11 @@ const Header: React.FC = () => {
                     )}
                   </div>
                 )}
-                <button
-                  className='p-2 rounded-lg hover:bg-bg-hover transition-colors relative'
-                  title='Notifiche'
-                  aria-label='Notifiche'
-                >
-                  <Bell className='w-5 h-5 text-text-primary' />
-                </button>
               </>
             )}
+
+            {/* Campanella degli avvisi: solo se l'applicazione la dà (ADR091), anche su telefono */}
+            {notifications && <NotificationBell {...notifications} />}
 
             <UserAvatar initials={user?.initials || '?'} size='md' onClick={toggleUserMenu} />
 
