@@ -9,7 +9,8 @@ import { Alert, ModuleBrand, ScaleToFit } from '@edg/ui';
 import { useMyModule } from '../../../core/modules';
 import { moduleImages } from '../../../assets/moduli';
 
-export const InPreparazione: React.FC<{ errore?: string | null }> = ({ errore }) => {
+/** daEdg: Vigilo lo prepara EDG (ADR088), il cliente lo troverà pronto */
+export const InPreparazione: React.FC<{ errore?: string | null; daEdg?: boolean }> = ({ errore, daEdg = false }) => {
   const module = useMyModule('vigilo');
   const name = module?.name ?? 'Vigilo';
 
@@ -25,6 +26,13 @@ export const InPreparazione: React.FC<{ errore?: string | null }> = ({ errore })
         <Alert variant='danger' title='Vigilo non risponde'>
           {errore}
         </Alert>
+      ) : daEdg ? (
+        <div className='rounded-lg border border-dashed border-surface-border bg-surface-1 px-6 py-4'>
+          <p className='text-base font-semibold text-text-primary'>EDG sta preparando Vigilo per te</p>
+          <p className='mt-1 text-sm text-text-secondary'>
+            Lo troverai pronto, con i controlli giusti per la tua azienda: non devi fare nulla.
+          </p>
+        </div>
       ) : (
         <p className='rounded-lg border border-dashed border-surface-border bg-surface-1 px-6 py-4 text-sm text-text-secondary'>
           Vigilo è in preparazione: chi lo configura sta scegliendo i controlli per l'azienda.

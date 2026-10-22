@@ -22,6 +22,11 @@ export interface StatoAvvio {
   modelliApplicati: { chiave: string; versione: number }[];
   predefiniti: Predefiniti;
   modelli: ModelloSettore[];
+  /** ADR088: chi prepara Vigilo e se l'utente può avviare */
+  preparazione: 'cliente' | 'edg';
+  puoAvviare: boolean;
+  /** Settori suggeriti da EDG all'attivazione (già spuntati in `modelli`) */
+  modelliSuggeriti: string[];
 }
 
 export interface CategoriaProposta {

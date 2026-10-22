@@ -27,6 +27,7 @@ export const RichiedeAvvio: React.FC<Props> = ({ children }) => {
     );
   }
   if (profilo?.avviatoIl) return <>{typeof children === 'function' ? children(profilo) : children}</>;
-  if (profilo?.capacita.config) return <Navigate to='/vigilo/avvio' replace />;
-  return <InPreparazione errore={errore} />;
+  // ADR088: se prepara EDG, la procedura la fa solo l'operatore EDG con l'accesso assistito
+  if (profilo?.capacita.config && profilo.puoAvviare) return <Navigate to='/vigilo/avvio' replace />;
+  return <InPreparazione errore={errore} daEdg={profilo?.preparazione === 'edg'} />;
 };

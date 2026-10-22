@@ -18,4 +18,10 @@ export interface ProfiloVigilo {
   avviatoIl: string | null;
   /** La persona di cui l'utente è l'addetto */
   persona: { uuid: string; nome: string; stato: string } | null;
+  /** ADR088: chi prepara Vigilo, scelto da EDG all'attivazione */
+  preparazione: 'cliente' | 'edg';
+  /** ADR088: l'utente può fare la procedura di avvio (oltre al permesso di configurazione) */
+  puoAvviare: boolean;
+  /** Accesso assistito in corso (ADR085) */
+  inAssistenza: boolean;
 }

@@ -11,6 +11,7 @@ import { PassoFatto } from '../components/avvio/PassoFatto';
 import { PassoRiepilogo } from '../components/avvio/PassoRiepilogo';
 import { PassoSettori } from '../components/avvio/PassoSettori';
 import { PassoVoci } from '../components/avvio/PassoVoci';
+import { InPreparazione } from '../components/InPreparazione';
 import { PASSI, useAvvio, type Passo } from '../hooks/useAvvio';
 import { useInCima } from '../hooks/useInCima';
 
@@ -36,6 +37,9 @@ const AvvioPage: React.FC = () => {
   const indice = PASSI.indexOf(a.passo);
   const vai = (p: Passo) => a.setPasso(p);
   useInCima(a.passo);
+
+  // ADR088: Vigilo lo prepara EDG e non siamo nella sua sessione assistita
+  if (a.stato && !a.stato.puoAvviare) return <InPreparazione daEdg={a.stato.preparazione === 'edg'} />;
 
   const titolo = a.primoAvvio ? 'Prepariamo Vigilo' : 'Aggiungi dalla libreria';
   const sottotitolo = a.primoAvvio
