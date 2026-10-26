@@ -7,6 +7,8 @@
 // torna sulla scheda e quando si apre il pannello. "Letto"
 // si mostra subito e si conferma al servizio; se il servizio rifiuta, si
 // rilegge. Un modulo che non risponde non spegne gli altri.
+// Il collegamento in fondo al pannello è quello del modulo, se uno solo lo
+// dichiara (con più moduli servirà una pagina comune degli avvisi).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EdgNotification, EdgNotifications } from '@edg/ui';
 
@@ -45,6 +47,8 @@ export function useModuleNotifications(sorgenti: ActiveNotificationSource[]): Ed
   /** Solo l'ultima lettura conta */
   const turno = useRef(0);
   const chiave = sorgenti.map(s => s.key).join(',');
+  const conFooter = sorgenti.filter(s => s.source.footer);
+  const footer = conFooter.length === 1 ? conFooter[0].source.footer : undefined;
 
   const leggi = useCallback(async () => {
     const mio = ++turno.current;
@@ -109,7 +113,7 @@ export function useModuleNotifications(sorgenti: ActiveNotificationSource[]): Ed
   }, [leggi]);
 
   return useMemo(
-    () => (chiave ? { ...stato, onOpen: () => void leggi(), onSelect, onReadAll } : null),
-    [chiave, stato, leggi, onSelect, onReadAll]
+    () => (chiave ? { ...stato, onOpen: () => void leggi(), onSelect, onReadAll, footer } : null),
+    [chiave, stato, leggi, onSelect, onReadAll, footer]
   );
 }

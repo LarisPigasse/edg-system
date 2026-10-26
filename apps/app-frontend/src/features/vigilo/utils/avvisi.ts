@@ -13,7 +13,7 @@ import type { TonoAvviso, VoceAvviso } from '../types/avvisi';
 const TONO: Record<TonoAvviso, EdgNotificationTone> = { pericolo: 'danger', attenzione: 'warning', normale: 'default' };
 
 /** "Iveco S-Way 01 (GH128KM) · scade tra 2 giorni · 24 ott" */
-const dettaglioDi = (v: VoceAvviso) => {
+export const dettaglioAvviso = (v: VoceAvviso) => {
   const chi = v.soggetto ? `${v.soggetto.nome}${v.soggetto.identificativo ? ` (${v.soggetto.identificativo})` : ''}` : null;
   return [chi, v.stato].filter(Boolean).join(' · ');
 };
@@ -22,10 +22,23 @@ const dettaglioDi = (v: VoceAvviso) => {
 export const percorsoScadenza = (base: string, scadenza: string, soggetto?: string | null) =>
   soggetto ? `${base}/soggetti/${soggetto}?scadenza=${scadenza}` : `${base}/scadenze?scadenza=${scadenza}`;
 
+/** Quando è nato un avviso: "oggi, 08:16", "ieri, 18:02", "24 ott, 08:16" (con l'anno se non è quest'anno) */
+export function quandoAvviso(iso: string, adesso = new Date()): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const ora = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  const giorno = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const fa = Math.round((giorno(adesso) - giorno(d)) / 86400000);
+  if (fa === 0) return `oggi, ${ora}`;
+  if (fa === 1) return `ieri, ${ora}`;
+  const data = d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', ...(d.getFullYear() !== adesso.getFullYear() ? { year: 'numeric' } : {}) });
+  return `${data}, ${ora}`;
+}
+
 export const notificaDi = (v: VoceAvviso, base: string): ModuleNotification => ({
   id: v.uuid,
   text: v.titolo,
-  detail: dettaglioDi(v),
+  detail: dettaglioAvviso(v),
   tone: TONO[v.tono] ?? 'default',
   unread: v.consegna === 'inviato',
   resolved: v.consegna === 'risolto',

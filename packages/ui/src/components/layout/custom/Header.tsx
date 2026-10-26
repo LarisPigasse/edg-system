@@ -23,11 +23,18 @@ import { useIsMobile } from '../../../hooks';
 import { useEdgConfig } from '../../../config';
 import type { EdgSubMenuItem } from '../../../config';
 
-/** La sottovoce attiva: quella con il percorso più lungo che contiene la pagina corrente */
-const sottovoceAttiva = (voci: EdgSubMenuItem[], pathname: string): EdgSubMenuItem | undefined =>
-  voci
-    .filter(v => pathname === v.href || pathname.startsWith(`${v.href}/`))
+/**
+ * La sottovoce attiva: quella con il percorso più lungo che contiene la pagina
+ * corrente. Una voce "radice" delle altre (es. Dashboard su /vigilo) è attiva
+ * solo sul suo indirizzo esatto: una pagina fuori dal menu (es. /vigilo/avvisi)
+ * non accende nessuna voce.
+ */
+const sottovoceAttiva = (voci: EdgSubMenuItem[], pathname: string): EdgSubMenuItem | undefined => {
+  const radice = (v: EdgSubMenuItem) => voci.some(w => w !== v && w.href.startsWith(`${v.href}/`));
+  return voci
+    .filter(v => pathname === v.href || (!radice(v) && pathname.startsWith(`${v.href}/`)))
     .sort((a, b) => b.href.length - a.href.length)[0];
+};
 
 const Header: React.FC = () => {
   const { toggleSettingsMenu, toggleUserMenu, toggleMobileMenu } = useUISettings();

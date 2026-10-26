@@ -31,6 +31,8 @@ export interface ModuleNotificationSource {
   read: (limit: number) => Promise<ModuleNotificationPage>;
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
+  /** Collegamento in fondo alla campanella (es. la pagina dei propri avvisi e delle preferenze) */
+  footer?: { label: string; href: string };
 }
 
 /** Una sorgente attiva per l'utente, col nome del modulo da mostrare */

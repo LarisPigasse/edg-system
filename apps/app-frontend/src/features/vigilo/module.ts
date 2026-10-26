@@ -31,6 +31,8 @@ export const vigiloModule: AppModuleManifest = {
     { path: 'soggetti/nuovo', component: dopoAvvio(() => import('./pages/NuovoSoggettoPage')) },
     { path: 'soggetti/:id', component: dopoAvvio(() => import('./pages/SoggettoPage')) },
     { path: 'calendario', component: dopoAvvio(() => import('./pages/CalendarioPage')) },
+    // Fuori dal menu: si apre dal collegamento in fondo alla campanella (B8d-1)
+    { path: 'avvisi', component: dopoAvvio(() => import('./pages/AvvisiPage')) },
     { path: 'configurazione', component: dopoAvvio(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
   ],
   // Le altre voci (Fornitori…) arrivano con le loro pagine
