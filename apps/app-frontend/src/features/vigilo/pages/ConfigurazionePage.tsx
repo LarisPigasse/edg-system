@@ -4,18 +4,23 @@
 // settori e predefiniti in breve, poi una scheda per tipo di soggetto con
 // categorie e controlli. Da qui si riapre la libreria. Modifica, editor della
 // cadenza e "Ricomincia da capo" arriveranno sulla stessa pagina.
-import React from 'react';
+// Le regole degli avvisi del tenant si cambiano nel pannello laterale (B8d-2).
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
 
 import { TIPI } from '../constants/tipiSoggetto';
 import { Impostazioni } from '../components/configurazione/Impostazioni';
+import { PannelloRegoleAvvisi } from '../components/configurazione/PannelloRegoleAvvisi';
 import { SchedaTipo } from '../components/configurazione/SchedaTipo';
 import { useConfigurazione } from '../hooks/useConfigurazione';
+import { useRegoleAvvisi } from '../hooks/useRegoleAvvisi';
 
 const ConfigurazionePage: React.FC = () => {
   const navigate = useNavigate();
   const { gruppi, stato, errore, caricamento, ricarica, vuota } = useConfigurazione();
+  const regole = useRegoleAvvisi();
+  const [regoleAperte, setRegoleAperte] = useState(false);
 
   const schede: TabItem[] = gruppi.map(g => ({
     id: g.tipo,
@@ -36,7 +41,10 @@ const ConfigurazionePage: React.FC = () => {
       <PageHeader
         title='Configurazione'
         subtitle='Le categorie e i controlli con cui Vigilo segue le scadenze della tua azienda.'
-        onRefresh={ricarica}
+        onRefresh={() => {
+          void ricarica();
+          void regole.ricarica();
+        }}
         isLoading={caricamento}
         actions={<Button onClick={() => navigate('/vigilo/avvio')}>Aggiungi dalla libreria</Button>}
       />
@@ -47,7 +55,18 @@ const ConfigurazionePage: React.FC = () => {
         </Alert>
       )}
 
-      {stato && <Impostazioni stato={stato} />}
+      {stato && <Impostazioni stato={stato} regole={regole.scheda} onModificaRegole={() => setRegoleAperte(true)} />}
+
+      {regole.scheda && (
+        <PannelloRegoleAvvisi
+          scheda={regole.scheda}
+          aperto={regoleAperte}
+          inCorso={regole.inCorso}
+          onChiudi={() => setRegoleAperte(false)}
+          onSalva={regole.salva}
+          onRipristina={regole.ripristina}
+        />
+      )}
 
       {caricamento && !gruppi.length && <Skeleton className='h-96 rounded-lg' />}
 

@@ -19,3 +19,9 @@ export const FREQUENZE_EMAIL: { value: FrequenzaAvvisi; label: string }[] = [
   { value: 'subito', label: 'Ogni avviso subito' },
   { value: 'mai', label: 'Nessuna email' },
 ];
+
+/** Scelte del richiamo delle scadute, in giorni (0 = nessuno): potenze di 2 dentro i limiti del servizio (0-64) */
+export const RICHIAMI = [0, 1, 2, 4, 8, 16, 32, 64] as const;
+
+/** I giorni della settimana come le caselle dei giorni lavorativi (1 = lunedì) */
+export const GIORNI_BREVI = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'] as const;
