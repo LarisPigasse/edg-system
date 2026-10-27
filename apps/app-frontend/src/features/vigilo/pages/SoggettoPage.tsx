@@ -5,8 +5,8 @@
 // e il refresh. Poi i riquadri di
 // riepilogo con le azioni sullo stato accanto, e
 // le schede Scadenze (con il pannello delle azioni), Storico, Contatori,
-// Assegnazioni e Dati. Modifica nel pannello laterale (B7d-3). I documenti
-// arriveranno con gli allegati (B9).
+// Assegnazioni, Documenti (B9a: del soggetto, delle sue scadenze e
+// registrazioni) e Dati. Modifica nel pannello laterale (B7d-3).
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Alert, ChevronRight, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
@@ -14,6 +14,7 @@ import { Alert, ChevronRight, PageHeader, Skeleton, Tabs, type TabItem } from '@
 import { AssegnazioniSoggetto } from '../components/soggetto/AssegnazioniSoggetto';
 import { AzioniSoggetto } from '../components/soggetto/AzioniSoggetto';
 import { CartaContatore } from '../components/soggetto/CartaContatore';
+import { Documenti } from '../components/documenti/Documenti';
 import { DatiSoggetto } from '../components/soggetto/DatiSoggetto';
 import { RiepilogoSoggetto } from '../components/soggetto/RiepilogoSoggetto';
 import { ScadenzeSoggetto } from '../components/soggetto/ScadenzeSoggetto';
@@ -87,6 +88,11 @@ const SoggettoPage: React.FC = () => {
               },
             ]
           : []),
+        {
+          id: 'documenti',
+          label: 'Documenti',
+          content: <Documenti entita='soggetto' id={s.uuid} puoModificare={!!capacita?.write && s.stato !== 'dismesso'} />,
+        },
         { id: 'dati', label: 'Dati', content: <DatiSoggetto s={s} campi={x.campi} /> },
       ]
     : [];

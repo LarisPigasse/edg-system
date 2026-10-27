@@ -4,16 +4,21 @@
 // importo, fornitore e riferimento. Pronto in due clic: data di oggi ed esito
 // positivo sono già impostati, i dettagli facoltativi stanno chiusi in "Altri
 // dettagli" (aperti da soli se qualcuno è obbligatorio). Sotto, la prossima
-// scadenza che Vigilo aprirà, correggibile.
+// scadenza che Vigilo aprirà, correggibile. Se il controllo lo prevede, il
+// documento (obbligatorio o facoltativo): si carica qui e passa alla
+// registrazione (B9a).
 import React, { useState } from 'react';
-import { DatePicker, Input, RadioGroup, Select, TextArea } from '@edg/ui';
+import { DatePicker, FileText, ImageIcon, Input, RadioGroup, Select, TextArea, X } from '@edg/ui';
 
+import { useDocumentiRegistra } from '../../hooks/useDocumentiRegistra';
 import { useFornitori } from '../../hooks/useFornitori';
 import type { Capacita } from '../../types/io';
 import type { DatiEsecuzione, DatoRegistrazione, DettaglioScadenza, Esito } from '../../types/scadenze';
+import { dimensioneLeggibile, eImmagine } from '../../utils/allegati';
 import { aGiorno, daGiorno, giornoEsteso, oggiLocale } from '../../utils/giorni';
 import { misura } from '../../utils/misure';
 import { importo as leggiImporto, intero } from '../../utils/numeri';
+import { InArrivo, PulsantiCarica } from '../documenti/CaricaDocumenti';
 import { PulsantiForm } from './PulsantiForm';
 
 const NESSUNO = 'nessuno';
@@ -38,6 +43,8 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
   const fornitori = useFornitori(vede('fornitore'));
   const conFornitore = vede('fornitore') && fornitori.length > 0;
   const conRiferimento = vede('riferimento');
+  const conDocumento = vede('allegato');
+  const doc = useDocumentiRegistra(s.uuid);
 
   const [eseguitaIl, setEseguitaIl] = useState(oggi);
   const [esito, setEsito] = useState<Esito>('positivo');
@@ -67,7 +74,9 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
     !manca('lettura', conLettura && valoreLettura === null) &&
     !manca('importo', conImporto && valoreEuro === null) &&
     !manca('fornitore', conFornitore && fornitore === NESSUNO) &&
-    !manca('riferimento', conRiferimento && !riferimento.trim());
+    !manca('riferimento', conRiferimento && !riferimento.trim()) &&
+    !manca('allegato', conDocumento && !doc.caricati.length) &&
+    !doc.inArrivo.length;
 
   const invia = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +92,7 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
       note: note.trim() || null,
       ...(prossima && Object.keys(prossima).length ? { prossima } : {}),
       ...(!positivo && dataNuova ? { dataNuova } : {}),
+      ...(conDocumento && doc.caricati.length ? { allegati: doc.consegna() } : {}),
     });
   };
 
@@ -201,6 +211,45 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
                 />
               )}
             </div>
+          )}
+        </div>
+      )}
+
+      {conDocumento && (
+        <div className='space-y-2'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <p className='text-sm font-medium text-text-primary'>
+              Documento
+              {chiede('allegato') ? <span className='text-text-danger'> *</span> : <span className='font-normal text-text-secondary'> (facoltativo)</span>}
+            </p>
+            <PulsantiCarica onFile={files => void doc.carica(files)} disabilitato={doc.inArrivo.length > 0 || inCorso} etichetta='Allega' />
+          </div>
+          <InArrivo voci={doc.inArrivo} />
+          {doc.caricati.length > 0 && (
+            <ul className='divide-y divide-border-thin rounded-lg border border-border-default'>
+              {doc.caricati.map(a => {
+                const Icona = eImmagine(a.tipo) ? ImageIcon : FileText;
+                return (
+                  <li key={a.uuid} className='flex items-center gap-3 px-3 py-2 text-sm'>
+                    <Icona className='h-4 w-4 shrink-0 text-text-secondary' aria-hidden />
+                    <span className='min-w-0 flex-1 truncate text-text-primary'>{a.nome}</span>
+                    <span className='shrink-0 text-xs text-text-secondary'>{dimensioneLeggibile(a.dimensione)}</span>
+                    <button
+                      type='button'
+                      onClick={() => void doc.togli(a)}
+                      aria-label={`Togli ${a.nome}`}
+                      title='Togli'
+                      className='rounded-md p-1 text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary'
+                    >
+                      <X className='h-4 w-4' />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {positivo && chiede('allegato') && !doc.caricati.length && !doc.inArrivo.length && (
+            <p className='text-xs text-text-secondary'>Questo controllo chiede un documento: il certificato, la ricevuta o una foto.</p>
           )}
         </div>
       )}

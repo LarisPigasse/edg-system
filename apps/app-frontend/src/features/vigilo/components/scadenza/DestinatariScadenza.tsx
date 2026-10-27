@@ -34,14 +34,15 @@ const VUOTO: Record<VoceAnteprima['ruolo'], string> = {
 const Voce: React.FC<{ v: VoceAnteprima }> = ({ v }) => {
   const chi = v.ruolo === 'email' ? v.email : v.nome;
   const come = v.recapito === 'app' ? 'sul suo account' : v.recapito === 'email' && v.ruolo !== 'email' ? `per email (${v.email})` : null;
-  const nessuno = v.recapito === 'nessuno';
+  const nessuno = v.recapito === 'nessuno' || v.recapito === 'escluso';
   return (
     <li className={cn('text-sm', nessuno ? 'text-text-secondary' : 'text-text-primary')}>
       {chi ? (
         <>
           <span className='font-medium'>{chi}</span>
           <span className='text-text-secondary'> · {[RUOLO[v.ruolo], come].filter(Boolean).join(' · ')}</span>
-          {nessuno && <span className='text-text-secondary'> · senza account né email: non lo riceve</span>}
+          {v.recapito === 'nessuno' && <span className='text-text-secondary'> · senza account né email: non lo riceve</span>}
+          {v.recapito === 'escluso' && <span className='text-text-secondary'> · ha chiesto di non ricevere più le email</span>}
         </>
       ) : (
         <>

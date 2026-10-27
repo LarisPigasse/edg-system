@@ -97,6 +97,8 @@ export interface DatiEsecuzione {
   prossima?: { scadeIl?: string; sogliaUso?: number };
   /** Nuova data se l'esito è negativo */
   dataNuova?: string | null;
+  /** Documenti caricati sulla scadenza dal modulo: passano alla registrazione (B9a) */
+  allegati?: string[];
 }
 
 export interface DatiRinvio {

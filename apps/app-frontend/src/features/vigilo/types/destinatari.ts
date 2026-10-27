@@ -4,8 +4,12 @@ export type TipoDestinatario = 'ufficio' | 'referente' | 'assegnatario' | 'inter
 
 export type Destinatario = { tipo: TipoDestinatario } | { tipo: 'email'; email: string };
 
-/** Come arriva l'avviso: sul suo account (in app, ed email secondo le preferenze), per email, o per niente */
-export type Recapito = 'app' | 'email' | 'nessuno';
+/**
+ * Come arriva l'avviso: sul suo account (in app, ed email secondo le preferenze),
+ * per email, per niente, o per niente perché l'indirizzo ha chiesto di non
+ * ricevere più (escluso, B8d-4)
+ */
+export type Recapito = 'app' | 'email' | 'nessuno' | 'escluso';
 
 export interface VoceAnteprima {
   ruolo: 'referente' | 'assegnatario' | 'interessato' | 'email';

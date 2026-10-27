@@ -47,4 +47,6 @@ export const vigiloModule: AppModuleManifest = {
   // Avvisi delle scadenze nella campanella e nella pagina /avvisi (ADR090-ADR091, B8d-1 bis);
   // le preferenze si caricano solo quando la pagina le mostra
   notifications: { ...sorgenteAvvisi(BASE), settings: lazy(() => import('./components/avvisi/PreferenzeVigilo')) },
+  // "Non ricevere più questi avvisi" per chi riceve le email senza account (B8d-4)
+  publicPages: [{ path: 'non-ricevere', component: lazy(() => import('./pages/NonRicevereAvvisiPage')) }],
 };

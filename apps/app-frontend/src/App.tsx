@@ -124,6 +124,12 @@ const App: React.FC = () => {
                       {/* Accesso assistito (ADR085): ingresso dal codice di EDG Pro e fine */}
                       <Route path={ROUTES.ASSISTENZA} element={<AssistenzaIngressoPage destinazione={ROUTES.HOME} />} />
                       <Route path={ROUTES.ASSISTENZA_TERMINATA} element={<AssistenzaTerminataPage />} />
+                      {/* Pagine pubbliche dei moduli, aperte da un'email (ADR098) */}
+                      {MODULE_MANIFESTS.flatMap(manifest =>
+                        (manifest.publicPages ?? []).map(({ path, component: Pagina }) => (
+                          <Route key={`${manifest.key}:${path}`} path={`${manifest.basePath}/${path}`} element={<Pagina />} />
+                        ))
+                      )}
 
                       {/* Tutto il resto dentro il layout */}
                       <Route

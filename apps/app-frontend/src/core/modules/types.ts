@@ -22,6 +22,17 @@ export interface ModulePage {
   permission?: string;
 }
 
+/**
+ * Una pagina pubblica del modulo: senza accesso e fuori dal layout, per chi
+ * arriva da un'email e non ha un account (ADR098). La credenziale, se serve,
+ * è nell'indirizzo (es. un codice) e la verifica il servizio.
+ */
+export interface ModulePublicPage {
+  /** Percorso relativo alla base del modulo */
+  path: string;
+  component: LazyExoticComponent<ComponentType>;
+}
+
 /** Voce del sottomenu del modulo nell'header */
 export interface ModuleMenuItem {
   id: string;
@@ -47,6 +58,8 @@ export interface AppModuleManifest {
   menu?: ModuleMenuItem[];
   /** Avvisi del modulo nella campanella dell'header (ADR091); assente = nessuno */
   notifications?: ModuleNotificationSource;
+  /** Pagine pubbliche, senza accesso (ADR098); assente = nessuna */
+  publicPages?: ModulePublicPage[];
 }
 
 /** Un modulo come lo restituisce GET /auth/me/modules (ADR061) */
