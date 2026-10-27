@@ -4,23 +4,28 @@
 // settori e predefiniti in breve, poi una scheda per tipo di soggetto con
 // categorie e controlli. Da qui si riapre la libreria. Modifica, editor della
 // cadenza e "Ricomincia da capo" arriveranno sulla stessa pagina.
-// Le regole degli avvisi del tenant si cambiano nel pannello laterale (B8d-2).
+// Le regole degli avvisi del tenant si cambiano nel pannello laterale (B8d-2);
+// i destinatari di un controllo dal menu della sua riga (B8d-3).
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
 
 import { TIPI } from '../constants/tipiSoggetto';
 import { Impostazioni } from '../components/configurazione/Impostazioni';
+import { PannelloDestinatariControllo } from '../components/configurazione/PannelloDestinatariControllo';
 import { PannelloRegoleAvvisi } from '../components/configurazione/PannelloRegoleAvvisi';
 import { SchedaTipo } from '../components/configurazione/SchedaTipo';
 import { useConfigurazione } from '../hooks/useConfigurazione';
 import { useRegoleAvvisi } from '../hooks/useRegoleAvvisi';
+import type { Controllo } from '../types/configurazione';
 
 const ConfigurazionePage: React.FC = () => {
   const navigate = useNavigate();
   const { gruppi, stato, errore, caricamento, ricarica, vuota } = useConfigurazione();
   const regole = useRegoleAvvisi();
   const [regoleAperte, setRegoleAperte] = useState(false);
+  // il controllo resta impostato durante la chiusura del pannello
+  const [destinatari, setDestinatari] = useState<{ c: Controllo | null; aperto: boolean }>({ c: null, aperto: false });
 
   const schede: TabItem[] = gruppi.map(g => ({
     id: g.tipo,
@@ -33,7 +38,7 @@ const ConfigurazionePage: React.FC = () => {
         </span>
       </span>
     ),
-    content: <SchedaTipo gruppo={g} />,
+    content: <SchedaTipo gruppo={g} onDestinatari={c => setDestinatari({ c, aperto: true })} />,
   }));
 
   return (
@@ -67,6 +72,13 @@ const ConfigurazionePage: React.FC = () => {
           onRipristina={regole.ripristina}
         />
       )}
+
+      <PannelloDestinatariControllo
+        controllo={destinatari.c}
+        aperto={destinatari.aperto}
+        onChiudi={() => setDestinatari(d => ({ ...d, aperto: false }))}
+        onSalvato={() => void ricarica()}
+      />
 
       {caricamento && !gruppi.length && <Skeleton className='h-96 rounded-lg' />}
 

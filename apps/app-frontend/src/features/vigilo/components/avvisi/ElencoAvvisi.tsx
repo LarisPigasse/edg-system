@@ -1,17 +1,18 @@
 // src/features/vigilo/components/avvisi/ElencoAvvisi.tsx
 //
-// La scheda Avvisi di "I miei avvisi" (B8d-1): stato e tipo di soggetto in
+// La scheda Avvisi di Vigilo › Avvisi (B8d-1): stato e tipo di soggetto in
 // alto con "Segna tutti come letti", poi gli avvisi dal più recente, a
-// pagine da 32.
+// pagine da 32. Ogni voce è la riga degli avvisi della piattaforma.
 import React from 'react';
 import { Alert, Button, Select, Skeleton } from '@edg/ui';
 
+import { NotificationRow } from '../../../../core/notifications';
 import { STATI_ELENCO_AVVISI } from '../../constants/avvisi';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { StatoMieiAvvisi } from '../../hooks/useMieiAvvisi';
 import type { StatoElencoAvvisi } from '../../types/avvisi';
 import { TIPI_SOGGETTO, type TipoSoggetto } from '../../types/valori';
-import { RigaAvviso } from './RigaAvviso';
+import { notificaDi } from '../../utils/avvisi';
 
 const TUTTI = 'tutti';
 
@@ -74,7 +75,7 @@ export const ElencoAvvisi: React.FC<{ e: StatoMieiAvvisi; base: string }> = ({ e
         ) : (
           <ul className='divide-y divide-border-thin'>
             {e.voci.map(v => (
-              <RigaAvviso key={v.uuid} v={v} base={base} onApri={e.segnaLetto} />
+              <NotificationRow key={v.uuid} n={notificaDi(v, base)} onOpen={() => e.segnaLetto(v)} />
             ))}
           </ul>
         )}

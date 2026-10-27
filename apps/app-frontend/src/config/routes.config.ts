@@ -1,4 +1,5 @@
 // src/config/routes.config.ts
+import { NOTIFICATIONS_PATH } from '../core/notifications/constants';
 
 /**
  * MAPPA DELLE ROTTE
@@ -26,6 +27,9 @@ export const ROUTES = {
   SETTINGS: '/settings',
   PROFILE: '/profile',
   NOT_FOUND: '/404',
+
+  // Avvisi di tutti i moduli (B8d-1 bis): il percorso lo decide core/notifications
+  NOTIFICATIONS: NOTIFICATIONS_PATH,
 
   // Footer
   TERMS: '/terms',

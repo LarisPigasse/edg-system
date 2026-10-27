@@ -6,6 +6,7 @@
 // conta: cambiando in fretta i filtri non si mescolano risposte vecchie.
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useNotificationSources } from '../../../core/notifications';
 import { leggiAvvisi, segnaAvvisiLetti, segnaAvvisoLetto } from '../api/avvisi';
 import { AVVISI_PER_PAGINA } from '../constants/avvisi';
 import type { FiltriAvvisi, VoceAvviso } from '../types/avvisi';
@@ -18,6 +19,8 @@ export function useMieiAvvisi() {
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState<string | null>(null);
   const turno = useRef(0);
+  // dopo un "letto" la campanella si aggiorna subito (B8d-1 bis)
+  const { refresh } = useNotificationSources();
 
   const carica = useCallback(
     async (offset: number) => {
@@ -49,9 +52,11 @@ export function useMieiAvvisi() {
       if (v.consegna !== 'inviato') return;
       setVoci(l => l.map(x => (x.uuid === v.uuid ? { ...x, consegna: 'letto' } : x)));
       setNonLetti(n => Math.max(0, n - 1));
-      segnaAvvisoLetto(v.uuid).catch(() => void carica(0));
+      segnaAvvisoLetto(v.uuid)
+        .then(refresh)
+        .catch(() => void carica(0));
     },
-    [carica]
+    [carica, refresh]
   );
 
   const segnaTutti = useCallback(async () => {
@@ -60,9 +65,10 @@ export function useMieiAvvisi() {
     try {
       await segnaAvvisiLetti();
     } finally {
+      refresh();
       void carica(0);
     }
-  }, [carica]);
+  }, [carica, refresh]);
 
   return {
     filtri,

@@ -11,6 +11,7 @@ import { AZIONI, type Azione } from '../../constants/azioni';
 import { useScadenza } from '../../hooks/useScadenza';
 import type { Capacita } from '../../types/io';
 import { azioniDi } from '../../utils/azioni';
+import { DestinatariScadenza } from './DestinatariScadenza';
 import { FormCompleta } from './FormCompleta';
 import { FormLettura } from './FormLettura';
 import { FormRegistra } from './FormRegistra';
@@ -83,6 +84,8 @@ export const PannelloScadenza: React.FC<Props> = ({ uuid, aperto, capacita, onCh
               </div>
             </section>
           )}
+
+          <DestinatariScadenza s={s} aperto={aperto} puoModificare={capacita.write} />
 
           <UltimeRegistrazioni registrazioni={s.registrazioni} />
         </div>

@@ -1,5 +1,6 @@
 // src/features/vigilo/types/configurazione.ts — categorie e controlli del cliente
 import type { Cadenza } from './cadenza';
+import type { Destinatario } from './destinatari';
 import type { Frasi, Natura, Preavvisi, Rinnovo, TipoSoggetto, Tolleranza } from './valori';
 
 /** Un campo in più che la categoria chiede ai suoi soggetti */
@@ -44,6 +45,8 @@ export interface Controllo {
   cadenza: Cadenza;
   preavvisi: Preavvisi;
   tolleranza: Tolleranza;
+  /** Chi riceve gli avvisi delle sue scadenze (B8d-3) */
+  destinatari: Destinatario[];
   rinnovo: Rinnovo;
   rinviabile: boolean;
   ordine: number;

@@ -1,15 +1,18 @@
 // src/features/vigilo/components/configurazione/SchedaTipo.tsx
 //
 // Un tipo di soggetto nella Configurazione: le sue categorie (con quanti
-// soggetti e controlli) e i suoi controlli in parole. Per ora in sola lettura.
+// soggetti e controlli) e i suoi controlli in parole, con a chi vanno gli
+// avvisi. Del controllo si cambiano per ora solo i destinatari, dal menu
+// Azioni della riga (B8d-3); il resto è in sola lettura.
 import React from 'react';
-import { Badge, LayoutGrid, cn } from '@edg/ui';
+import { ActionMenu, Badge, Bell, LayoutGrid, MoreVertical, cn } from '@edg/ui';
 
 import { DescrizioneControllo } from '../DescrizioneControllo';
 import { IconaLibreria } from '../IconaLibreria';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { Categoria, Controllo } from '../../types/configurazione';
 import type { GruppoConfigurazione } from '../../hooks/useConfigurazione';
+import { fraseDestinatari } from '../../utils/destinatari';
 
 const quanti = (n: number | undefined, uno: string, molti: string) => (n ? `${n} ${n === 1 ? uno : molti}` : null);
 
@@ -40,31 +43,48 @@ const SchedaCategoria: React.FC<{ c: Categoria }> = ({ c }) => (
   </article>
 );
 
-const RigaControllo: React.FC<{ c: Controllo }> = ({ c }) => (
-  <li className='px-4 py-3'>
-    <DescrizioneControllo
-      nome={c.nome}
-      natura={c.natura}
-      rinnovo={c.rinnovo}
-      frasi={c.frasi}
-      attenuato={!c.attivo}
-      dettagli={[
-        c.categorie.length ? c.categorie.map(k => k.nome).join(', ') : null,
-        c.riferimentoNormativo,
-        c.scadenzeAperte ? `${c.scadenzeAperte} ${c.scadenzeAperte === 1 ? 'scadenza aperta' : 'scadenze aperte'}` : null,
-      ]}
-      segni={
-        <>
-          {c.automatico && <Badge variant='primary' text='automatico' />}
-          {!c.attivo && <Badge variant='warning' text='disattivato' />}
-          {!c.libreria && <Badge text='creato da te' />}
-        </>
+const RigaControllo: React.FC<{ c: Controllo; onDestinatari: (c: Controllo) => void }> = ({ c, onDestinatari }) => (
+  <li className='flex items-start gap-3 px-4 py-3'>
+    <div className='min-w-0 flex-1'>
+      <DescrizioneControllo
+        nome={c.nome}
+        natura={c.natura}
+        rinnovo={c.rinnovo}
+        frasi={c.frasi}
+        attenuato={!c.attivo}
+        dettagli={[
+          c.categorie.length ? c.categorie.map(k => k.nome).join(', ') : null,
+          c.riferimentoNormativo,
+          c.scadenzeAperte ? `${c.scadenzeAperte} ${c.scadenzeAperte === 1 ? 'scadenza aperta' : 'scadenze aperte'}` : null,
+          `avvisi a ${fraseDestinatari(c.destinatari)}`,
+        ]}
+        segni={
+          <>
+            {c.automatico && <Badge variant='primary' text='automatico' />}
+            {!c.attivo && <Badge variant='warning' text='disattivato' />}
+            {!c.libreria && <Badge text='creato da te' />}
+          </>
+        }
+      />
+    </div>
+    <ActionMenu
+      align='end'
+      actions={[{ id: 'destinatari', label: 'Destinatari degli avvisi', icon: <Bell className='h-4 w-4' />, onClick: () => onDestinatari(c) }]}
+      trigger={
+        <button
+          type='button'
+          aria-label={`Azioni per ${c.nome}`}
+          title='Azioni'
+          className='rounded-md p-1.5 text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary'
+        >
+          <MoreVertical className='h-4 w-4' />
+        </button>
       }
     />
   </li>
 );
 
-export const SchedaTipo: React.FC<{ gruppo: GruppoConfigurazione }> = ({ gruppo }) => (
+export const SchedaTipo: React.FC<{ gruppo: GruppoConfigurazione; onDestinatari: (c: Controllo) => void }> = ({ gruppo, onDestinatari }) => (
   <div className='space-y-6 pt-4'>
     {gruppo.categorie.length > 0 && (
       <section className='space-y-3'>
@@ -81,7 +101,7 @@ export const SchedaTipo: React.FC<{ gruppo: GruppoConfigurazione }> = ({ gruppo 
       {gruppo.controlli.length ? (
         <ul className='divide-y divide-border-thin overflow-hidden rounded-lg border border-border-default bg-bg-primary'>
           {gruppo.controlli.map(c => (
-            <RigaControllo key={c.uuid} c={c} />
+            <RigaControllo key={c.uuid} c={c} onDestinatari={onDestinatari} />
           ))}
         </ul>
       ) : (

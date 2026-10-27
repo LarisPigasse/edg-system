@@ -24,13 +24,14 @@ import {
 import store from './app/store';
 import { EDG_CONFIG, MODULE_MANIFESTS, ROUTES, getModules } from './config';
 import { MyModulesProvider, ModuleRoutes, canOpenModule, useMyModules } from './core/modules';
-import { useModuleNotifications, type ActiveNotificationSource } from './core/notifications';
+import { NotificationSourcesProvider, useModuleNotifications, type ActiveNotificationSource } from './core/notifications';
 import { moduleImages } from './assets/moduli';
 import { Dashboard } from './pages';
 
 const NotFound = lazy(() => import('./pages/NotFound'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
+const NotificationsPage = lazy(() => import('./core/notifications/pages/NotificationsPage'));
 
 
 /** Inizializza tema e sessione una volta sola all'avvio. */
@@ -75,7 +76,14 @@ const AppConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }),
     [hasModule, hasPermission, permissions, byKey, user, notifications]
   );
-  return <EdgConfigProvider config={config}>{children}</EdgConfigProvider>;
+  // Le sorgenti attive anche per le pagine degli avvisi, con "rileggi la campanella" (B8d-1 bis)
+  return (
+    <EdgConfigProvider config={config}>
+      <NotificationSourcesProvider sources={sorgenti} refresh={notifications?.onOpen}>
+        {children}
+      </NotificationSourcesProvider>
+    </EdgConfigProvider>
+  );
 };
 
 const PageLoadingFallback: React.FC = () => (
@@ -158,6 +166,14 @@ const App: React.FC = () => {
                                   element={
                                     <PrivateRoute>
                                       <ProfilePage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
+                                  path={ROUTES.NOTIFICATIONS}
+                                  element={
+                                    <PrivateRoute>
+                                      <NotificationsPage />
                                     </PrivateRoute>
                                   }
                                 />

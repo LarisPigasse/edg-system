@@ -1,27 +1,24 @@
 // src/features/vigilo/pages/AvvisiPage.tsx
 //
-// Vigilo › I miei avvisi (B8d-1): tutti i miei avvisi con i filtri e le mie
-// preferenze (email e di che cosa). Ci si arriva dal collegamento in fondo
-// alla campanella; ?scheda=preferenze apre direttamente le preferenze.
-// Ogni utente di Vigilo vede e cambia solo i propri.
+// Vigilo › Avvisi (B8d-1, B8d-1 bis): gli avvisi del solo Vigilo, con il
+// filtro per tipo di soggetto, e le preferenze di Vigilo (lo stesso
+// componente della pagina /avvisi della piattaforma). Voce del menu di
+// Vigilo; ?scheda=preferenze apre direttamente le preferenze. Ogni utente
+// vede e cambia solo i propri.
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, Tabs, type TabItem } from '@edg/ui';
-import { useAuth } from '@edg/auth';
 
 import { ElencoAvvisi } from '../components/avvisi/ElencoAvvisi';
-import { PreferenzeAvvisi } from '../components/avvisi/PreferenzeAvvisi';
+import PreferenzeVigilo from '../components/avvisi/PreferenzeVigilo';
 import { useMieiAvvisi } from '../hooks/useMieiAvvisi';
-import { usePreferenzeAvvisi } from '../hooks/usePreferenzeAvvisi';
 
 const BASE = '/vigilo';
 const SCHEDE = ['avvisi', 'preferenze'] as const;
 
 const AvvisiPage: React.FC = () => {
   const [parametri, setParametri] = useSearchParams();
-  const { account } = useAuth();
   const elenco = useMieiAvvisi();
-  const preferenze = usePreferenzeAvvisi();
 
   const richiesta = parametri.get('scheda');
   const iniziale = SCHEDE.find(s => s === richiesta) ?? 'avvisi';
@@ -49,19 +46,16 @@ const AvvisiPage: React.FC = () => {
       ),
       content: <ElencoAvvisi e={elenco} base={BASE} />,
     },
-    { id: 'preferenze', label: 'Preferenze', content: <PreferenzeAvvisi p={preferenze} email={account?.email ?? null} /> },
+    { id: 'preferenze', label: 'Preferenze', content: <PreferenzeVigilo /> },
   ];
 
   return (
     <div className='space-y-6'>
       <PageHeader
-        title='I miei avvisi'
+        title='Avvisi'
         subtitle='Gli avvisi delle scadenze che arrivano a te e come vuoi riceverli.'
-        onRefresh={() => {
-          void elenco.ricarica();
-          void preferenze.ricarica();
-        }}
-        isLoading={elenco.caricamento || preferenze.caricamento}
+        onRefresh={() => void elenco.ricarica()}
+        isLoading={elenco.caricamento}
       />
       <Tabs items={schede} defaultTab={iniziale} onTabChange={cambiaScheda} />
     </div>

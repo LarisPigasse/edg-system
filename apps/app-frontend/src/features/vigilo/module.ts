@@ -31,7 +31,7 @@ export const vigiloModule: AppModuleManifest = {
     { path: 'soggetti/nuovo', component: dopoAvvio(() => import('./pages/NuovoSoggettoPage')) },
     { path: 'soggetti/:id', component: dopoAvvio(() => import('./pages/SoggettoPage')) },
     { path: 'calendario', component: dopoAvvio(() => import('./pages/CalendarioPage')) },
-    // Fuori dal menu: si apre dal collegamento in fondo alla campanella (B8d-1)
+    // Gli avvisi del solo Vigilo; quelli di tutti i moduli sono in /avvisi (B8d-1 bis)
     { path: 'avvisi', component: dopoAvvio(() => import('./pages/AvvisiPage')) },
     { path: 'configurazione', component: dopoAvvio(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
   ],
@@ -41,8 +41,10 @@ export const vigiloModule: AppModuleManifest = {
     { id: 'scadenze', label: 'Scadenze', path: 'scadenze' },
     { id: 'soggetti', label: 'Soggetti', path: 'soggetti' },
     { id: 'calendario', label: 'Calendario', path: 'calendario' },
+    { id: 'avvisi', label: 'Avvisi', path: 'avvisi' },
     { id: 'configurazione', label: 'Configurazione', path: 'configurazione', permission: 'vigilo.config' },
   ],
-  // Avvisi delle scadenze nella campanella (ADR090-ADR091)
-  notifications: sorgenteAvvisi(BASE),
+  // Avvisi delle scadenze nella campanella e nella pagina /avvisi (ADR090-ADR091, B8d-1 bis);
+  // le preferenze si caricano solo quando la pagina le mostra
+  notifications: { ...sorgenteAvvisi(BASE), settings: lazy(() => import('./components/avvisi/PreferenzeVigilo')) },
 };
