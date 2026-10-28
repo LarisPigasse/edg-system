@@ -9,7 +9,10 @@
 // non lascia spazi vuoti: a sinistra Da fare e, sotto, i prossimi 12 mesi
 // accanto a fatte in tempo; a destra per controllo e soggetti. Un clic su
 // una scheda apre il pannello laterale della scadenza, con le azioni.
+// Se gli addetti hanno segnalato cose fatte, un avviso in testa porta
+// all'elenco di quelle da confermare (B9c).
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@edg/auth';
 import { Alert, PageHeader } from '@edg/ui';
 
@@ -77,6 +80,15 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
       {d.errore && (
         <Alert variant='danger' title='Impossibile leggere le scadenze'>
           {d.errore}
+        </Alert>
+      )}
+
+      {profilo.capacita.write && !!d.dati?.daConfermare && (
+        <Alert variant='info' title={d.dati.daConfermare === 1 ? 'Una segnalazione da confermare' : `${d.dati.daConfermare} segnalazioni da confermare`}>
+          Gli addetti hanno segnalato cose fatte: controllale e confermale, così le scadenze si chiudono.{' '}
+          <Link to='/vigilo/scadenze?stato=segnalate' className='font-semibold text-text-link hover:underline'>
+            Vedi le segnalazioni
+          </Link>
         </Alert>
       )}
 

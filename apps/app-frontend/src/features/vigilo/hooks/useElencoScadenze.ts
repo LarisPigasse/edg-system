@@ -2,7 +2,8 @@
 //
 // Lo stato dell'elenco delle scadenze: ricerca, filtri (stato, tipo, natura,
 // controllo, sede), ordinamento e pagine da 32 ("Mostra altre"). Lo stato
-// "chiuse" chiede le scadenze storiche, dalla più recente. In più, lette una
+// "chiuse" chiede le scadenze storiche, dalla più recente; "segnalate" le aperte
+// con una segnalazione dell'addetto da confermare (B9c). In più, lette una
 // volta, le scelte dei filtri (controlli e sedi) e l'esportazione in PDF di
 // tutto ciò che i filtri trovano (fino a 1024 righe).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -54,11 +55,13 @@ export function useElencoScadenze(iniziali: Partial<FiltriElenco> = {}) {
   const base = useMemo<Omit<RichiestaScadenze, 'pagina' | 'righe'>>(() => {
     const { stato, ...resto } = filtri;
     const chiuse = stato === 'chiuse';
+    const segnalate = stato === 'segnalate';
     return {
       ...resto,
       testo: testoRitardato || undefined,
       ...(chiuse ? { aperte: false, ordina: 'chiusaIl', verso: 'desc' } : { ordina }),
-      ...(stato !== 'aperte' && !chiuse ? { stati: stato } : {}),
+      ...(segnalate ? { segnalate: true } : {}),
+      ...(stato !== 'aperte' && !chiuse && !segnalate ? { stati: stato } : {}),
     };
   }, [filtri, ordina, testoRitardato]);
 

@@ -48,6 +48,7 @@ export function useSoggetto(uuid: string) {
   const turno = useRef(0);
 
   const ricarica = useCallback(async () => {
+    if (!uuid) return; // nessun soggetto da leggere (es. l'addetto, rimandato altrove)
     const mio = ++turno.current;
     setCaricamento(true);
     try {

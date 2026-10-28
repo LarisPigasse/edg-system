@@ -2,8 +2,8 @@
 //
 // Sotto il titolo, i riquadri per capire subito che cos'è e come sta il
 // soggetto: tipo ("Veicolo") con identificativo e categoria, situazione
-// delle scadenze, stato, sede, referente (quelli che ci sono), a tutta
-// larghezza. Le azioni stanno nel menu "Azioni" in testa alla pagina.
+// delle scadenze, stato, sede, referente e, per una persona, l'account
+// collegato (B9b) (quelli che ci sono), a tutta larghezza. Le azioni stanno nel menu "Azioni" in testa alla pagina.
 import React from 'react';
 import { Tooltip } from '@edg/ui';
 
@@ -43,5 +43,12 @@ export const RiepilogoSoggetto: React.FC<{ s: Soggetto }> = ({ s }) => (
     </Voce>
     {s.sede && <Voce etichetta='Sede'>{s.sede.nome}</Voce>}
     {s.referente && <Voce etichetta='Referente'>{s.referente.nome}</Voce>}
+    {s.account && (
+      <Voce etichetta='Account'>
+        <span title={s.account.email}>
+          {s.account.nome} <span className='text-text-secondary'>· {s.account.email}</span>
+        </span>
+      </Voce>
+    )}
   </div>
 );

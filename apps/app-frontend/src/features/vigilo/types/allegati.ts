@@ -23,6 +23,8 @@ export interface VoceAllegato {
   apribile: boolean;
   caricatoIl: string;
   caricatoDa: string | null;
+  /** L'ha caricato chi guarda (l'addetto elimina solo i suoi, B9b) */
+  tuo: boolean;
   di: AppartenenzaAllegato;
 }
 

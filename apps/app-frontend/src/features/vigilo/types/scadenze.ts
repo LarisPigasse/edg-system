@@ -29,6 +29,8 @@ export interface Scadenza {
   urgenzaIl: string | null;
   chiusa: { il: string; motivo: string } | null;
   note: string | null;
+  /** C'è una segnalazione dell'addetto da confermare (B9c) */
+  segnalata: boolean;
 }
 
 export interface Contatore {
@@ -69,6 +71,17 @@ export interface Registrazione {
   motivo: string | null;
   note: string | null;
   registrataIl: string;
+  /** Segnalazione respinta: perché (B9c) */
+  motivoRifiuto: string | null;
+  /** L'ha inserita l'utente (l'addetto ritira solo le sue segnalazioni) */
+  tua: boolean;
+}
+
+/** La segnalazione dell'addetto in attesa, con il nome di chi l'ha mandata (B9c) */
+export interface SegnalazioneInAttesa extends Registrazione {
+  da: string | null;
+  /** Documenti allegati alla segnalazione */
+  documenti: number;
 }
 
 /** Che cosa chiede la registrazione, dato per dato (dal controllo) */
@@ -83,6 +96,7 @@ export interface DettaglioScadenza extends Scadenza {
   prossimaSeRegistrataOggi: { scadeIl: string | null; sogliaUso: number | null } | null;
   richieste: Record<DatoRegistrazione, Richiesta>;
   rinviabile: boolean;
+  segnalazione: SegnalazioneInAttesa | null;
 }
 
 export interface DatiEsecuzione {
@@ -101,6 +115,17 @@ export interface DatiEsecuzione {
   allegati?: string[];
 }
 
+/** "Fatto" segnalato dall'addetto: solo ciò che può dare (B9c) */
+export interface DatiSegnalazione {
+  eseguitaIl: string;
+  lettura?: number | null;
+  note?: string | null;
+  allegati?: string[];
+}
+
+/** La conferma dell'ufficio: i campi del modulo Registra, corretti se serve */
+export type DatiConferma = Omit<DatiEsecuzione, 'esito' | 'dataNuova'>;
+
 export interface DatiRinvio {
   dataNuova: string;
   motivo: string;
@@ -113,6 +138,6 @@ export interface EsitoEsecuzione {
 
 // --- Elenco delle scadenze --------------------------------------------------
 
-/** Quali scadenze: tutte le aperte, uno stato, o le chiuse (storiche) */
-export type FiltroStatoScadenze = 'aperte' | Stato | 'chiuse';
+/** Quali scadenze: tutte le aperte, uno stato, quelle segnalate dall'addetto da confermare, o le chiuse (storiche) */
+export type FiltroStatoScadenze = 'aperte' | Stato | 'segnalate' | 'chiuse';
 export type OrdinaScadenze = 'urgenza' | 'scadeIl' | 'soggetto';

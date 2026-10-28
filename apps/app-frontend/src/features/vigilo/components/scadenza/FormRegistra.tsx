@@ -7,18 +7,19 @@
 // scadenza che Vigilo aprirà, correggibile. Se il controllo lo prevede, il
 // documento (obbligatorio o facoltativo): si carica qui e passa alla
 // registrazione (B9a).
+// Con `segnalazione` è la conferma dell'ufficio (B9c): i campi partono dai
+// dati dell'addetto, correggibili, e l'esito è positivo.
 import React, { useState } from 'react';
-import { DatePicker, FileText, ImageIcon, Input, RadioGroup, Select, TextArea, X } from '@edg/ui';
+import { DatePicker, Input, RadioGroup, Select, TextArea } from '@edg/ui';
 
 import { useDocumentiRegistra } from '../../hooks/useDocumentiRegistra';
 import { useFornitori } from '../../hooks/useFornitori';
 import type { Capacita } from '../../types/io';
-import type { DatiEsecuzione, DatoRegistrazione, DettaglioScadenza, Esito } from '../../types/scadenze';
-import { dimensioneLeggibile, eImmagine } from '../../utils/allegati';
+import type { DatiEsecuzione, DatoRegistrazione, DettaglioScadenza, Esito, SegnalazioneInAttesa } from '../../types/scadenze';
 import { aGiorno, daGiorno, giornoEsteso, oggiLocale } from '../../utils/giorni';
 import { misura } from '../../utils/misure';
 import { importo as leggiImporto, intero } from '../../utils/numeri';
-import { InArrivo, PulsantiCarica } from '../documenti/CaricaDocumenti';
+import { CampoDocumento } from './CampoDocumento';
 import { PulsantiForm } from './PulsantiForm';
 
 const NESSUNO = 'nessuno';
@@ -29,9 +30,15 @@ interface Props {
   inCorso: boolean;
   onRegistra: (dati: DatiEsecuzione) => void;
   onAnnulla: () => void;
+  /** La segnalazione dell'addetto da confermare: i campi partono dai suoi dati */
+  segnalazione?: SegnalazioneInAttesa | null;
 }
 
-export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra, onAnnulla }) => {
+/** Un numero come testo per i campi ('' se manca) */
+const testoDi = (n: number | null | undefined) => (n == null ? '' : String(n));
+
+export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra, onAnnulla, segnalazione = null }) => {
+  const seg = segnalazione;
   const oggi = oggiLocale();
   const r = s.richieste;
   const c = s.contatore;
@@ -46,13 +53,14 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
   const conDocumento = vede('allegato');
   const doc = useDocumentiRegistra(s.uuid);
 
-  const [eseguitaIl, setEseguitaIl] = useState(oggi);
+  const [eseguitaIl, setEseguitaIl] = useState(seg?.eseguitaIl ?? oggi);
   const [esito, setEsito] = useState<Esito>('positivo');
-  const [lettura, setLettura] = useState('');
-  const [euro, setEuro] = useState('');
-  const [fornitore, setFornitore] = useState(NESSUNO);
-  const [riferimento, setRiferimento] = useState('');
-  const [note, setNote] = useState('');
+  const [lettura, setLettura] = useState(testoDi(seg?.lettura));
+  const [euro, setEuro] = useState(seg?.importo != null ? seg.importo.toLocaleString('it-IT') : '');
+  const [fornitore, setFornitore] = useState(seg?.fornitore?.uuid ?? NESSUNO);
+  const [riferimento, setRiferimento] = useState(seg?.riferimento ?? '');
+  const [note, setNote] = useState(seg?.note ?? '');
+  const gia = seg?.documenti ?? 0;
   const [altri, setAltri] = useState(['importo', 'fornitore', 'riferimento'].some(k => chiede(k as DatoRegistrazione)));
   const [correggi, setCorreggi] = useState(false);
   const [prossimaIl, setProssimaIl] = useState(s.prossimaSeRegistrataOggi?.scadeIl ?? '');
@@ -75,7 +83,7 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
     !manca('importo', conImporto && valoreEuro === null) &&
     !manca('fornitore', conFornitore && fornitore === NESSUNO) &&
     !manca('riferimento', conRiferimento && !riferimento.trim()) &&
-    !manca('allegato', conDocumento && !doc.caricati.length) &&
+    !manca('allegato', conDocumento && !doc.caricati.length && !gia) &&
     !doc.inArrivo.length;
 
   const invia = (e: React.FormEvent) => {
@@ -117,17 +125,19 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
           maxDate={daGiorno(oggi)}
           required
         />
-        <RadioGroup
-          label='Esito'
-          orientation='horizontal'
-          size='sm'
-          value={esito}
-          onValueChange={v => setEsito(v as Esito)}
-          options={[
-            { value: 'positivo', label: 'Positivo' },
-            { value: 'negativo', label: 'Negativo' },
-          ]}
-        />
+        {!seg && (
+          <RadioGroup
+            label='Esito'
+            orientation='horizontal'
+            size='sm'
+            value={esito}
+            onValueChange={v => setEsito(v as Esito)}
+            options={[
+              { value: 'positivo', label: 'Positivo' },
+              { value: 'negativo', label: 'Negativo' },
+            ]}
+          />
+        )}
         {conLettura && c && (
           <Input
             label={`Lettura (${c.unita})`}
@@ -216,42 +226,7 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
       )}
 
       {conDocumento && (
-        <div className='space-y-2'>
-          <div className='flex flex-wrap items-center justify-between gap-2'>
-            <p className='text-sm font-medium text-text-primary'>
-              Documento
-              {chiede('allegato') ? <span className='text-text-danger'> *</span> : <span className='font-normal text-text-secondary'> (facoltativo)</span>}
-            </p>
-            <PulsantiCarica onFile={files => void doc.carica(files)} disabilitato={doc.inArrivo.length > 0 || inCorso} etichetta='Allega' />
-          </div>
-          <InArrivo voci={doc.inArrivo} />
-          {doc.caricati.length > 0 && (
-            <ul className='divide-y divide-border-thin rounded-lg border border-border-default'>
-              {doc.caricati.map(a => {
-                const Icona = eImmagine(a.tipo) ? ImageIcon : FileText;
-                return (
-                  <li key={a.uuid} className='flex items-center gap-3 px-3 py-2 text-sm'>
-                    <Icona className='h-4 w-4 shrink-0 text-text-secondary' aria-hidden />
-                    <span className='min-w-0 flex-1 truncate text-text-primary'>{a.nome}</span>
-                    <span className='shrink-0 text-xs text-text-secondary'>{dimensioneLeggibile(a.dimensione)}</span>
-                    <button
-                      type='button'
-                      onClick={() => void doc.togli(a)}
-                      aria-label={`Togli ${a.nome}`}
-                      title='Togli'
-                      className='rounded-md p-1 text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary'
-                    >
-                      <X className='h-4 w-4' />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {positivo && chiede('allegato') && !doc.caricati.length && !doc.inArrivo.length && (
-            <p className='text-xs text-text-secondary'>Questo controllo chiede un documento: il certificato, la ricevuta o una foto.</p>
-          )}
-        </div>
+        <CampoDocumento doc={doc} obbligatorio={chiede('allegato')} avvisaSeManca={positivo} disabilitato={inCorso} gia={gia} />
       )}
 
       <TextArea label='Note' value={note} onChange={e => setNote(e.target.value)} maxLength={4096} minRows={1} autoResize />

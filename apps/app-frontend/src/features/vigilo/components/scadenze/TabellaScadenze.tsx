@@ -3,9 +3,10 @@
 // La tabella delle scadenze: scadenza, soggetto (link alla sua scheda),
 // natura, stato nel colore della dashboard (per le chiuse: quando e
 // perché), data o soglia. Un clic sulla riga apre il pannello con le azioni.
+// Accanto allo stato, la segnalazione dell'addetto da confermare (B9c).
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Table, type TableColumn } from '@edg/ui';
+import { Badge, Button, Table, type TableColumn } from '@edg/ui';
 
 import type { StatoElencoScadenze } from '../../hooks/useElencoScadenze';
 import type { Scadenza } from '../../types/scadenze';
@@ -30,7 +31,15 @@ function colonne(chiuse: boolean): TableColumn<Scadenza>[] {
     { header: 'Natura', accessor: s => naturaDi(s) },
     chiuse
       ? { header: 'Chiusa', accessor: s => <span className='text-text-secondary'>{chiusuraDi(s)}</span> }
-      : { header: 'Stato', accessor: s => <StatoScadenza stato={s.stato} testo={s.testo} /> },
+      : {
+          header: 'Stato',
+          accessor: s => (
+            <span className='inline-flex flex-wrap items-center gap-2'>
+              <StatoScadenza stato={s.stato} testo={s.testo} />
+              {s.segnalata && <Badge variant='info' size='xs' text='Da confermare' className='rounded-lg' />}
+            </span>
+          ),
+        },
     { header: 'Data o soglia', accessor: s => <span className='whitespace-nowrap'>{quandoDi(s)}</span> },
   ];
 }

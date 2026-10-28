@@ -22,9 +22,11 @@ interface Props {
   puoModificare: boolean;
   /** Titolo della sezione (nel pannello della scadenza); assente nella scheda del soggetto */
   titolo?: string;
+  /** Si eliminano solo i documenti caricati da chi guarda (l'addetto, B9b) */
+  soloTuoi?: boolean;
 }
 
-export const Documenti: React.FC<Props> = ({ entita, id, attivo = true, puoModificare, titolo }) => {
+export const Documenti: React.FC<Props> = ({ entita, id, attivo = true, puoModificare, titolo, soloTuoi = false }) => {
   const d = useAllegati(entita, id, attivo);
   const [daEliminare, setDaEliminare] = useState<VoceAllegato | null>(null);
   const [sopra, setSopra] = useState(false);
@@ -100,7 +102,7 @@ export const Documenti: React.FC<Props> = ({ entita, id, attivo = true, puoModif
                     a={a}
                     onApri={() => void d.apri(a)}
                     onScarica={() => void d.scarica(a)}
-                    onElimina={puoModificare ? () => setDaEliminare(a) : undefined}
+                    onElimina={puoModificare && (!soloTuoi || a.tuo) ? () => setDaEliminare(a) : undefined}
                     occupato={d.eliminando === a.uuid}
                   />
                 ))}

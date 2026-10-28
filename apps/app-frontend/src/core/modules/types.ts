@@ -13,6 +13,13 @@ import type { EdgModuleConfig, HomeModuleStatus, ModuleBranding } from '@edg/ui'
 
 import type { ModuleNotificationSource } from '../notifications/types';
 
+/**
+ * Condizione sui permessi del ruolo, quando un solo permesso non basta (es. "chi
+ * ha soltanto vigilo.own", B9b). Il modulo la scrive con le sue regole; il
+ * controllo vero resta nel servizio.
+ */
+export type CondizionePermessi = (permissions: readonly string[]) => boolean;
+
 /** Una pagina del modulo, caricata a richiesta */
 export interface ModulePage {
   /** Percorso relativo alla base del modulo; '' = home del modulo */
@@ -20,6 +27,8 @@ export interface ModulePage {
   component: LazyExoticComponent<ComponentType>;
   /** Permesso richiesto (es. 'vigilo.read'); assente = basta poter usare il modulo */
   permission?: string;
+  /** Condizione in più; falsa = si torna alla home del modulo */
+  quando?: CondizionePermessi;
 }
 
 /**
@@ -40,6 +49,8 @@ export interface ModuleMenuItem {
   /** Percorso relativo alla base del modulo */
   path: string;
   permission?: string;
+  /** Condizione in più per mostrare la voce */
+  quando?: CondizionePermessi;
 }
 
 /** Il manifest: cosa il modulo è in questo frontend */

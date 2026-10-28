@@ -1,7 +1,8 @@
 // src/features/vigilo/hooks/useScadenza.ts
 //
-// Una scadenza aperta nel pannello: il dettaglio e le quattro azioni
-// (registra, rinvia, completa la data, leggi il contatore). Ogni azione
+// Una scadenza aperta nel pannello: il dettaglio e le azioni (registra,
+// rinvia, completa la data, leggi il contatore; per le segnalazioni
+// dell'addetto segnala e ritira, conferma e respingi, B9c). Ogni azione
 // riuscita avvisa con un toast e chiama `onFatto`, che di norma chiude il
 // pannello e ricarica la pagina sotto; un errore resta nel pannello, con i
 // dati inseriti, per correggerli.
@@ -9,8 +10,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useToast } from '@edg/ui';
 
 import { registraLettura } from '../api/contatori';
-import { completaScadenza, leggiScadenza, registraEsecuzione, rinviaScadenza } from '../api/scadenze';
-import type { DatiEsecuzione, DatiRinvio, DettaglioScadenza } from '../types/scadenze';
+import {
+  completaScadenza,
+  confermaSegnalazione,
+  leggiScadenza,
+  registraEsecuzione,
+  respingiSegnalazione,
+  rinviaScadenza,
+  ritiraSegnalazione,
+  segnalaFatto,
+} from '../api/scadenze';
+import type { DatiConferma, DatiEsecuzione, DatiRinvio, DatiSegnalazione, DettaglioScadenza, EsitoEsecuzione } from '../types/scadenze';
 import { giornoEsteso } from '../utils/giorni';
 import { misura, nomeContatore } from '../utils/misure';
 
@@ -55,15 +65,59 @@ export function useScadenza(uuid: string | null, aperto: boolean, onFatto: () =>
     [onFatto, toast]
   );
 
+  /** "La prossima scadenza è …" dopo una registrazione che chiude */
+  const fraseProssima = useCallback(
+    (e: EsitoEsecuzione) => {
+      const s = e.successiva;
+      if (s?.scadeIl) return `La prossima scadenza è ${giornoEsteso(s.scadeIl)}.`;
+      return s?.sogliaUso && dettaglio?.contatore ? `La prossima è a ${misura(s.sogliaUso, dettaglio.contatore.unita)}.` : undefined;
+    },
+    [dettaglio]
+  );
+
   const registra = useCallback(
     (dati: DatiEsecuzione) =>
       esegui(async () => {
         const r = await registraEsecuzione(uuid!, dati);
-        const s = r.data.successiva;
-        const prossima = s?.scadeIl ? `La prossima scadenza è ${giornoEsteso(s.scadeIl)}.` : s?.sogliaUso && dettaglio?.contatore ? `La prossima è a ${misura(s.sogliaUso, dettaglio.contatore.unita)}.` : undefined;
-        return { title: r.message ?? 'Registrato', description: prossima };
+        return { title: r.message ?? 'Registrato', description: fraseProssima(r.data) };
       }, 'Registrazione non riuscita'),
-    [dettaglio, esegui, uuid]
+    [esegui, fraseProssima, uuid]
+  );
+
+  const segnala = useCallback(
+    (dati: DatiSegnalazione) =>
+      esegui(async () => {
+        await segnalaFatto(uuid!, dati);
+        return { title: 'Segnalazione inviata', description: 'L’ufficio la confermerà: riceverai un avviso.' };
+      }, 'Segnalazione non inviata'),
+    [esegui, uuid]
+  );
+
+  const ritira = useCallback(
+    () =>
+      esegui(async () => {
+        await ritiraSegnalazione(dettaglio!.segnalazione!.uuid);
+        return { title: 'Segnalazione ritirata' };
+      }, 'Segnalazione non ritirata'),
+    [dettaglio, esegui]
+  );
+
+  const conferma = useCallback(
+    (dati: DatiConferma) =>
+      esegui(async () => {
+        const r = await confermaSegnalazione(dettaglio!.segnalazione!.uuid, dati);
+        return { title: r.message ?? 'Segnalazione confermata', description: fraseProssima(r.data) };
+      }, 'Conferma non riuscita'),
+    [dettaglio, esegui, fraseProssima]
+  );
+
+  const respingi = useCallback(
+    (motivo: string) =>
+      esegui(async () => {
+        await respingiSegnalazione(dettaglio!.segnalazione!.uuid, motivo);
+        return { title: 'Segnalazione respinta', description: 'Chi l’ha mandata riceve un avviso con il motivo.' };
+      }, 'Segnalazione non respinta'),
+    [dettaglio, esegui]
   );
 
   const rinvia = useCallback(
@@ -94,7 +148,7 @@ export function useScadenza(uuid: string | null, aperto: boolean, onFatto: () =>
     [dettaglio, esegui]
   );
 
-  return { dettaglio, caricamento, errore, inCorso, registra, rinvia, completa, leggiContatore };
+  return { dettaglio, caricamento, errore, inCorso, registra, rinvia, completa, leggiContatore, segnala, ritira, conferma, respingi };
 }
 
 export type StatoScadenzaAperta = ReturnType<typeof useScadenza>;

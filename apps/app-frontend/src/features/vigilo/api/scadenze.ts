@@ -1,5 +1,15 @@
 // src/features/vigilo/api/scadenze.ts
-import type { DatiEsecuzione, DatiRinvio, DettaglioScadenza, EsitoEsecuzione, FiltriScadenze, Scadenza } from '../types/scadenze';
+import type {
+  DatiConferma,
+  DatiEsecuzione,
+  DatiRinvio,
+  DatiSegnalazione,
+  DettaglioScadenza,
+  EsitoEsecuzione,
+  FiltriScadenze,
+  Registrazione,
+  Scadenza,
+} from '../types/scadenze';
 import { leggi, richiesta } from './client';
 
 /** Solo i parametri valorizzati, codificati */
@@ -20,6 +30,8 @@ export interface RichiestaScadenze extends FiltriScadenze {
   aperte?: boolean;
   verso?: 'asc' | 'desc';
   entro?: number;
+  /** Solo quelle con una segnalazione dell'addetto da confermare (B9c) */
+  segnalate?: boolean;
   ordina?: 'urgenza' | 'soggetto' | 'scadeIl' | 'stato' | 'chiusaIl';
   pagina?: number;
   righe?: number;
@@ -48,6 +60,22 @@ export const leggiScadenza = (uuid: string) => leggi<DettaglioScadenza>(`/scaden
 /** Fatto: chiude la scadenza (esito positivo) e apre la successiva */
 export const registraEsecuzione = (uuid: string, dati: DatiEsecuzione) =>
   richiesta<EsitoEsecuzione>(`/scadenze/${uuid}/registrazioni`, 'POST', dati);
+
+// --- Segnalazioni dell'addetto (B9c) ------------------------------------------
+
+/** L'addetto: "fatto", da confermare dall'ufficio */
+export const segnalaFatto = (uuid: string, dati: DatiSegnalazione) => richiesta<Registrazione>(`/scadenze/${uuid}/segnalazioni`, 'POST', dati);
+
+/** L'addetto la ritira, finché aspetta */
+export const ritiraSegnalazione = (uuidSegnalazione: string) => richiesta<unknown>(`/segnalazioni/${uuidSegnalazione}`, 'DELETE');
+
+/** L'ufficio la conferma, con i dati corretti se serve: chiude la scadenza come Registra */
+export const confermaSegnalazione = (uuidSegnalazione: string, dati: DatiConferma) =>
+  richiesta<EsitoEsecuzione>(`/segnalazioni/${uuidSegnalazione}/conferma`, 'POST', dati);
+
+/** L'ufficio la respinge, con il motivo */
+export const respingiSegnalazione = (uuidSegnalazione: string, motivo: string) =>
+  richiesta<Registrazione>(`/segnalazioni/${uuidSegnalazione}/rifiuto`, 'POST', { motivo });
 
 /** Sposta la data con un motivo, senza chiudere */
 export const rinviaScadenza = (uuid: string, dati: DatiRinvio) => richiesta<unknown>(`/scadenze/${uuid}/rinvio`, 'POST', dati);

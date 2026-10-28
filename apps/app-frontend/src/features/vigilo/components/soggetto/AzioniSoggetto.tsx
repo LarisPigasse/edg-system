@@ -5,6 +5,7 @@
 //   Aggiungi scadenza     pannello laterale: controllo o promemoria
 //   ─────────
 //   Modifica              pannello laterale con il modulo
+//   Account collegato     solo persone: pannello laterale (B9b)
 //   Sospendi / Riattiva   sospendere chiede conferma (le scadenze continuano)
 //   ─────────
 //   Archivia (in rosso)   conferma: le scadenze aperte si chiudono, le
@@ -25,6 +26,7 @@ import {
   Pencil,
   Play,
   Plus,
+  User,
   type Action,
   type ConfirmVariant,
 } from '@edg/ui';
@@ -35,6 +37,7 @@ import type { DatiSoggetto, Soggetto, StatoSoggetto } from '../../types/soggetti
 import type { Scadenza } from '../../types/scadenze';
 import { AggiungiScadenza } from './AggiungiScadenza';
 import { ModificaSoggetto } from './ModificaSoggetto';
+import { PannelloAccountPersona } from './PannelloAccountPersona';
 
 type Conferma = 'sospendi' | 'archivia' | 'ripristina';
 
@@ -46,6 +49,8 @@ interface Props {
   /** Le scadenze aperte: i loro controlli non si propongono fra quelli da aggiungere */
   scadenze: Scadenza[];
   onAggiungi: React.ComponentProps<typeof AggiungiScadenza>['onAggiungi'];
+  /** Dopo un cambio fatto in un pannello proprio (account collegato, B9b) */
+  onRicarica: () => void;
 }
 
 interface TestoConferma {
@@ -90,8 +95,9 @@ function testi(s: Soggetto): Record<Conferma, TestoConferma> {
   };
 }
 
-export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModifica, scadenze, onAggiungi }) => {
+export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModifica, scadenze, onAggiungi, onRicarica }) => {
   const [modifica, setModifica] = useState(false);
+  const [account, setAccount] = useState(false);
   const [aggiungi, setAggiungi] = useState(false);
   const [conferma, setConferma] = useState<Conferma | null>(null);
   const c = conferma ? testi(s)[conferma] : null;
@@ -102,7 +108,9 @@ export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModific
     ...(s.stato !== 'dismesso'
       ? [{ id: 'aggiungi', label: 'Aggiungi scadenza', icon: icona(Plus), onClick: () => setAggiungi(true), divider: true }]
       : []),
-    { id: 'modifica', label: 'Modifica', icon: icona(Pencil), onClick: () => setModifica(true), divider: s.stato === 'dismesso' },
+    { id: 'modifica', label: 'Modifica', icon: icona(Pencil), onClick: () => setModifica(true), divider: s.stato === 'dismesso' && s.tipo !== 'persona' },
+    // una persona si collega al suo account (B9b)
+    ...(s.tipo === 'persona' ? [{ id: 'account', label: 'Account collegato', icon: icona(User), onClick: () => setAccount(true), divider: s.stato === 'dismesso' }] : []),
     ...(s.stato === 'in-servizio'
       ? [{ id: 'sospendi', label: 'Sospendi', icon: icona(Pause), onClick: () => setConferma('sospendi'), divider: true }]
       : s.stato === 'fermo'
@@ -148,6 +156,7 @@ export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModific
         onChiudi={() => setAggiungi(false)}
         onAggiungi={onAggiungi}
       />
+      {s.tipo === 'persona' && <PannelloAccountPersona s={s} aperto={account} onChiudi={() => setAccount(false)} onSalvato={onRicarica} />}
     </>
   );
 };

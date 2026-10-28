@@ -1,6 +1,6 @@
 // src/features/vigilo/api/soggetti.ts
 import type { RiferimentoSoggetto } from '../types/scadenze';
-import type { Assegnazione, DatiSoggetto, EsitoSalvataggio, EsitoStato, FiltriSoggetti, OrdinaSoggetti, RegistrazioneStorico, Soggetto, StatoSoggetto } from '../types/soggetti';
+import type { AccountCollegabile, Assegnazione, DatiSoggetto, EsitoSalvataggio, EsitoStato, FiltriSoggetti, OrdinaSoggetti, RegistrazioneStorico, Soggetto, StatoSoggetto } from '../types/soggetti';
 import type { TipoSoggetto } from '../types/valori';
 import { leggi, leggiTutti, richiesta } from './client';
 import { query } from './scadenze';
@@ -24,6 +24,12 @@ export async function leggiSoggetti(r: RichiestaSoggetti) {
 // --- Un soggetto ------------------------------------------------------------
 
 export const leggiSoggetto = (uuid: string) => leggi<Soggetto>(`/soggetti/${uuid}`);
+
+/** Gli account del cliente da collegare a una persona (B9b) */
+export const leggiAccount = () => leggi<AccountCollegabile[]>('/account');
+
+/** Collega (o scollega con null) un account a una persona */
+export const collegaAccount = (persona: string, account: number | null) => richiesta<Soggetto>(`/soggetti/${persona}/account`, 'PUT', { account });
 
 /** Attivo, sospeso, archiviato (codici in-servizio, fermo, dismesso) */
 export const cambiaStatoSoggetto = (uuid: string, stato: StatoSoggetto) =>

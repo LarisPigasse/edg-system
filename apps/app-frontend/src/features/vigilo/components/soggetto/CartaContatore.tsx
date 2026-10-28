@@ -3,12 +3,15 @@
 // Un contatore (km, ore): il valore, quando è stato letto, l'uso medio,
 // l'andamento delle ultime 32 letture e le più recenti, con la nuova lettura
 // a portata di mano. Le letture minori di una precedente sono segnalate.
+// Una lettura sbagliata si corregge eliminandola (puoCorreggere: l'ufficio le
+// manuali, l'addetto solo le sue, B9b), con conferma.
 import React, { useState } from 'react';
-import { Button } from '@edg/ui';
+import { Button, ConfirmModal, Tooltip as Suggerimento, Trash2 } from '@edg/ui';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { useContatore } from '../../hooks/useContatore';
 import type { Contatore } from '../../types/scadenze';
+import type { Lettura } from '../../types/soggetti';
 import { giornoBreve } from '../../utils/giorni';
 import { misura, nomeContatore } from '../../utils/misure';
 import { Riquadro } from '../Riquadro';
@@ -19,12 +22,15 @@ const VISIBILI = 8;
 interface Props {
   c: Contatore;
   puoScrivere: boolean;
+  /** Quali letture si possono correggere (eliminare); assente = nessuna */
+  puoCorreggere?: (l: Lettura) => boolean;
   onCambiato: () => void;
 }
 
-export const CartaContatore: React.FC<Props> = ({ c, puoScrivere, onCambiato }) => {
+export const CartaContatore: React.FC<Props> = ({ c, puoScrivere, puoCorreggere, onCambiato }) => {
   const k = useContatore(c, onCambiato);
   const [nuova, setNuova] = useState(false);
+  const [daCorreggere, setDaCorreggere] = useState<Lettura | null>(null);
   const andamento = [...k.letture].reverse().map(l => ({ giorno: giornoBreve(l.lettoIl), valore: l.valore }));
 
   return (
@@ -87,7 +93,7 @@ export const CartaContatore: React.FC<Props> = ({ c, puoScrivere, onCambiato }) 
         {k.letture.length > 0 && (
           <ol className='divide-y divide-border-default text-sm'>
             {k.letture.slice(0, VISIBILI).map(l => (
-              <li key={l.uuid} className='grid grid-cols-[7rem_1fr] gap-3 py-1.5'>
+              <li key={l.uuid} className='grid grid-cols-[7rem_1fr_auto] items-start gap-3 py-1.5'>
                 <span className='text-text-secondary'>{giornoBreve(l.lettoIl)}</span>
                 <span className='min-w-0'>
                   <span className='tabular-nums text-text-primary'>{misura(l.valore, c.unita)}</span>
@@ -96,11 +102,43 @@ export const CartaContatore: React.FC<Props> = ({ c, puoScrivere, onCambiato }) 
                   )}
                   {l.note && <span className='block truncate text-xs text-text-secondary'>{l.note}</span>}
                 </span>
+                {puoCorreggere?.(l) ? (
+                  <Suggerimento content='Sbagliata? Eliminala e inserisci quella giusta'>
+                    <button
+                      type='button'
+                      onClick={() => setDaCorreggere(l)}
+                      disabled={k.inCorso}
+                      aria-label={`Elimina la lettura del ${giornoBreve(l.lettoIl)}`}
+                      className='rounded-md p-1 text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary disabled:opacity-50'
+                    >
+                      <Trash2 className='h-4 w-4' />
+                    </button>
+                  </Suggerimento>
+                ) : (
+                  <span />
+                )}
               </li>
             ))}
           </ol>
         )}
       </div>
+      <ConfirmModal
+        isOpen={!!daCorreggere}
+        onClose={() => setDaCorreggere(null)}
+        onConfirm={async () => {
+          if (daCorreggere && (await k.elimina(daCorreggere))) {
+            setDaCorreggere(null);
+            if (puoScrivere) setNuova(true); // subito la lettura giusta
+          }
+        }}
+        title='Eliminare la lettura?'
+        message={daCorreggere ? `${misura(daCorreggere.valore, c.unita)} del ${giornoBreve(daCorreggere.lettoIl)}: il contatore si ricalcola dalle altre letture.` : ''}
+        confirmText='Elimina'
+        cancelText='Annulla'
+        variant='danger'
+        isLoading={k.inCorso}
+        loadingText='Elimino…'
+      />
     </Riquadro>
   );
 };

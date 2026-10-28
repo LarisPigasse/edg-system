@@ -12,6 +12,7 @@ export const FILTRI_STATO_SCADENZE: { value: FiltroStatoScadenze; label: string 
   { value: 'in-scadenza', label: STATI_ASPETTO['in-scadenza'].etichetta },
   { value: 'da-completare', label: STATI_ASPETTO['da-completare'].etichetta },
   { value: 'in-regola', label: STATI_ASPETTO['in-regola'].etichetta },
+  { value: 'segnalate', label: 'Da confermare' },
   { value: 'chiuse', label: 'Chiuse' },
 ];
 

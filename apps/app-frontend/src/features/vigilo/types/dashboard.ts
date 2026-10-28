@@ -24,6 +24,8 @@ export interface Dashboard {
   soggetti: { tipo: TipoSoggetto; n: number; peggiore: Stato | null; critici: number }[];
   /** Ultimi 12 mesi: esecuzioni con una data da rispettare, e quante entro quella data */
   fatteInTempo: { mese: string; totale: number; inTempo: number }[];
+  /** Scadenze aperte con una segnalazione dell'addetto da confermare (B9c) */
+  daConfermare: number;
 }
 
 /** Le due viste della dashboard */

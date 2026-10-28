@@ -2,8 +2,10 @@
 //
 // Le pagine di un modulo, montate sotto `${basePath}/*`. Chi non può aprire il
 // modulo (non in vigore o senza permessi) torna alla home, dove il riquadro
-// spiega perché; una pagina con un permesso che manca fa lo stesso. Un percorso
-// sconosciuto dentro il modulo riporta alla sua home.
+// spiega perché; una pagina con un permesso che manca fa lo stesso. Una pagina
+// la cui condizione (quando) non vale riporta alla home del modulo, che sa
+// dove mandare l'utente. Un percorso sconosciuto dentro il modulo riporta alla
+// sua home.
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from '@edg/auth';
@@ -22,7 +24,14 @@ const ModuleRoutes: React.FC<{ manifest: AppModuleManifest; homePath?: string }>
     <Routes>
       {manifest.pages.map(page => {
         const Page = page.component;
-        const element = page.permission && !hasPermission(page.permission) ? <Navigate to={homePath} replace /> : <Page />;
+        const element =
+          page.permission && !hasPermission(page.permission) ? (
+            <Navigate to={homePath} replace />
+          ) : page.quando && !page.quando(permissions) ? (
+            <Navigate to={manifest.basePath} replace />
+          ) : (
+            <Page />
+          );
         return page.path ? (
           <Route key={page.path} path={page.path} element={element} />
         ) : (

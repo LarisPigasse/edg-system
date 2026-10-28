@@ -8,7 +8,7 @@
 // Assegnazioni, Documenti (B9a: del soggetto, delle sue scadenze e
 // registrazioni) e Dati. Modifica nel pannello laterale (B7d-3).
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { Alert, ChevronRight, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
 
 import { AssegnazioniSoggetto } from '../components/soggetto/AssegnazioniSoggetto';
@@ -22,6 +22,7 @@ import { StoricoSoggetto } from '../components/soggetto/StoricoSoggetto';
 import { TornaAllElenco } from '../components/TornaAllElenco';
 import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
 import { useSoggetto } from '../hooks/useSoggetto';
+import { eAddetto } from '../utils/capacita';
 
 /** Hanno assegnazioni i mezzi (chi li usa) e le persone (che cosa usano) */
 const CON_ASSEGNAZIONI = ['veicolo', 'macchina', 'attrezzatura', 'persona'];
@@ -44,8 +45,10 @@ const Conteggio: React.FC<{ testo: string; n: number }> = ({ testo, n }) => (
 
 const SoggettoPage: React.FC = () => {
   const { id = '' } = useParams();
+  const { search } = useLocation();
   const { profilo } = useProfiloVigilo();
-  const x = useSoggetto(id);
+  const addetto = !!profilo && eAddetto(profilo.capacita);
+  const x = useSoggetto(addetto ? '' : id);
   const s = x.soggetto;
   const capacita = profilo?.capacita;
 
@@ -71,6 +74,7 @@ const SoggettoPage: React.FC = () => {
                         key={c.uuid}
                         c={c}
                         puoScrivere={!!capacita?.write && s.stato !== 'dismesso'}
+                        puoCorreggere={l => !!capacita?.write && l.fonte === 'manuale'}
                         onCambiato={() => void x.ricarica()}
                       />
                     ))}
@@ -98,6 +102,9 @@ const SoggettoPage: React.FC = () => {
     : [];
 
   const elenco = <TornaAllElenco tipo={s?.tipo} />;
+
+  // l'addetto arriva qui dai collegamenti delle email: la sua scadenza è in "Le mie scadenze" (B9b)
+  if (addetto) return <Navigate to={`/vigilo/mie-scadenze${search}`} replace />;
 
   return (
     <div className='space-y-6'>
@@ -135,6 +142,7 @@ const SoggettoPage: React.FC = () => {
                   onModifica={x.modifica}
                   scadenze={x.scadenze}
                   onAggiungi={x.aggiungiScadenza}
+                  onRicarica={() => void x.ricarica()}
                 />
               )
             }

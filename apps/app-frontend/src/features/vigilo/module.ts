@@ -10,6 +10,7 @@ import { Clock } from '@edg/ui';
 import type { AppModuleManifest } from '../../core/modules/types';
 import { sorgenteAvvisi } from './api/avvisi';
 import { dopoAvvio } from './components/dopoAvvio';
+import { soloAddetto, ufficio } from './utils/capacita';
 
 const BASE = '/vigilo';
 
@@ -21,26 +22,32 @@ export const vigiloModule: AppModuleManifest = {
   icon: Clock,
   // Prima della procedura di avvio si aprono solo la home (che porta alla
   // procedura o dice che Vigilo è in preparazione) e la procedura stessa;
-  // le altre pagine passano da dopoAvvio.
+  // le altre pagine passano da dopoAvvio. L'addetto (solo vigilo.own, B9b) ha
+  // le sue due pagine; la home lo porta a "Le mie scadenze".
   pages: [
     { path: '', component: lazy(() => import('./pages/VigiloHome')) },
     // Procedura di avvio e, dopo, "Aggiungi dalla libreria" (ADR076)
     { path: 'avvio', component: lazy(() => import('./pages/AvvioPage')), permission: 'vigilo.config' },
-    { path: 'scadenze', component: dopoAvvio(() => import('./pages/ScadenzePage')) },
-    { path: 'soggetti', component: dopoAvvio(() => import('./pages/SoggettiPage')) },
-    { path: 'soggetti/nuovo', component: dopoAvvio(() => import('./pages/NuovoSoggettoPage')) },
+    { path: 'scadenze', component: dopoAvvio(() => import('./pages/ScadenzePage')), quando: ufficio },
+    { path: 'soggetti', component: dopoAvvio(() => import('./pages/SoggettiPage')), quando: ufficio },
+    { path: 'soggetti/nuovo', component: dopoAvvio(() => import('./pages/NuovoSoggettoPage')), quando: ufficio },
+    // senza condizione: un addetto che ci arriva da un'email va alla sua scadenza in "Le mie scadenze"
     { path: 'soggetti/:id', component: dopoAvvio(() => import('./pages/SoggettoPage')) },
-    { path: 'calendario', component: dopoAvvio(() => import('./pages/CalendarioPage')) },
+    { path: 'calendario', component: dopoAvvio(() => import('./pages/CalendarioPage')), quando: ufficio },
+    { path: 'mie-scadenze', component: lazy(() => import('./pages/MieScadenzePage')), quando: soloAddetto },
+    { path: 'miei-mezzi', component: lazy(() => import('./pages/MieiMezziPage')), quando: soloAddetto },
     // Gli avvisi del solo Vigilo; quelli di tutti i moduli sono in /avvisi (B8d-1 bis)
     { path: 'avvisi', component: dopoAvvio(() => import('./pages/AvvisiPage')) },
     { path: 'configurazione', component: dopoAvvio(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
   ],
   // Le altre voci (Fornitori…) arrivano con le loro pagine
   menu: [
-    { id: 'dashboard', label: 'Dashboard', path: '' },
-    { id: 'scadenze', label: 'Scadenze', path: 'scadenze' },
-    { id: 'soggetti', label: 'Soggetti', path: 'soggetti' },
-    { id: 'calendario', label: 'Calendario', path: 'calendario' },
+    { id: 'dashboard', label: 'Dashboard', path: '', quando: ufficio },
+    { id: 'scadenze', label: 'Scadenze', path: 'scadenze', quando: ufficio },
+    { id: 'soggetti', label: 'Soggetti', path: 'soggetti', quando: ufficio },
+    { id: 'calendario', label: 'Calendario', path: 'calendario', quando: ufficio },
+    { id: 'mie-scadenze', label: 'Le mie scadenze', path: 'mie-scadenze', quando: soloAddetto },
+    { id: 'miei-mezzi', label: 'I miei mezzi', path: 'miei-mezzi', quando: soloAddetto },
     { id: 'avvisi', label: 'Avvisi', path: 'avvisi' },
     { id: 'configurazione', label: 'Configurazione', path: 'configurazione', permission: 'vigilo.config' },
   ],

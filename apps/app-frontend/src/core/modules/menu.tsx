@@ -26,7 +26,7 @@ export function buildModuleMenu(manifests: readonly AppModuleManifest[], ctx: Mo
     .filter(m => canOpenModule(m.key, ctx))
     .map(m => {
       const children = (m.menu ?? [])
-        .filter(item => !item.permission || ctx.hasPermission(item.permission))
+        .filter(item => (!item.permission || ctx.hasPermission(item.permission)) && (!item.quando || item.quando(ctx.permissions)))
         .map(item => ({ id: item.id, label: item.label, href: modulePath(m.basePath, item.path) }));
       const data = ctx.myModules.get(m.key);
 

@@ -26,8 +26,24 @@ export interface Soggetto {
   note: string | null;
   /** Solo negli elenchi e nel dettaglio: la situazione delle scadenze aperte */
   scadenze?: { aperte: number; statoPeggiore: Stato | null; urgenzaIl: string | null };
+  /** Solo nel dettaglio di una persona: l'account collegato (B9b) */
+  account?: AccountPersona | null;
   creatoIl: string;
   modificatoIl: string;
+}
+
+/** L'account collegato a una persona (B9b) */
+export interface AccountPersona {
+  id: number;
+  nome: string;
+  email: string;
+}
+
+/** GET /account: gli account del cliente, con la persona a cui sono già collegati */
+export interface AccountCollegabile extends AccountPersona {
+  /** Ha solo vigilo.own */
+  addetto: boolean;
+  persona: { uuid: string; nome: string } | null;
 }
 
 /** "attivi" = attivi e sospesi (gli archiviati si chiedono a parte) */
@@ -63,6 +79,8 @@ export interface Lettura {
   /** Minore di una precedente: da controllare */
   anomala: boolean;
   note: string | null;
+  /** L'ha inserita chi chiede (l'addetto corregge solo le sue, B9b) */
+  tua: boolean;
 }
 
 export interface Assegnazione {
