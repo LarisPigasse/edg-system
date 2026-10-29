@@ -31,7 +31,7 @@ export const GruppoScadenze: React.FC<Props> = ({ titolo, voci, onApri }) => {
             s={s}
             fascia={fasciaDi(s, oggi)}
             onApri={() => onApri(s.uuid)}
-            sottotitolo={s.controllo ? NATURE_TESTO[s.controllo.natura] : undefined}
+            sottotitolo={s.natura !== 'promemoria' ? NATURE_TESTO[s.natura] : undefined}
             segnalata={SEGNALATA_ADDETTO}
           />
         ))}

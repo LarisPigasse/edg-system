@@ -36,9 +36,11 @@ interface Props {
   onChiudi: () => void;
   /** Dopo un'azione riuscita (il pannello si chiude da solo) */
   onFatto: () => void;
+  /** L'azione da cui partire all'apertura, se c'è fra quelle possibili (es. Registra per un guasto già riparato) */
+  azioneIniziale?: Azione | null;
 }
 
-export const PannelloScadenza: React.FC<Props> = ({ uuid, aperto, capacita, onChiudi, onFatto }) => {
+export const PannelloScadenza: React.FC<Props> = ({ uuid, aperto, capacita, onChiudi, onFatto, azioneIniziale = null }) => {
   const a = useScadenza(uuid, aperto, () => {
     onChiudi();
     onFatto();
@@ -48,8 +50,8 @@ export const PannelloScadenza: React.FC<Props> = ({ uuid, aperto, capacita, onCh
   const [scelta, setScelta] = useState<Azione | null>(null);
   const attiva = scelta && azioni.includes(scelta) ? scelta : azioni[0];
 
-  // a ogni apertura si riparte dall'azione principale
-  useEffect(() => setScelta(null), [uuid, aperto]);
+  // a ogni apertura si riparte dall'azione indicata, altrimenti dalla principale
+  useEffect(() => setScelta(azioneIniziale), [uuid, aperto, azioneIniziale]);
 
   const soggetto = s?.soggetto ? [s.soggetto.nome, s.soggetto.identificativo].filter(Boolean).join(' · ') : s ? 'Promemoria' : undefined;
 

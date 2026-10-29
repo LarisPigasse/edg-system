@@ -3,7 +3,8 @@
 // Sotto il titolo, i riquadri per capire subito che cos'è e come sta il
 // soggetto: tipo ("Veicolo") con identificativo e categoria, situazione
 // delle scadenze, stato, sede, referente e, per una persona, l'account
-// collegato (B9b) (quelli che ci sono), a tutta larghezza. Le azioni stanno nel menu "Azioni" in testa alla pagina.
+// collegato (B9b) e il costo orario a chi ha vigilo.costi (passo 8) (quelli
+// che ci sono), a tutta larghezza. Le azioni stanno nel menu "Azioni" in testa alla pagina.
 import React from 'react';
 import { Tooltip } from '@edg/ui';
 
@@ -11,6 +12,7 @@ import { STATI_SOGGETTO, etichettaStato } from '../../constants/statiSoggetto';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { Soggetto } from '../../types/soggetti';
 import { giornoBreve } from '../../utils/giorni';
+import { euro } from '../../utils/manodopera';
 import { maiuscola } from '../../utils/testo';
 import { SituazioneSoggetto } from '../soggetti/SituazioneSoggetto';
 
@@ -43,6 +45,12 @@ export const RiepilogoSoggetto: React.FC<{ s: Soggetto }> = ({ s }) => (
     </Voce>
     {s.sede && <Voce etichetta='Sede'>{s.sede.nome}</Voce>}
     {s.referente && <Voce etichetta='Referente'>{s.referente.nome}</Voce>}
+    {/* il servizio lo manda solo per le persone e a chi ha vigilo.costi */}
+    {s.costoOrario !== undefined && (
+      <Voce etichetta='Costo orario'>
+        {s.costoOrario != null ? `${euro(s.costoOrario)}/h` : <span className='text-text-secondary'>non indicato: vale il predefinito</span>}
+      </Voce>
+    )}
     {s.account && (
       <Voce etichetta='Account'>
         <span title={s.account.email}>

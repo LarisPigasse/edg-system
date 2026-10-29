@@ -7,8 +7,10 @@
 // le schede Scadenze (con il pannello delle azioni), Storico, Contatori,
 // Assegnazioni, Documenti (B9a: del soggetto, delle sue scadenze e
 // registrazioni) e Dati. Modifica nel pannello laterale (B7d-3).
-import React from 'react';
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+// Un guasto segnalato dal menu Azioni riporta sulla scheda Scadenze e ne
+// apre il pannello (B10a).
+import React, { useState } from 'react';
+import { Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, ChevronRight, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
 
 import { AssegnazioniSoggetto } from '../components/soggetto/AssegnazioniSoggetto';
@@ -51,6 +53,16 @@ const SoggettoPage: React.FC = () => {
   const x = useSoggetto(addetto ? '' : id);
   const s = x.soggetto;
   const capacita = profilo?.capacita;
+  const [, setParametri] = useSearchParams();
+  /** Cambia per riaprire le schede su Scadenze */
+  const [giro, setGiro] = useState(0);
+
+  // il guasto appena segnalato: si torna su Scadenze e se ne apre il pannello (su Registra se già riparato)
+  const dopoGuasto = (uuid: string, giaRiparato: boolean) => {
+    void x.ricarica();
+    setGiro(g => g + 1);
+    setParametri(giaRiparato ? { scadenza: uuid, azione: 'registra' } : { scadenza: uuid });
+  };
 
   const schede: TabItem[] = s
     ? [
@@ -131,10 +143,12 @@ const SoggettoPage: React.FC = () => {
           />
           <RiepilogoSoggetto s={s} />
           <Tabs
+            key={giro}
             items={schede}
             defaultTab='scadenze'
             actions={
-              capacita?.write && (
+              capacita?.write &&
+              profilo && (
                 <AzioniSoggetto
                   s={s}
                   inCorso={x.inCorso}
@@ -143,6 +157,8 @@ const SoggettoPage: React.FC = () => {
                   scadenze={x.scadenze}
                   onAggiungi={x.aggiungiScadenza}
                   onRicarica={() => void x.ricarica()}
+                  giorniRiparazione={profilo.giorniRiparazione}
+                  onGuasto={dopoGuasto}
                 />
               )
             }

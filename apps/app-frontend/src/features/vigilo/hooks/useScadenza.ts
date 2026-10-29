@@ -65,12 +65,16 @@ export function useScadenza(uuid: string | null, aperto: boolean, onFatto: () =>
     [onFatto, toast]
   );
 
-  /** "La prossima scadenza è …" dopo una registrazione che chiude */
+  /** "La prossima scadenza è …" (e "il mezzo è di nuovo in servizio") dopo una registrazione che chiude */
   const fraseProssima = useCallback(
     (e: EsitoEsecuzione) => {
       const s = e.successiva;
-      if (s?.scadeIl) return `La prossima scadenza è ${giornoEsteso(s.scadeIl)}.`;
-      return s?.sogliaUso && dettaglio?.contatore ? `La prossima è a ${misura(s.sogliaUso, dettaglio.contatore.unita)}.` : undefined;
+      const prossima = s?.scadeIl
+        ? `La prossima scadenza è ${giornoEsteso(s.scadeIl)}.`
+        : s?.sogliaUso && dettaglio?.contatore
+          ? `La prossima è a ${misura(s.sogliaUso, dettaglio.contatore.unita)}.`
+          : null;
+      return [prossima, e.rimessoInServizio ? 'Il mezzo è di nuovo in servizio.' : null].filter(Boolean).join(' ') || undefined;
     },
     [dettaglio]
   );

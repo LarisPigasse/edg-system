@@ -4,11 +4,13 @@
 // ha soltanto vigilo.own. Prima le sue (patente, visite, corsi), poi quelle
 // dei mezzi che usa adesso, in schede grandi pensate per il telefono. Il clic
 // apre il pannello: in sola lettura, con i documenti da caricare. Dalla
-// campanella ci si arriva con ?scadenza=. Senza persona collegata, il perché.
+// campanella ci si arriva con ?scadenza= (e da un guasto appena segnalato,
+// anche con &azione=segnala se già riparato). Senza persona collegata, il perché.
 import React, { useCallback, useState } from 'react';
 import { Alert, PageHeader, Skeleton } from '@edg/ui';
 
 import { GruppoScadenze } from '../components/addetto/GruppoScadenze';
+import type { Azione } from '../constants/azioni';
 import { NonCollegato } from '../components/addetto/NonCollegato';
 import { RichiedeAvvio } from '../components/RichiedeAvvio';
 import { PannelloScadenza } from '../components/scadenza/PannelloScadenza';
@@ -22,8 +24,10 @@ const Contenuto: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => {
   const m = useMieScadenze(persona?.uuid ?? null);
   const [aperta, setAperta] = useState<string | null>(null);
   const [pannello, setPannello] = useState(false);
-  const apri = useCallback((uuid: string) => {
+  const [azione, setAzione] = useState<Azione | null>(null);
+  const apri = useCallback((uuid: string, a: Azione | null = null) => {
     setAperta(uuid);
+    setAzione(a);
     setPannello(true);
   }, []);
   useScadenzaDaIndirizzo(apri);
@@ -69,7 +73,14 @@ const Contenuto: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => {
           ))}
         </div>
       )}
-      <PannelloScadenza uuid={aperta} aperto={pannello} capacita={profilo.capacita} onChiudi={() => setPannello(false)} onFatto={() => void m.ricarica()} />
+      <PannelloScadenza
+        uuid={aperta}
+        aperto={pannello}
+        capacita={profilo.capacita}
+        azioneIniziale={azione}
+        onChiudi={() => setPannello(false)}
+        onFatto={() => void m.ricarica()}
+      />
     </div>
   );
 };

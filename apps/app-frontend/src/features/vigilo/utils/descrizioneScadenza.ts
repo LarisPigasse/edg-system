@@ -10,7 +10,7 @@ import { misura } from './misure';
 /** "Iveco Stralis FT456CD" o "Promemoria" */
 export const soggettoDi = (s: Scadenza) => (s.soggetto ? [s.soggetto.nome, s.soggetto.identificativo].filter(Boolean).join(' ') : 'Promemoria');
 
-export const naturaDi = (s: Scadenza) => (s.controllo ? NATURE_TESTO[s.controllo.natura] : 'Promemoria');
+export const naturaDi = (s: Scadenza) => NATURE_TESTO[s.natura];
 
 /** "23 set 2026", "a 16.000 km", "23 set 2026 o a 16.000 km" */
 export function quandoDi(s: Scadenza): string {

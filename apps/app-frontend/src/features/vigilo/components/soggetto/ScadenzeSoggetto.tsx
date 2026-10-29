@@ -3,10 +3,12 @@
 // Le scadenze aperte del soggetto, per urgenza, con le stesse schede
 // colorate della dashboard (sotto il titolo la natura, il soggetto è già
 // scritto in testa). Un clic apre il pannello con le azioni; ci si arriva
-// anche dalla campanella con ?scadenza= (ADR091). "Aggiungi scadenza" sta
-// nel menu Azioni della pagina.
+// anche dalla campanella con ?scadenza= (ADR091), e dopo un guasto segnalato
+// (anche con &azione=registra se già riparato, B10a). "Aggiungi scadenza" e
+// "Segnala un guasto" stanno nel menu Azioni della pagina.
 import React, { useCallback, useState } from 'react';
 
+import type { Azione } from '../../constants/azioni';
 import { NATURE_TESTO } from '../../constants/nature';
 import type { Capacita } from '../../types/io';
 import type { Scadenza } from '../../types/scadenze';
@@ -26,8 +28,10 @@ export const ScadenzeSoggetto: React.FC<Props> = ({ scadenze, capacita, onCambia
   const oggi = oggiLocale();
   const [aperta, setAperta] = useState<string | null>(null);
   const [pannello, setPannello] = useState(false);
-  const apri = useCallback((uuid: string) => {
+  const [azione, setAzione] = useState<Azione | null>(null);
+  const apri = useCallback((uuid: string, a: Azione | null = null) => {
     setAperta(uuid);
+    setAzione(a);
     setPannello(true);
   }, []);
   useScadenzaDaIndirizzo(apri);
@@ -44,12 +48,12 @@ export const ScadenzeSoggetto: React.FC<Props> = ({ scadenze, capacita, onCambia
               s={s}
               fascia={fasciaDi(s, oggi)}
               onApri={() => apri(s.uuid)}
-              sottotitolo={s.controllo ? NATURE_TESTO[s.controllo.natura] : 'Promemoria'}
+              sottotitolo={NATURE_TESTO[s.natura]}
             />
           ))}
         </div>
       )}
-      <PannelloScadenza uuid={aperta} aperto={pannello} capacita={capacita} onChiudi={() => setPannello(false)} onFatto={onCambiate} />
+      <PannelloScadenza uuid={aperta} aperto={pannello} capacita={capacita} azioneIniziale={azione} onChiudi={() => setPannello(false)} onFatto={onCambiate} />
     </>
   );
 };

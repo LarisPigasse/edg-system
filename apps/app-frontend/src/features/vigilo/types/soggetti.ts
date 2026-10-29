@@ -28,6 +28,8 @@ export interface Soggetto {
   scadenze?: { aperte: number; statoPeggiore: Stato | null; urgenzaIl: string | null };
   /** Solo nel dettaglio di una persona: l'account collegato (B9b) */
   account?: AccountPersona | null;
+  /** Solo persone e solo a chi ha vigilo.costi: €/h della manodopera (passo 8) */
+  costoOrario?: number | null;
   creatoIl: string;
   modificatoIl: string;
 }
@@ -104,6 +106,8 @@ export interface DatiSoggetto {
   dati: Record<string, unknown>;
   campi: Record<string, unknown>;
   note: string | null;
+  /** Solo persone, solo con vigilo.costi (passo 8) */
+  costoOrario?: number | null;
 }
 
 /** Esito di creazione e modifica: che cosa è successo alle scadenze */

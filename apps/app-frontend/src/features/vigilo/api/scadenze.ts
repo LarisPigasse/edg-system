@@ -2,6 +2,7 @@
 import type {
   DatiConferma,
   DatiEsecuzione,
+  DatiGuasto,
   DatiRinvio,
   DatiSegnalazione,
   DettaglioScadenza,
@@ -76,6 +77,12 @@ export const confermaSegnalazione = (uuidSegnalazione: string, dati: DatiConferm
 /** L'ufficio la respinge, con il motivo */
 export const respingiSegnalazione = (uuidSegnalazione: string, motivo: string) =>
   richiesta<Registrazione>(`/segnalazioni/${uuidSegnalazione}/rifiuto`, 'POST', { motivo });
+
+// --- Guasti (B10a) -------------------------------------------------------------
+
+/** Un guasto sul soggetto: nasce una scadenza di natura riparazione (sospeso: il mezzo è stato sospeso) */
+export const segnalaGuasto = (uuidSoggetto: string, dati: DatiGuasto) =>
+  richiesta<DettaglioScadenza & { sospeso: boolean }>(`/soggetti/${uuidSoggetto}/guasti`, 'POST', dati);
 
 /** Sposta la data con un motivo, senza chiudere */
 export const rinviaScadenza = (uuid: string, dati: DatiRinvio) => richiesta<unknown>(`/scadenze/${uuid}/rinvio`, 'POST', dati);

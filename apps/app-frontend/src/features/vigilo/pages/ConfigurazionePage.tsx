@@ -5,7 +5,8 @@
 // categorie e controlli. Da qui si riapre la libreria. Modifica, editor della
 // cadenza e "Ricomincia da capo" arriveranno sulla stessa pagina.
 // Le regole degli avvisi del tenant si cambiano nel pannello laterale (B8d-2);
-// i destinatari di un controllo dal menu della sua riga (B8d-3).
+// i destinatari di un controllo dal menu della sua riga (B8d-3); le regole
+// degli interventi (giorni per riparare, costo orario) nel loro pannello (passo 8).
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
@@ -13,9 +14,11 @@ import { Alert, Button, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui
 import { TIPI } from '../constants/tipiSoggetto';
 import { Impostazioni } from '../components/configurazione/Impostazioni';
 import { PannelloDestinatariControllo } from '../components/configurazione/PannelloDestinatariControllo';
+import { PannelloInterventi } from '../components/configurazione/PannelloInterventi';
 import { PannelloRegoleAvvisi } from '../components/configurazione/PannelloRegoleAvvisi';
 import { SchedaTipo } from '../components/configurazione/SchedaTipo';
 import { useConfigurazione } from '../hooks/useConfigurazione';
+import { useInterventi } from '../hooks/useInterventi';
 import { useRegoleAvvisi } from '../hooks/useRegoleAvvisi';
 import type { Controllo } from '../types/configurazione';
 
@@ -24,6 +27,8 @@ const ConfigurazionePage: React.FC = () => {
   const { gruppi, stato, errore, caricamento, ricarica, vuota } = useConfigurazione();
   const regole = useRegoleAvvisi();
   const [regoleAperte, setRegoleAperte] = useState(false);
+  const interventi = useInterventi();
+  const [interventiAperti, setInterventiAperti] = useState(false);
   // il controllo resta impostato durante la chiusura del pannello
   const [destinatari, setDestinatari] = useState<{ c: Controllo | null; aperto: boolean }>({ c: null, aperto: false });
 
@@ -49,6 +54,7 @@ const ConfigurazionePage: React.FC = () => {
         onRefresh={() => {
           void ricarica();
           void regole.ricarica();
+          void interventi.ricarica();
         }}
         isLoading={caricamento}
         actions={<Button onClick={() => navigate('/vigilo/avvio')}>Aggiungi dalla libreria</Button>}
@@ -60,7 +66,25 @@ const ConfigurazionePage: React.FC = () => {
         </Alert>
       )}
 
-      {stato && <Impostazioni stato={stato} regole={regole.scheda} onModificaRegole={() => setRegoleAperte(true)} />}
+      {stato && (
+        <Impostazioni
+          stato={stato}
+          regole={regole.scheda}
+          onModificaRegole={() => setRegoleAperte(true)}
+          interventi={interventi.scheda}
+          onModificaInterventi={() => setInterventiAperti(true)}
+        />
+      )}
+
+      {interventi.scheda && (
+        <PannelloInterventi
+          scheda={interventi.scheda}
+          aperto={interventiAperti}
+          inCorso={interventi.inCorso}
+          onChiudi={() => setInterventiAperti(false)}
+          onSalva={interventi.salva}
+        />
+      )}
 
       {regole.scheda && (
         <PannelloRegoleAvvisi

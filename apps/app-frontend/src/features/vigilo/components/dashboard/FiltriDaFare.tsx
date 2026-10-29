@@ -9,7 +9,7 @@ import { Select, cn } from '@edg/ui';
 import { NATURE_TESTO } from '../../constants/nature';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { FiltriScadenze, RiferimentoSoggetto } from '../../types/scadenze';
-import { NATURE, TIPI_SOGGETTO, type Natura, type TipoSoggetto } from '../../types/valori';
+import { NATURE_FILTRO, TIPI_SOGGETTO, type NaturaEffettiva, type TipoSoggetto } from '../../types/valori';
 import type { Ordina } from '../../hooks/useDashboard';
 
 const TUTTI = 'tutti';
@@ -44,7 +44,7 @@ export const FiltriDaFare: React.FC<Props> = ({ filtri, onFiltri, sedi, ordina, 
         />
       </div>
       <div className='w-44'>
-        <Select optionSize='sm' label='Natura' value={filtri.natura ?? TUTTI} onValueChange={imposta('natura')} options={opzioni<Natura>('Tutte le nature', NATURE, n => NATURE_TESTO[n])} />
+        <Select optionSize='sm' label='Natura' value={filtri.natura ?? TUTTI} onValueChange={imposta('natura')} options={opzioni<NaturaEffettiva>('Tutte le nature', NATURE_FILTRO, n => NATURE_TESTO[n])} />
       </div>
       {sedi.length > 0 && (
         <div className='w-48'>

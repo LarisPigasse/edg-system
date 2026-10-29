@@ -2,20 +2,35 @@
 //
 // "I miei mezzi" dell'addetto (B9b, 07-interfaccia 7.10): i mezzi che ha
 // assegnati oggi, con i contatori per inserire subito km o ore. Una lettura
-// sbagliata si corregge (solo le sue). Senza persona collegata, il perché.
-import React from 'react';
-import { Alert, PageHeader, Skeleton } from '@edg/ui';
+// sbagliata si corregge (solo le sue). Su ogni mezzo "Segnala un guasto"
+// (B10a): poi si apre il guasto in Le mie scadenze (su Segnala fatto se è già
+// riparato). Senza persona collegata, il perché.
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Alert, Badge, Button, PageHeader, Skeleton, Wrench } from '@edg/ui';
 
 import { NonCollegato } from '../components/addetto/NonCollegato';
+import { SegnalaGuasto } from '../components/guasti/SegnalaGuasto';
+import { etichettaStato } from '../constants/statiSoggetto';
 import { RichiedeAvvio } from '../components/RichiedeAvvio';
 import { Riquadro } from '../components/Riquadro';
 import { CartaContatore } from '../components/soggetto/CartaContatore';
 import { useMieiMezzi } from '../hooks/useMieiMezzi';
 import type { ProfiloVigilo } from '../types/io';
+import type { Soggetto } from '../types/soggetti';
+import { TIPI_CON_GUASTI } from '../types/valori';
 
 const Contenuto: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => {
   const m = useMieiMezzi(!!profilo.persona);
+  const navigate = useNavigate();
+  const [guasto, setGuasto] = useState<Soggetto | null>(null);
+  const [aperto, setAperto] = useState(false);
   if (!profilo.persona) return <NonCollegato />;
+
+  const segnala = (s: Soggetto) => {
+    setGuasto(s);
+    setAperto(true);
+  };
 
   return (
     <div className='space-y-6'>
@@ -34,10 +49,19 @@ const Contenuto: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => {
         <div className='space-y-6'>
           {m.mezzi.map(s => (
             <section key={s.uuid} className='space-y-3'>
-              <h2 className='text-lg font-semibold text-text-primary'>
-                {s.nome}
-                {s.identificativo && <span className='ml-2 font-mono text-base text-text-secondary'>{s.identificativo}</span>}
-              </h2>
+              <div className='flex flex-wrap items-center justify-between gap-2'>
+                <h2 className='flex flex-wrap items-center gap-x-2 text-lg font-semibold text-text-primary'>
+                  {s.nome}
+                  {s.identificativo && <span className='font-mono text-base text-text-secondary'>{s.identificativo}</span>}
+                  {/* sospeso (anche per un guasto che blocca l'uso, B10a): non va usato */}
+                  {s.stato === 'fermo' && <Badge variant='warning' size='xs' text={etichettaStato('fermo', s.tipo)} className='rounded-lg' />}
+                </h2>
+                {s.stato !== 'dismesso' && TIPI_CON_GUASTI.includes(s.tipo) && (
+                  <Button size='sm' variant='secondary' leftIcon={<Wrench className='h-4 w-4' />} onClick={() => segnala(s)}>
+                    Segnala un guasto
+                  </Button>
+                )}
+              </div>
               {s.contatori.length ? (
                 <div className='grid gap-4 xl:grid-cols-2'>
                   {s.contatori.map(c => (
@@ -58,6 +82,16 @@ const Contenuto: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => {
             </section>
           ))}
         </div>
+      )}
+      {guasto && (
+        <SegnalaGuasto
+          soggetto={guasto}
+          aperto={aperto}
+          giorniRiparazione={profilo.giorniRiparazione}
+          perAddetto
+          onChiudi={() => setAperto(false)}
+          onSegnalato={(uuid, giaRiparato) => navigate(`/vigilo/mie-scadenze?scadenza=${uuid}${giaRiparato ? '&azione=segnala' : ''}`)}
+        />
       )}
     </div>
   );

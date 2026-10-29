@@ -15,7 +15,7 @@ import { leggiSedi } from '../api/soggetti';
 import { FILTRI_STATO_SCADENZE } from '../constants/elencoScadenze';
 import type { Controllo } from '../types/configurazione';
 import type { FiltroStatoScadenze, OrdinaScadenze, RiferimentoSoggetto, Scadenza } from '../types/scadenze';
-import type { Natura, TipoSoggetto } from '../types/valori';
+import type { NaturaEffettiva, TipoSoggetto } from '../types/valori';
 import { colonnePdf } from '../utils/pdfScadenze';
 import { useRitardato } from './useRitardato';
 
@@ -24,7 +24,7 @@ const RIGHE = 32;
 export interface FiltriElenco {
   stato: FiltroStatoScadenze;
   tipo?: TipoSoggetto;
-  natura?: Natura;
+  natura?: NaturaEffettiva;
   controllo?: string;
   sede?: string;
 }

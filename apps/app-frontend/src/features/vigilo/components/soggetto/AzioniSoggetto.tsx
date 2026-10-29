@@ -3,6 +3,7 @@
 // Tutte le azioni sul soggetto in un menu "Azioni", a destra sulla riga delle
 // schede (visibile qualunque scheda sia aperta):
 //   Aggiungi scadenza     pannello laterale: controllo o promemoria
+//   Segnala un guasto     mezzi, attrezzature e sedi: pannello laterale (B10a)
 //   ─────────
 //   Modifica              pannello laterale con il modulo
 //   Account collegato     solo persone: pannello laterale (B9b)
@@ -27,12 +28,15 @@ import {
   Play,
   Plus,
   User,
+  Wrench,
   type Action,
   type ConfirmVariant,
 } from '@edg/ui';
 
 import { etichettaStato } from '../../constants/statiSoggetto';
 import { TIPI } from '../../constants/tipiSoggetto';
+import { TIPI_CON_GUASTI } from '../../types/valori';
+import { SegnalaGuasto } from '../guasti/SegnalaGuasto';
 import type { DatiSoggetto, Soggetto, StatoSoggetto } from '../../types/soggetti';
 import type { Scadenza } from '../../types/scadenze';
 import { AggiungiScadenza } from './AggiungiScadenza';
@@ -51,6 +55,10 @@ interface Props {
   onAggiungi: React.ComponentProps<typeof AggiungiScadenza>['onAggiungi'];
   /** Dopo un cambio fatto in un pannello proprio (account collegato, B9b) */
   onRicarica: () => void;
+  /** Giorni proposti per riparare un guasto (dal profilo) */
+  giorniRiparazione: number;
+  /** Guasto segnalato: aprirne il pannello (su Registra se già riparato) */
+  onGuasto: (uuid: string, giaRiparato: boolean) => void;
 }
 
 interface TestoConferma {
@@ -95,8 +103,10 @@ function testi(s: Soggetto): Record<Conferma, TestoConferma> {
   };
 }
 
-export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModifica, scadenze, onAggiungi, onRicarica }) => {
+export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModifica, scadenze, onAggiungi, onRicarica, giorniRiparazione, onGuasto }) => {
   const [modifica, setModifica] = useState(false);
+  const [guasto, setGuasto] = useState(false);
+  const conGuasti = s.stato !== 'dismesso' && TIPI_CON_GUASTI.includes(s.tipo);
   const [account, setAccount] = useState(false);
   const [aggiungi, setAggiungi] = useState(false);
   const [conferma, setConferma] = useState<Conferma | null>(null);
@@ -106,8 +116,9 @@ export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModific
   const azioni: Action[] = [
     // su un soggetto archiviato non si aggiungono scadenze
     ...(s.stato !== 'dismesso'
-      ? [{ id: 'aggiungi', label: 'Aggiungi scadenza', icon: icona(Plus), onClick: () => setAggiungi(true), divider: true }]
+      ? [{ id: 'aggiungi', label: 'Aggiungi scadenza', icon: icona(Plus), onClick: () => setAggiungi(true), divider: !conGuasti }]
       : []),
+    ...(conGuasti ? [{ id: 'guasto', label: 'Segnala un guasto', icon: icona(Wrench), onClick: () => setGuasto(true), divider: true }] : []),
     { id: 'modifica', label: 'Modifica', icon: icona(Pencil), onClick: () => setModifica(true), divider: s.stato === 'dismesso' && s.tipo !== 'persona' },
     // una persona si collega al suo account (B9b)
     ...(s.tipo === 'persona' ? [{ id: 'account', label: 'Account collegato', icon: icona(User), onClick: () => setAccount(true), divider: s.stato === 'dismesso' }] : []),
@@ -156,6 +167,15 @@ export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModific
         onChiudi={() => setAggiungi(false)}
         onAggiungi={onAggiungi}
       />
+      {conGuasti && (
+        <SegnalaGuasto
+          soggetto={s}
+          aperto={guasto}
+          giorniRiparazione={giorniRiparazione}
+          onChiudi={() => setGuasto(false)}
+          onSegnalato={onGuasto}
+        />
+      )}
       {s.tipo === 'persona' && <PannelloAccountPersona s={s} aperto={account} onChiudi={() => setAccount(false)} onSalvato={onRicarica} />}
     </>
   );

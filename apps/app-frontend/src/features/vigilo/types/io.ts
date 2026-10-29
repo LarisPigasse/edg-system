@@ -24,4 +24,6 @@ export interface ProfiloVigilo {
   puoAvviare: boolean;
   /** Accesso assistito in corso (ADR085) */
   inAssistenza: boolean;
+  /** Giorni proposti per riparare un guasto che non blocca l'uso (parametro del tenant) */
+  giorniRiparazione: number;
 }

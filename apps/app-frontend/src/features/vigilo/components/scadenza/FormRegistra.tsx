@@ -9,17 +9,23 @@
 // registrazione (B9a).
 // Con `segnalazione` è la conferma dell'ufficio (B9c): i campi partono dai
 // dati dell'addetto, correggibili, e l'esito è positivo.
+// Per l'ultimo guasto che blocca il mezzo, "Rimetti in servizio" (B10a).
+// "Chi ha fatto il lavoro" e la manodopera interna, se il controllo la
+// prevede (passo 8): lì sta anche il fornitore, con Esterno o Entrambi.
 import React, { useState } from 'react';
-import { DatePicker, Input, RadioGroup, Select, TextArea } from '@edg/ui';
+import { Checkbox, DatePicker, Input, RadioGroup, Select, TextArea } from '@edg/ui';
 
 import { useDocumentiRegistra } from '../../hooks/useDocumentiRegistra';
 import { useFornitori } from '../../hooks/useFornitori';
+import { usePersoneManodopera } from '../../hooks/usePersoneManodopera';
 import type { Capacita } from '../../types/io';
-import type { DatiEsecuzione, DatoRegistrazione, DettaglioScadenza, Esito, SegnalazioneInAttesa } from '../../types/scadenze';
+import type { DatiEsecuzione, DatoRegistrazione, DettaglioScadenza, Esecuzione, Esito, SegnalazioneInAttesa } from '../../types/scadenze';
 import { aGiorno, daGiorno, giornoEsteso, oggiLocale } from '../../utils/giorni';
+import { nuovaRiga, righePronte, type RigaInModulo } from '../../utils/manodopera';
 import { misura } from '../../utils/misure';
 import { importo as leggiImporto, intero } from '../../utils/numeri';
 import { CampoDocumento } from './CampoDocumento';
+import { CampoManodopera } from './CampoManodopera';
 import { PulsantiForm } from './PulsantiForm';
 
 const NESSUNO = 'nessuno';
@@ -52,6 +58,9 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
   const conRiferimento = vede('riferimento');
   const conDocumento = vede('allegato');
   const doc = useDocumentiRegistra(s.uuid);
+  const conManodopera = vede('manodopera');
+  const fornitoreInSezione = conManodopera && conFornitore;
+  const pm = usePersoneManodopera(conManodopera, capacita.costi);
 
   const [eseguitaIl, setEseguitaIl] = useState(seg?.eseguitaIl ?? oggi);
   const [esito, setEsito] = useState<Esito>('positivo');
@@ -61,6 +70,10 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
   const [riferimento, setRiferimento] = useState(seg?.riferimento ?? '');
   const [note, setNote] = useState(seg?.note ?? '');
   const gia = seg?.documenti ?? 0;
+  const [rimetti, setRimetti] = useState(s.rimettiInServizio);
+  // chi ha fatto il lavoro: già scelto se il controllo chiede il fornitore o la manodopera
+  const [esecuzione, setEsecuzione] = useState<Esecuzione | ''>(conManodopera && chiede('fornitore') ? 'esterna' : conManodopera && chiede('manodopera') ? 'interna' : '');
+  const [righe, setRighe] = useState<RigaInModulo[]>(() => (conManodopera && chiede('manodopera') ? [nuovaRiga()] : []));
   const [altri, setAltri] = useState(['importo', 'fornitore', 'riferimento'].some(k => chiede(k as DatoRegistrazione)));
   const [correggi, setCorreggi] = useState(false);
   const [prossimaIl, setProssimaIl] = useState(s.prossimaSeRegistrataOggi?.scadeIl ?? '');
@@ -68,6 +81,10 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
   const [dataNuova, setDataNuova] = useState('');
 
   const positivo = esito === 'positivo';
+  const interna = conManodopera && (esecuzione === 'interna' || esecuzione === 'entrambe');
+  const manodopera = righePronte(interna ? righe : []);
+  // con Esterno ed Entrambi il fornitore; se la rubrica è vuota lo si dice (si scrive nelle note)
+  const mostraFornitore = conManodopera && vede('fornitore') && (esecuzione === 'esterna' || esecuzione === 'entrambe' || chiede('fornitore'));
   const valoreLettura = intero(lettura);
   const valoreEuro = leggiImporto(euro);
   const soglia = intero(prossimaSoglia);
@@ -84,6 +101,9 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
     !manca('fornitore', conFornitore && fornitore === NESSUNO) &&
     !manca('riferimento', conRiferimento && !riferimento.trim()) &&
     !manca('allegato', conDocumento && !doc.caricati.length && !gia) &&
+    !manca('manodopera', conManodopera && !manodopera.pronte.length) &&
+    !manodopera.errore &&
+    !manodopera.incompleta &&
     !doc.inArrivo.length;
 
   const invia = (e: React.FormEvent) => {
@@ -95,18 +115,32 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
       esito,
       ...(conLettura ? { lettura: valoreLettura } : {}),
       ...(conImporto ? { importo: valoreEuro } : {}),
-      ...(conFornitore ? { fornitore: fornitore === NESSUNO ? null : fornitore } : {}),
+      ...(conFornitore && (!fornitoreInSezione || mostraFornitore) ? { fornitore: fornitore === NESSUNO ? null : fornitore } : {}),
+      ...(conManodopera && esecuzione ? { esecuzione } : {}),
+      ...(manodopera.pronte.length ? { manodopera: manodopera.pronte } : {}),
       ...(conRiferimento ? { riferimento: riferimento.trim() || null } : {}),
       note: note.trim() || null,
       ...(prossima && Object.keys(prossima).length ? { prossima } : {}),
       ...(!positivo && dataNuova ? { dataNuova } : {}),
       ...(conDocumento && doc.caricati.length ? { allegati: doc.consegna() } : {}),
+      ...(positivo && s.rimettiInServizio ? { rimettiInServizio: rimetti } : {}),
     });
   };
 
+  const campoFornitore = (
+    <Select
+      label='Fornitore'
+      value={fornitore}
+      onValueChange={setFornitore}
+      options={[{ value: NESSUNO, label: 'Nessuno' }, ...fornitori.map(f => ({ value: f.uuid, label: f.nome }))]}
+    />
+  );
+
   const proposta = s.prossimaSeRegistrataOggi;
   const testoProposta = !proposta
-    ? 'Con questa registrazione la serie finisce: non ci sono altre scadenze dopo questa.'
+    ? s.natura === 'riparazione'
+      ? 'Con questa registrazione il guasto risulta riparato.'
+      : 'Con questa registrazione la serie finisce: non ci sono altre scadenze dopo questa.'
     : eseguitaIl !== oggi
       ? 'Vigilo calcolerà la prossima scadenza dalla data di esecuzione.'
       : proposta.scadeIl
@@ -185,7 +219,22 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
         </div>
       )}
 
-      {(conImporto || conFornitore || conRiferimento) && (
+      {conManodopera && (
+        <CampoManodopera
+          esecuzione={esecuzione}
+          onEsecuzione={setEsecuzione}
+          righe={righe}
+          onRighe={setRighe}
+          persone={pm.persone}
+          costi={capacita.costi}
+          costoPredefinito={pm.costoPredefinito}
+          obbligatoria={chiede('manodopera')}
+          mostraFornitore={mostraFornitore}
+          fornitore={conFornitore ? campoFornitore : <p className='text-xs text-text-secondary'>Nessun fornitore in rubrica: scrivi nelle note chi ha fatto il lavoro.</p>}
+        />
+      )}
+
+      {(conImporto || (conFornitore && !fornitoreInSezione) || conRiferimento) && (
         <div>
           <button type='button' aria-expanded={altri} onClick={() => setAltri(!altri)} className='text-sm font-semibold text-action-primary hover:underline'>
             {altri ? 'Nascondi altri dettagli' : 'Altri dettagli'}
@@ -202,14 +251,7 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
                   error={Number.isNaN(valoreEuro) ? 'Un importo, es. 1.250,50' : undefined}
                 />
               )}
-              {conFornitore && (
-                <Select
-                  label='Fornitore'
-                  value={fornitore}
-                  onValueChange={setFornitore}
-                  options={[{ value: NESSUNO, label: 'Nessuno' }, ...fornitori.map(f => ({ value: f.uuid, label: f.nome }))]}
-                />
-              )}
+              {conFornitore && !fornitoreInSezione && campoFornitore}
               {conRiferimento && (
                 <Input
                   label='Riferimento'
@@ -227,6 +269,15 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
 
       {conDocumento && (
         <CampoDocumento doc={doc} obbligatorio={chiede('allegato')} avvisaSeManca={positivo} disabilitato={inCorso} gia={gia} />
+      )}
+
+      {positivo && s.rimettiInServizio && (
+        <Checkbox
+          label='Rimetti in servizio il mezzo'
+          description='Era sospeso per questo guasto e non ce ne sono altri che lo bloccano.'
+          checked={rimetti}
+          onCheckedChange={v => setRimetti(v === true)}
+        />
       )}
 
       <TextArea label='Note' value={note} onChange={e => setNote(e.target.value)} maxLength={4096} minRows={1} autoResize />

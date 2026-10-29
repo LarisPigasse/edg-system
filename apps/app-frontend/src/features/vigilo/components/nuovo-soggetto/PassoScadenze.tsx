@@ -41,7 +41,7 @@ export const PassoScadenze: React.FC<Props> = ({ scadenze, completamenti, onComp
                 <div className='min-w-0 self-center'>
                   <p className='font-medium text-text-primary'>{s.titolo}</p>
                   <p className='text-sm text-text-secondary'>
-                    {s.controllo ? NATURE_TESTO[s.controllo.natura] : 'Promemoria'} · <StatoScadenza stato={s.stato} testo={s.testo} className='font-semibold' />
+                    {NATURE_TESTO[s.natura]} · <StatoScadenza stato={s.stato} testo={s.testo} className='font-semibold' />
                   </p>
                 </div>
                 <DatePicker label='Scade il' value={c.scadeIl ? daGiorno(c.scadeIl) : undefined} onChange={d => onCompleta(s.uuid, { scadeIl: d ? aGiorno(d) : '' })} />

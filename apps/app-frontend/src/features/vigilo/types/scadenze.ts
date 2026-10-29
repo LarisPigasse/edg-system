@@ -1,5 +1,5 @@
 // src/features/vigilo/types/scadenze.ts — scadenze (vigilo-service, scadenza.presenta)
-import type { Natura, TipoSoggetto } from './valori';
+import type { Natura, NaturaEffettiva, TipoSoggetto } from './valori';
 
 export const STATI = ['scaduta', 'in-tolleranza', 'in-scadenza', 'da-completare', 'in-regola'] as const;
 export type Stato = (typeof STATI)[number];
@@ -16,6 +16,10 @@ export interface RiferimentoSoggetto {
 export interface Scadenza {
   uuid: string;
   titolo: string;
+  /** Della scadenza (riparazione = guasto), del controllo o promemoria */
+  natura: NaturaEffettiva;
+  /** Guasto che sospende il mezzo finché non è riparato */
+  bloccaUso: boolean;
   soggetto: RiferimentoSoggetto | null;
   controllo: { uuid: string; nome: string; natura: Natura } | null;
   scadeIl: string | null;
@@ -46,7 +50,7 @@ export interface Contatore {
 export interface FiltriScadenze {
   testo?: string;
   tipo?: TipoSoggetto;
-  natura?: Natura;
+  natura?: NaturaEffettiva;
   sede?: string;
 }
 
@@ -75,6 +79,24 @@ export interface Registrazione {
   motivoRifiuto: string | null;
   /** L'ha inserita l'utente (l'addetto ritira solo le sue segnalazioni) */
   tua: boolean;
+  /** Chi ha fatto il lavoro (passo 8) */
+  esecuzione: Esecuzione | null;
+  /** Manodopera interna: costoOrario e costo solo a chi ha vigilo.costi */
+  manodopera: { nome: string | null; ore: number; costoOrario?: number | null; costo?: number | null }[];
+  oreManodopera: number;
+  /** Solo a chi ha vigilo.costi */
+  costoManodopera?: number | null;
+  /** Importo + manodopera, solo a chi ha vigilo.costi */
+  costoTotale?: number | null;
+}
+
+/** Chi ha fatto il lavoro di una registrazione (passo 8) */
+export type Esecuzione = 'interna' | 'esterna' | 'entrambe';
+
+/** Una riga di manodopera nel modulo: persona (uuid, null = "dipendente") e ore */
+export interface RigaManodoperaDati {
+  persona: string | null;
+  ore: number;
 }
 
 /** La segnalazione dell'addetto in attesa, con il nome di chi l'ha mandata (B9c) */
@@ -86,7 +108,7 @@ export interface SegnalazioneInAttesa extends Registrazione {
 
 /** Che cosa chiede la registrazione, dato per dato (dal controllo) */
 export type Richiesta = 'obbligatorio' | 'facoltativo' | 'nascosto';
-export type DatoRegistrazione = 'importo' | 'fornitore' | 'riferimento' | 'lettura' | 'allegato';
+export type DatoRegistrazione = 'importo' | 'fornitore' | 'riferimento' | 'lettura' | 'allegato' | 'manodopera';
 
 export interface DettaglioScadenza extends Scadenza {
   impostazioni: { frasi: { cadenza: string; preavvisi: string; tolleranza: string } };
@@ -97,6 +119,8 @@ export interface DettaglioScadenza extends Scadenza {
   richieste: Record<DatoRegistrazione, Richiesta>;
   rinviabile: boolean;
   segnalazione: SegnalazioneInAttesa | null;
+  /** Riparando questo guasto il mezzo sospeso può tornare in servizio */
+  rimettiInServizio: boolean;
 }
 
 export interface DatiEsecuzione {
@@ -113,6 +137,11 @@ export interface DatiEsecuzione {
   dataNuova?: string | null;
   /** Documenti caricati sulla scadenza dal modulo: passano alla registrazione (B9a) */
   allegati?: string[];
+  /** Ultimo guasto che bloccava il mezzo: rimetterlo in servizio (B10a) */
+  rimettiInServizio?: boolean;
+  /** Chi ha fatto il lavoro; senza, il servizio lo deduce */
+  esecuzione?: Esecuzione | null;
+  manodopera?: RigaManodoperaDati[];
 }
 
 /** "Fatto" segnalato dall'addetto: solo ciò che può dare (B9c) */
@@ -126,6 +155,14 @@ export interface DatiSegnalazione {
 /** La conferma dell'ufficio: i campi del modulo Registra, corretti se serve */
 export type DatiConferma = Omit<DatiEsecuzione, 'esito' | 'dataNuova'>;
 
+/** Un guasto segnalato (B10a) */
+export interface DatiGuasto {
+  titolo: string;
+  descrizione?: string | null;
+  bloccaUso: boolean;
+  scadeIl?: string | null;
+}
+
 export interface DatiRinvio {
   dataNuova: string;
   motivo: string;
@@ -133,6 +170,8 @@ export interface DatiRinvio {
 }
 
 export interface EsitoEsecuzione {
+  /** Riparato l'ultimo guasto bloccante: il mezzo è di nuovo in servizio */
+  rimessoInServizio: boolean;
   successiva: { uuid: string; scadeIl: string | null; sogliaUso: number | null } | null;
 }
 

@@ -26,7 +26,7 @@ export const PerControllo: React.FC<{ righe: Dashboard['perControllo'] }> = ({ r
           {mostrati.map(r => (
             <li key={r.nome} className='border-t border-border-thin first:border-t-0'>
               <Link
-                to={`/vigilo/scadenze?controllo=${r.uuids.join(',')}`}
+                to={r.natura ? `/vigilo/scadenze?natura=${r.natura}` : `/vigilo/scadenze?controllo=${r.uuids.join(',')}`}
                 className='-mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary'
               >
                 <span className='min-w-0 flex-1 truncate text-sm font-medium text-text-primary'>{r.nome}</span>

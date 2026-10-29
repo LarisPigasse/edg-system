@@ -22,3 +22,19 @@ export interface SchedaRegoleAvvisi {
   /** L'utente può cambiarle (vigilo.config) */
   modificabili: boolean;
 }
+
+// --- Interventi (passo 8): GET/PATCH /api/vigilo/impostazioni/interventi ---
+
+export interface RegoleInterventi {
+  costoOrario: number | null;
+  giorniRiparazione: number;
+}
+
+export interface SchedaInterventi {
+  giorniRiparazione: number;
+  /** Solo a chi ha vigilo.costi */
+  costoOrario?: number | null;
+  predefinite: { giorniRiparazione: number };
+  limiti: { costoOrario: { min: number; max: number }; giorniRiparazione: { min: number; max: number } };
+  modificabili: { giorniRiparazione: boolean; costoOrario: boolean };
+}

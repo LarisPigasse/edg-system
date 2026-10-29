@@ -11,7 +11,7 @@ import { NATURE_TESTO } from '../../constants/nature';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { StatoElencoScadenze } from '../../hooks/useElencoScadenze';
 import type { FiltroStatoScadenze } from '../../types/scadenze';
-import { NATURE, TIPI_SOGGETTO, type Natura, type TipoSoggetto } from '../../types/valori';
+import { NATURE_FILTRO, TIPI_SOGGETTO, type NaturaEffettiva, type TipoSoggetto } from '../../types/valori';
 import { CampoRicerca } from '../CampoRicerca';
 
 const TUTTI = 'tutti';
@@ -56,7 +56,7 @@ export const FiltriElenco: React.FC<{ e: StatoElencoScadenze }> = ({ e }) => {
           label='Natura'
           value={f.natura ?? TUTTI}
           onValueChange={scegli('natura')}
-          options={[{ value: TUTTI, label: 'Tutte le nature' }, ...NATURE.map((n: Natura) => ({ value: n, label: NATURE_TESTO[n] }))]}
+          options={[{ value: TUTTI, label: 'Tutte le nature' }, ...NATURE_FILTRO.map((n: NaturaEffettiva) => ({ value: n, label: NATURE_TESTO[n] }))]}
         />
       </div>
       {controlli.length > 0 && (

@@ -18,7 +18,8 @@ export interface Dashboard {
   conteggi: Conteggi;
   /** Le scadenze da fare per controllo, dalla più grave */
   /** Per nome: i controlli omonimi (es. i tagliandi di categorie diverse) sono una riga sola */
-  perControllo: { uuids: string[]; nome: string; n: number; peggiore: Stato }[];
+  /** Senza controllo: "Riparazioni" (natura riparazione, i guasti) e "Promemoria" */
+  perControllo: { uuids: string[]; nome: string; natura: 'riparazione' | null; n: number; peggiore: Stato }[];
   /** Mesi 'YYYY-MM' dal corrente in avanti, più quelle rimaste indietro */
   perMese: { arretrato: number; mesi: { mese: string; n: number }[] };
   soggetti: { tipo: TipoSoggetto; n: number; peggiore: Stato | null; critici: number }[];
