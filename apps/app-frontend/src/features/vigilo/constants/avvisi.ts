@@ -7,6 +7,9 @@ import type { FrequenzaAvvisi, StatoElencoAvvisi } from '../types/avvisi';
 /** Voci per pagina dell'elenco ("Mostra altri") */
 export const AVVISI_PER_PAGINA = 32;
 
+/** Il tipo dell'avviso degli aggiornamenti della libreria (vigilo-service, avvisoLibreria.ts, B10b) */
+export const TIPO_LIBRERIA = 'libreria';
+
 export const STATI_ELENCO_AVVISI: { value: StatoElencoAvvisi; label: string; vuoto: string }[] = [
   { value: 'tutti', label: 'Tutti', vuoto: 'Nessun avviso, per ora.' },
   { value: 'da-leggere', label: 'Da leggere', vuoto: 'Nessun avviso da leggere.' },

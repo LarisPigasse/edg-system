@@ -4,10 +4,12 @@
 // soggetto e stato sotto; pallino rosso, arancio o normale come i colori
 // della dashboard; il clic porta alla scadenza (scheda del soggetto, o
 // elenco delle scadenze per un promemoria) con il pannello già aperto
-// (?scadenza=).
+// (?scadenza=). L'avviso della libreria, senza scadenza, porta alla
+// Configurazione con gli aggiornamenti aperti (B10b).
 import type { EdgNotificationTone } from '@edg/ui';
 
 import type { ModuleNotification } from '../../../core/notifications';
+import { TIPO_LIBRERIA } from '../constants/avvisi';
 import type { TonoAvviso, VoceAvviso } from '../types/avvisi';
 
 const TONO: Record<TonoAvviso, EdgNotificationTone> = { pericolo: 'danger', attenzione: 'warning', normale: 'default' };
@@ -30,5 +32,5 @@ export const notificaDi = (v: VoceAvviso, base: string): ModuleNotification => (
   unread: v.consegna === 'inviato',
   resolved: v.consegna === 'risolto',
   date: v.creatoIl,
-  href: v.scadenza ? percorsoScadenza(base, v.scadenza.uuid, v.soggetto?.uuid) : undefined,
+  href: v.scadenza ? percorsoScadenza(base, v.scadenza.uuid, v.soggetto?.uuid) : v.tipo === TIPO_LIBRERIA ? `${base}/configurazione?aggiornamenti=1` : undefined,
 });

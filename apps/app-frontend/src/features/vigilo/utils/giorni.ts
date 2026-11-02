@@ -38,3 +38,11 @@ export const giornoBreve = (giorno: string): string => {
 
 /** Oggi sul calendario di chi usa la pagina, come 'YYYY-MM-DD' */
 export const oggiLocale = (): string => aGiorno(new Date());
+
+/** Un istante (ISO) come "3 mar 2026 alle 10:42", in ora italiana: per i registri (B10b) */
+export const istanteEsteso = (iso: string): string => {
+  const d = new Date(iso);
+  const giorno = d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Rome' });
+  const ora = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+  return `${giorno} alle ${ora}`;
+};

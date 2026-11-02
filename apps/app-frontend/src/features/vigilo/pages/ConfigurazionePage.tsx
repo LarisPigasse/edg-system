@@ -7,16 +7,25 @@
 // Le regole degli avvisi del tenant si cambiano nel pannello laterale (B8d-2);
 // i destinatari di un controllo dal menu della sua riga (B8d-3); le regole
 // degli interventi (giorni per riparare, costo orario) nel loro pannello (passo 8).
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Gli aggiornamenti della libreria hanno il loro riquadro e pannello (B10b):
+// ?aggiornamenti=1 (dall'avviso o dall'email) apre il pannello,
+// ?aggiornamenti=<uuid> (dal segno su una riga) il dettaglio di quella voce;
+// lo Storico della libreria di un controllo si apre dal menu della sua riga.
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Button, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
 
+import { PARAMETRO_AGGIORNAMENTI } from '../constants/aggiornamenti';
 import { TIPI } from '../constants/tipiSoggetto';
+import { PannelloAggiornamenti } from '../components/aggiornamenti/PannelloAggiornamenti';
+import { PannelloStoricoLibreria } from '../components/aggiornamenti/PannelloStoricoLibreria';
+import { RiquadroAggiornamenti } from '../components/aggiornamenti/RiquadroAggiornamenti';
 import { Impostazioni } from '../components/configurazione/Impostazioni';
 import { PannelloDestinatariControllo } from '../components/configurazione/PannelloDestinatariControllo';
 import { PannelloInterventi } from '../components/configurazione/PannelloInterventi';
 import { PannelloRegoleAvvisi } from '../components/configurazione/PannelloRegoleAvvisi';
 import { SchedaTipo } from '../components/configurazione/SchedaTipo';
+import { useAggiornamenti } from '../hooks/useAggiornamenti';
 import { useConfigurazione } from '../hooks/useConfigurazione';
 import { useInterventi } from '../hooks/useInterventi';
 import { useRegoleAvvisi } from '../hooks/useRegoleAvvisi';
@@ -31,6 +40,27 @@ const ConfigurazionePage: React.FC = () => {
   const [interventiAperti, setInterventiAperti] = useState(false);
   // il controllo resta impostato durante la chiusura del pannello
   const [destinatari, setDestinatari] = useState<{ c: Controllo | null; aperto: boolean }>({ c: null, aperto: false });
+  const aggiornamenti = useAggiornamenti(() => void ricarica());
+  const [parametri, setParametri] = useSearchParams();
+  const parametro = parametri.get(PARAMETRO_AGGIORNAMENTI);
+  const aggiornamentiAperti = !!parametro && !!aggiornamenti.elenco;
+  /** '1' = l'elenco, un uuid = quella voce, null = chiuso */
+  const apriAggiornamenti = (valore: string | null) =>
+    setParametri(
+      p => {
+        if (valore) p.set(PARAMETRO_AGGIORNAMENTI, valore);
+        else p.delete(PARAMETRO_AGGIORNAMENTI);
+        return p;
+      },
+      { replace: true }
+    );
+  const attesa = useMemo(
+    () => ({ voci: new Map((aggiornamenti.elenco?.voci ?? []).map(v => [v.uuid, v.tipo])), onApri: (uuid: string) => apriAggiornamenti(uuid) }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- apriAggiornamenti cambia a ogni render ma fa sempre la stessa cosa
+    [aggiornamenti.elenco]
+  );
+  // il controllo resta impostato durante la chiusura del pannello
+  const [storico, setStorico] = useState<{ c: Controllo | null; aperto: boolean }>({ c: null, aperto: false });
 
   const schede: TabItem[] = gruppi.map(g => ({
     id: g.tipo,
@@ -43,7 +73,14 @@ const ConfigurazionePage: React.FC = () => {
         </span>
       </span>
     ),
-    content: <SchedaTipo gruppo={g} onDestinatari={c => setDestinatari({ c, aperto: true })} />,
+    content: (
+      <SchedaTipo
+        gruppo={g}
+        onDestinatari={c => setDestinatari({ c, aperto: true })}
+        onStorico={c => setStorico({ c, aperto: true })}
+        attesa={attesa.voci.size ? attesa : undefined}
+      />
+    ),
   }));
 
   return (
@@ -55,6 +92,7 @@ const ConfigurazionePage: React.FC = () => {
           void ricarica();
           void regole.ricarica();
           void interventi.ricarica();
+          void aggiornamenti.ricarica();
         }}
         isLoading={caricamento}
         actions={<Button onClick={() => navigate('/vigilo/avvio')}>Aggiungi dalla libreria</Button>}
@@ -75,6 +113,29 @@ const ConfigurazionePage: React.FC = () => {
           onModificaInterventi={() => setInterventiAperti(true)}
         />
       )}
+
+      {aggiornamenti.elenco && aggiornamenti.elenco.voci.length > 0 && (
+        <RiquadroAggiornamenti elenco={aggiornamenti.elenco} onApri={() => apriAggiornamenti('1')} />
+      )}
+
+      {aggiornamenti.elenco && (
+        <PannelloAggiornamenti
+          elenco={aggiornamenti.elenco}
+          aperto={aggiornamentiAperti}
+          inCorso={aggiornamenti.inCorso}
+          onChiudi={() => apriAggiornamenti(null)}
+          onVisto={aggiornamenti.visto}
+          onDecidi={aggiornamenti.decidi}
+          voceIniziale={parametro && parametro !== '1' ? parametro : null}
+        />
+      )}
+
+      <PannelloStoricoLibreria
+        entita='controllo'
+        voce={storico.c}
+        aperto={storico.aperto}
+        onChiudi={() => setStorico(s => ({ ...s, aperto: false }))}
+      />
 
       {interventi.scheda && (
         <PannelloInterventi
