@@ -3,7 +3,7 @@
 // Scheda di un modulo del catalogo (ADR054): i dati e le scelte grafiche in
 // vigore, con un'anteprima di come appare (header e home del modulo, tessera
 // della home della piattaforma). Da qui si passa alla modifica dei dati o
-// dell'aspetto.
+// dell'aspetto, e alle gestioni proprie del modulo (module-admin, F0).
 import React from 'react';
 import {
   Badge,
@@ -21,6 +21,7 @@ import {
 } from '@edg/ui';
 import type { BrandElement, ModuleBrandImages } from '@edg/ui';
 
+import { moduleAdminDefs, type ModuleAdminDef } from './module-admin';
 import type { CatalogModule } from '../types/modules';
 import {
   MODULE_STATUS,
@@ -40,6 +41,8 @@ interface ModuleDetailModalProps {
   catalog: CatalogModule[];
   onEdit: (item: CatalogModule) => void;
   onEditBranding: (item: CatalogModule) => void;
+  /** Apre una gestione propria del modulo (es. i tipi di fornitore di Vigilo) */
+  onGestione?: (def: ModuleAdminDef) => void;
 }
 
 /** Da dove viene un elemento: immagine (presente o mancante) o testo con le sue classi */
@@ -94,8 +97,10 @@ const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({
   catalog,
   onEdit,
   onEditBranding,
+  onGestione,
 }) => {
   if (!item) return null;
+  const gestioni = moduleAdminDefs(item.key);
   const images = moduleImages(item.key);
   const brand = { name: item.name, branding: item.branding, images };
   const tile = { ...brand, subtitle: item.description, version: item.version };
@@ -145,6 +150,29 @@ const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({
               <Field label='Aggiornato'>{formatDate(item.updatedAt)}</Field>
             </dl>
           </section>
+
+          {gestioni.length > 0 && onGestione && (
+            <section>
+              <h3 className='mb-2 text-sm font-semibold uppercase tracking-wide text-text-secondary'>Gestione</h3>
+              <ul className='space-y-2'>
+                {gestioni.map(d => (
+                  <li key={d.id}>
+                    <button
+                      type='button'
+                      onClick={() => onGestione(d)}
+                      className='flex w-full items-start gap-3 rounded-lg border border-surface-border p-3 text-left transition-colors hover:bg-surface-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action-primary'
+                    >
+                      <span className='mt-0.5 text-text-secondary'>{d.icon}</span>
+                      <span className='min-w-0'>
+                        <span className='block text-sm font-medium text-text-primary'>{d.label}</span>
+                        <span className='block text-xs text-text-secondary'>{d.description}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section>
             <h3 className='mb-2 text-sm font-semibold uppercase tracking-wide text-text-secondary'>

@@ -6,6 +6,8 @@
 //
 // Un modulo già attivato, o richiesto da un altro, non si elimina: si porta a
 // "Dismesso". Il pulsante di eliminazione compare solo quando è possibile.
+// Le gestioni proprie di un modulo (es. i tipi di fornitore di Vigilo, F0) si
+// aprono dal menu della riga o dalla scheda: registro in module-admin.
 import React, { useMemo, useState } from 'react';
 import {
   PageHeader,
@@ -21,6 +23,7 @@ import {
 
 import ModuleFormModal from '../components/ModuleFormModal';
 import ModuleDetailModal from '../components/ModuleDetailModal';
+import { moduleAdminDefs, type ModuleAdminDef } from '../components/module-admin';
 import { ModuleBrandingModal } from '../components/module-brand';
 import { moduleImages } from '../../../assets/moduli';
 import { useModuleCatalog } from '../hooks/useModuleCatalog';
@@ -39,6 +42,9 @@ const ModuliPage: React.FC = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [brandingItem, setBrandingItem] = useState<CatalogModule | null>(null);
   const [isBrandingOpen, setIsBrandingOpen] = useState(false);
+  // la gestione resta impostata durante la chiusura (animazione)
+  const [gestione, setGestione] = useState<{ def: ModuleAdminDef | null; aperta: boolean }>({ def: null, aperta: false });
+  const apriGestione = (def: ModuleAdminDef) => setGestione({ def, aperta: true });
 
   // Dal catalogo aggiornato: dopo un salvataggio la scheda mostra i dati nuovi
   const detailItem = useMemo(() => items.find(m => m.key === detailKey) ?? null, [items, detailKey]);
@@ -155,7 +161,10 @@ const ModuliPage: React.FC = () => {
               getItemName: item => item.name,
             },
           },
-          actions: item => [{ id: 'branding', label: 'Aspetto', icon: <Palette className='w-4 h-4' />, onClick: () => openBranding(item) }],
+          actions: item => [
+            { id: 'branding', label: 'Aspetto', icon: <Palette className='w-4 h-4' />, onClick: () => openBranding(item) },
+            ...moduleAdminDefs(item.key).map(d => ({ id: d.id, label: d.label, icon: d.icon, onClick: () => apriGestione(d) })),
+          ],
         }}
       />
 
@@ -181,7 +190,13 @@ const ModuliPage: React.FC = () => {
           setIsDetailOpen(false);
           openBranding(item);
         }}
+        onGestione={def => {
+          setIsDetailOpen(false);
+          apriGestione(def);
+        }}
       />
+
+      {gestione.def && <gestione.def.Panel isOpen={gestione.aperta} onClose={() => setGestione(g => ({ ...g, aperta: false }))} />}
 
       <ModuleBrandingModal
         isOpen={isBrandingOpen}
