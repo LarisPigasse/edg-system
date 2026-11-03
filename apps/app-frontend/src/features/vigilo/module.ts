@@ -33,6 +33,8 @@ export const vigiloModule: AppModuleManifest = {
     { path: 'soggetti/nuovo', component: dopoAvvio(() => import('./pages/NuovoSoggettoPage')), quando: ufficio },
     // senza condizione: un addetto che ci arriva da un'email va alla sua scadenza in "Le mie scadenze"
     { path: 'soggetti/:id', component: dopoAvvio(() => import('./pages/SoggettoPage')) },
+    // La rubrica dei fornitori (F1): la legge l'ufficio, la modifica chi ha vigilo.write
+    { path: 'fornitori', component: dopoAvvio(() => import('./pages/FornitoriPage')), quando: ufficio },
     { path: 'calendario', component: dopoAvvio(() => import('./pages/CalendarioPage')), quando: ufficio },
     { path: 'mie-scadenze', component: lazy(() => import('./pages/MieScadenzePage')), quando: soloAddetto },
     { path: 'miei-mezzi', component: lazy(() => import('./pages/MieiMezziPage')), quando: soloAddetto },
@@ -40,11 +42,11 @@ export const vigiloModule: AppModuleManifest = {
     { path: 'avvisi', component: dopoAvvio(() => import('./pages/AvvisiPage')) },
     { path: 'configurazione', component: dopoAvvio(() => import('./pages/ConfigurazionePage')), permission: 'vigilo.config' },
   ],
-  // Le altre voci (Fornitori…) arrivano con le loro pagine
   menu: [
     { id: 'dashboard', label: 'Dashboard', path: '', quando: ufficio },
     { id: 'scadenze', label: 'Scadenze', path: 'scadenze', quando: ufficio },
     { id: 'soggetti', label: 'Soggetti', path: 'soggetti', quando: ufficio },
+    { id: 'fornitori', label: 'Fornitori', path: 'fornitori', quando: ufficio },
     { id: 'calendario', label: 'Calendario', path: 'calendario', quando: ufficio },
     { id: 'mie-scadenze', label: 'Le mie scadenze', path: 'mie-scadenze', quando: soloAddetto },
     { id: 'miei-mezzi', label: 'I miei mezzi', path: 'miei-mezzi', quando: soloAddetto },

@@ -12,8 +12,10 @@
 // Per l'ultimo guasto che blocca il mezzo, "Rimetti in servizio" (B10a).
 // "Chi ha fatto il lavoro" e la manodopera interna, se il controllo la
 // prevede (passo 8): lì sta anche il fornitore, con Esterno o Entrambi.
+// Chi ha vigilo.write aggiunge un fornitore al volo dal campo (F2): per lui il
+// campo c'è anche con la rubrica vuota.
 import React, { useState } from 'react';
-import { Checkbox, DatePicker, Input, RadioGroup, Select, TextArea } from '@edg/ui';
+import { Checkbox, DatePicker, Input, RadioGroup, TextArea } from '@edg/ui';
 
 import { useDocumentiRegistra } from '../../hooks/useDocumentiRegistra';
 import { useFornitori } from '../../hooks/useFornitori';
@@ -25,10 +27,10 @@ import { nuovaRiga, righePronte, type RigaInModulo } from '../../utils/manodoper
 import { misura } from '../../utils/misure';
 import { importo as leggiImporto, intero } from '../../utils/numeri';
 import { CampoDocumento } from './CampoDocumento';
+import { CampoFornitore, NESSUN_FORNITORE as NESSUNO } from './CampoFornitore';
 import { CampoManodopera } from './CampoManodopera';
 import { PulsantiForm } from './PulsantiForm';
 
-const NESSUNO = 'nessuno';
 
 interface Props {
   s: DettaglioScadenza;
@@ -53,8 +55,8 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
 
   const conLettura = !!c && vede('lettura');
   const conImporto = capacita.costi && vede('importo');
-  const fornitori = useFornitori(vede('fornitore'));
-  const conFornitore = vede('fornitore') && fornitori.length > 0;
+  const { fornitori, aggiungi: aggiungiFornitore } = useFornitori(vede('fornitore'));
+  const conFornitore = vede('fornitore') && (fornitori.length > 0 || capacita.write);
   const conRiferimento = vede('riferimento');
   const conDocumento = vede('allegato');
   const doc = useDocumentiRegistra(s.uuid);
@@ -128,12 +130,7 @@ export const FormRegistra: React.FC<Props> = ({ s, capacita, inCorso, onRegistra
   };
 
   const campoFornitore = (
-    <Select
-      label='Fornitore'
-      value={fornitore}
-      onValueChange={setFornitore}
-      options={[{ value: NESSUNO, label: 'Nessuno' }, ...fornitori.map(f => ({ value: f.uuid, label: f.nome }))]}
-    />
+    <CampoFornitore fornitori={fornitori} valore={fornitore} onValore={setFornitore} puoAggiungere={capacita.write} onCreato={aggiungiFornitore} />
   );
 
   const proposta = s.prossimaSeRegistrataOggi;
