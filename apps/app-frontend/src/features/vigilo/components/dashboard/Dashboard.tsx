@@ -2,17 +2,16 @@
 //
 // La dashboard di Vigilo (home del modulo dopo l'avvio). Due viste:
 //   Da fare          "che cosa devo fare, e entro quando?"
-//   Spese e consumi  "quanto spendo, quanto consumo?" (da sviluppare)
+//   Spese e consumi  "quanto spendo, quanto consumo?" (B10c, solo con vigilo.costi)
 // In testa il titolo (PageHeader come le altre pagine) con il saluto e la
 // sintesi come sottotitolo; sotto, la barra con vista e ricerca. Poi i riquadri
 // numerici e due colonne indipendenti, così l'altezza variabile dell'elenco
 // non lascia spazi vuoti: a sinistra Da fare e, sotto, i prossimi 12 mesi
 // accanto a fatte in tempo; a destra per controllo e soggetti. Un clic su
 // una scheda apre il pannello laterale della scadenza, con le azioni.
-// Se gli addetti hanno segnalato cose fatte, un avviso in testa porta
-// all'elenco di quelle da confermare (B9c).
+// Se gli addetti hanno segnalato cose fatte, nella vista Da fare un sesto
+// riquadro porta all'elenco di quelle da confermare (B9c).
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '@edg/auth';
 import { Alert, PageHeader } from '@edg/ui';
 
@@ -75,7 +74,7 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
         isLoading={d.caricamento}
       />
 
-      {!vuota && <BarraVista vista={vista} onVista={setVista} testo={d.testo} onTesto={d.setTesto} />}
+      {!vuota && <BarraVista conSpese={profilo.capacita.costi} vista={vista} onVista={setVista} testo={d.testo} onTesto={d.setTesto} />}
 
       {d.errore && (
         <Alert variant='danger' title='Impossibile leggere le scadenze'>
@@ -83,22 +82,18 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
         </Alert>
       )}
 
-      {profilo.capacita.write && !!d.dati?.daConfermare && (
-        <Alert variant='info' title={d.dati.daConfermare === 1 ? 'Una segnalazione da confermare' : `${d.dati.daConfermare} segnalazioni da confermare`}>
-          Gli addetti hanno segnalato cose fatte: controllale e confermale, così le scadenze si chiudono.{' '}
-          <Link to='/vigilo/scadenze?stato=segnalate' className='font-semibold text-text-link hover:underline'>
-            Vedi le segnalazioni
-          </Link>
-        </Alert>
-      )}
-
       {vuota ? (
         <PrimiPassi capacita={profilo.capacita} />
-      ) : vista === 'spese' ? (
-        <VistaSpese />
+      ) : vista === 'spese' && profilo.capacita.costi ? (
+        <VistaSpese testo={d.testo} sedi={sedi} />
       ) : (
         <>
-          <RiquadriStato conteggi={d.dati?.conteggi ?? null} vista={d.vista} onScegli={d.scegliVista} />
+          <RiquadriStato
+            conteggi={d.dati?.conteggi ?? null}
+            vista={d.vista}
+            onScegli={d.scegliVista}
+            daConfermare={profilo.capacita.write ? (d.dati?.daConfermare ?? 0) : 0}
+          />
           <div className='flex flex-wrap items-start gap-4'>
             <div className='flex min-w-0 flex-[3_1_40rem] flex-col gap-4'>
               <DaFare d={d} sedi={sedi} onApri={apri} />

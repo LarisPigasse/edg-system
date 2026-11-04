@@ -1,7 +1,8 @@
 // src/features/vigilo/components/dashboard/BarraVista.tsx
 //
 // La barra sotto il titolo: a sinistra la scelta della vista, a destra la
-// ricerca (veicolo, persona, targa).
+// ricerca (veicolo, persona, targa). "Spese e consumi" solo per chi ha
+// vigilo.costi (B10c).
 import React from 'react';
 import { cn } from '@edg/ui';
 
@@ -14,16 +15,18 @@ const VISTE: readonly (readonly [VistaDashboard, string])[] = [
 ];
 
 interface Props {
+  /** vigilo.costi: c'è anche la vista Spese e consumi */
+  conSpese: boolean;
   vista: VistaDashboard;
   onVista: (v: VistaDashboard) => void;
   testo: string;
   onTesto: (t: string) => void;
 }
 
-export const BarraVista: React.FC<Props> = ({ vista, onVista, testo, onTesto }) => (
+export const BarraVista: React.FC<Props> = ({ conSpese, vista, onVista, testo, onTesto }) => (
   <div className='flex flex-wrap items-center justify-between gap-3'>
     <div className='flex rounded-lg border border-border-default bg-bg-primary p-0.5' role='group' aria-label='Vista'>
-      {VISTE.map(([v, etichetta]) => (
+      {VISTE.filter(([v]) => conSpese || v !== 'spese').map(([v, etichetta]) => (
         <button
           key={v}
           type='button'

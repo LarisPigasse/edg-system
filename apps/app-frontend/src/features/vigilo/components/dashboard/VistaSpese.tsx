@@ -1,14 +1,52 @@
 // src/features/vigilo/components/dashboard/VistaSpese.tsx
-// La seconda vista della dashboard: "quanto spendo, quanto consumo". Da sviluppare.
+//
+// La seconda vista della Dashboard: "quanto spendo, quanto consumo" (B10c,
+// anteprima approvata). Dalle registrazioni eseguite e confermate: filtri,
+// quattro riquadri, poi due colonne indipendenti come in Da fare: a sinistra
+// mese per mese e per soggetto, a destra per natura e a chi vanno. Solo per
+// chi ha vigilo.costi (la Dashboard non offre la vista agli altri). Con un
+// periodo personalizzato incompleto si vede solo l'avviso, non i numeri di
+// prima.
 import React from 'react';
+import { Alert } from '@edg/ui';
 
-export const VistaSpese: React.FC = () => (
-  <section className='flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-default bg-bg-primary px-8 py-12 text-center'>
-    <span className='text-xs font-bold uppercase tracking-wider text-text-link'>In sviluppo</span>
-    <h2 className='text-2xl font-bold text-text-primary'>Quanto spendo, quanto consumo</h2>
-    <p className='max-w-xl text-[15px] text-text-secondary'>
-      Spese dell'anno per natura e per soggetto, confronto con l'anno precedente, km e ore dai contatori. Arriverà con la
-      gestione dei costi.
-    </p>
-  </section>
-);
+import { useSpese } from '../../hooks/useSpese';
+import type { RiferimentoSoggetto } from '../../types/scadenze';
+import { AChiVanno } from '../spese/AChiVanno';
+import { FiltriSpese } from '../spese/FiltriSpese';
+import { MesePerMese } from '../spese/MesePerMese';
+import { PerNatura } from '../spese/PerNatura';
+import { PerSoggetto } from '../spese/PerSoggetto';
+import { RiquadriSpese } from '../spese/RiquadriSpese';
+
+export const VistaSpese: React.FC<{ testo: string; sedi: RiferimentoSoggetto[] }> = ({ testo, sedi }) => {
+  const s = useSpese(testo);
+  return (
+    <div className='space-y-6'>
+      <FiltriSpese s={s} sedi={sedi} />
+      {s.avvisoDate && (
+        <Alert variant='info' title='Periodo da completare'>
+          {s.avvisoDate}
+        </Alert>
+      )}
+      {s.errore && (
+        <Alert variant='danger' title='Impossibile leggere le spese'>
+          {s.errore}
+        </Alert>
+      )}
+      {!s.avvisoDate && <RiquadriSpese dati={s.dati} />}
+      {s.dati && !s.avvisoDate && (
+        <div className='flex flex-wrap items-start gap-4'>
+          <div className='flex min-w-0 flex-[3_1_40rem] flex-col gap-4'>
+            <MesePerMese dati={s.dati} />
+            <PerSoggetto dati={s.dati} />
+          </div>
+          <div className='flex min-w-0 flex-[2_1_22rem] flex-col gap-4'>
+            <PerNatura dati={s.dati} />
+            <AChiVanno dati={s.dati} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
