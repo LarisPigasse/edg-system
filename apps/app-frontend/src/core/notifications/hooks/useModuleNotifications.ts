@@ -9,7 +9,10 @@
 // rilegge. Un modulo che non risponde non spegne gli altri.
 // In fondo al pannello "Tutti gli avvisi" porta alla pagina della
 // piattaforma (/avvisi): la campanella è di tutti i moduli (B8d-1 bis).
+// In Assistenza (sola lettura, AA4) si guarda soltanto: nessun "letto" e
+// niente "Segna tutti come letti", gli avvisi restano come li ha l'utente.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSolaLettura } from '@edg/auth';
 import type { EdgNotification, EdgNotifications } from '@edg/ui';
 
 import { NOTIFICATIONS_PATH } from '../constants';
@@ -50,6 +53,7 @@ export function useModuleNotifications(sorgenti: ActiveNotificationSource[]): Ed
   /** Solo l'ultima lettura conta */
   const turno = useRef(0);
   const chiave = sorgenti.map(s => s.key).join(',');
+  const solaLettura = useSolaLettura();
 
   const leggi = useCallback(async () => {
     const mio = ++turno.current;
@@ -99,13 +103,13 @@ export function useModuleNotifications(sorgenti: ActiveNotificationSource[]): Ed
 
   const onSelect = useCallback(
     (n: EdgNotification) => {
-      if (!n.unread) return;
+      if (!n.unread || solaLettura) return;
       setStato(s => ({ ...s, unread: Math.max(0, s.unread - 1), items: s.items.map(x => (x.id === n.id ? { ...x, unread: false } : x)) }));
       const { key, id } = separa(n.id);
       const s = rif.current.find(x => x.key === key);
       s?.source.markRead(id).catch(() => void leggi());
     },
-    [leggi]
+    [leggi, solaLettura]
   );
 
   const onReadAll = useCallback(() => {
@@ -114,7 +118,8 @@ export function useModuleNotifications(sorgenti: ActiveNotificationSource[]): Ed
   }, [leggi]);
 
   return useMemo(
-    () => (chiave ? { ...stato, onOpen: () => void leggi(), onSelect, onReadAll, footer: FOOTER } : null),
-    [chiave, stato, leggi, onSelect, onReadAll]
+    () =>
+      chiave ? { ...stato, onOpen: () => void leggi(), onSelect, onReadAll: solaLettura ? undefined : onReadAll, footer: FOOTER } : null,
+    [chiave, stato, leggi, onSelect, onReadAll, solaLettura]
   );
 }

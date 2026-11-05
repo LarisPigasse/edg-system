@@ -1,6 +1,6 @@
 // src/features/vigilo/components/spese/PerSoggetto.tsx
 //
-// La spesa per soggetto, dalla più alta: interventi, spesa, variazione
+// La spesa per soggetto, dalla più alta: registrazioni (interventi e rifornimenti), spesa, variazione
 // rispetto all'anno prima, uso nel periodo dal contatore e costo per km o per
 // ora (solo sopra la soglia minima d'uso). Un clic porta alla scheda del
 // soggetto. I primi 16, poi "Mostra tutti".
@@ -31,7 +31,7 @@ function colonne(soglie: Spese['soglie']): TableColumn<SpesaSoggetto>[] {
         </span>
       ),
     },
-    { header: 'Interventi', accessor: s => <span className='tabular-nums'>{s.n}</span>, className: 'text-right' },
+    { header: 'Registrazioni', accessor: s => <span className='tabular-nums'>{s.n}</span>, className: 'text-right' },
     { header: 'Spesa', accessor: s => <span className='font-semibold tabular-nums'>{euroTondi(s.spesa)}</span>, className: 'text-right' },
     {
       header: 'Anno prima',

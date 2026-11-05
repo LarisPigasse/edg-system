@@ -1,14 +1,14 @@
 // src/features/vigilo/types/allegati.ts — i documenti di soggetti, scadenze e registrazioni (B9a)
 
-export type EntitaAllegato = 'soggetto' | 'scadenza' | 'registrazione';
+export type EntitaAllegato = 'soggetto' | 'scadenza' | 'registrazione' | 'rifornimento';
 
 /** A che cosa appartiene: per raggruppare i documenti nella scheda del soggetto */
 export interface AppartenenzaAllegato {
   entita: EntitaAllegato;
   uuid: string;
-  /** Titolo della scadenza (anche per una registrazione); null per il soggetto */
+  /** Titolo della scadenza (anche per una registrazione), voce del rifornimento; null per il soggetto */
   titolo: string | null;
-  /** Solo per una registrazione */
+  /** Solo per una registrazione o un rifornimento: il giorno */
   eseguitaIl: string | null;
 }
 

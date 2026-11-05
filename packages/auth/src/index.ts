@@ -59,6 +59,8 @@ export { handleSessionInvalid, clearAuthStorage } from './services/sessionGuard'
 
 // Accesso assistito (ADR085): punto unico dei token e pagine dell'assistenza
 export { ASSISTENZA_PATHS, isAssistedTab } from './services/tokenStore';
+// Assistenza in sola lettura (AA4): stessa regola del gateway, prima della rete
+export { isSolaLettura, MESSAGGIO_SOLA_LETTURA } from './services/solaLettura';
 
 // ============================================================================
 // STORE - Redux slice per stato globale
@@ -96,13 +98,14 @@ export {
 // HOOKS - Interfaccia semplificata per i componenti
 // ============================================================================
 
-export { useAuth, useEdgUser, useAssistenza, MINUTI_AVVISO_ASSISTENZA } from './hooks';
+export { useAuth, useEdgUser, useAssistenza, useSolaLettura, MINUTI_AVVISO_ASSISTENZA } from './hooks';
 
 // ============================================================================
 // COMPONENTS - Elementi UI riusabili
 // ============================================================================
 
 export { UserMenu, ConnectionStatus, AssistenzaBar } from './components';
+export type { UserMenuItem } from './components';
 export { PrivateRoute, LoginForm } from './components';
 
 // ============================================================================

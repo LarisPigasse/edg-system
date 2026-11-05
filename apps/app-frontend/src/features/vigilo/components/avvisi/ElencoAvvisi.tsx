@@ -47,11 +47,13 @@ export const ElencoAvvisi: React.FC<{ e: StatoMieiAvvisi; base: string }> = ({ e
         </div>
         {/* il conteggio solo a dati arrivati: niente "0 avvisi" mentre carica */}
         {!(e.caricamento && !e.voci.length) && <p className='pb-2 text-sm text-text-secondary'>{conteggio(e.totale, e.nonLetti)}</p>}
-        <div className='ml-auto pb-0.5'>
-          <Button variant='secondary' size='sm' onClick={() => void e.segnaTutti()} disabled={!e.nonLetti}>
-            Segna tutti come letti
-          </Button>
-        </div>
+        {e.puoSegnare && (
+          <div className='ml-auto pb-0.5'>
+            <Button variant='secondary' size='sm' onClick={() => void e.segnaTutti()} disabled={!e.nonLetti}>
+              Segna tutti come letti
+            </Button>
+          </div>
+        )}
       </div>
 
       {e.errore && (

@@ -1,4 +1,5 @@
 // src/features/vigilo/types/soggetti.ts — soggetti (vigilo-service, soggetto.presenta)
+import type { DatiPossesso, Possesso } from './costoMezzi';
 import type { Contatore, Registrazione, RiferimentoSoggetto, Stato } from './scadenze';
 import type { TipoSoggetto } from './valori';
 
@@ -30,6 +31,8 @@ export interface Soggetto {
   account?: AccountPersona | null;
   /** Solo persone e solo a chi ha vigilo.costi: €/h della manodopera (passo 8) */
   costoOrario?: number | null;
+  /** Solo veicoli, macchine e attrezzature e solo a chi ha vigilo.costi (costo dei mezzi) */
+  possesso?: Possesso | null;
   creatoIl: string;
   modificatoIl: string;
 }
@@ -108,6 +111,8 @@ export interface DatiSoggetto {
   note: string | null;
   /** Solo persone, solo con vigilo.costi (passo 8) */
   costoOrario?: number | null;
+  /** Solo mezzi, solo con vigilo.costi: null = non indicato */
+  possesso?: DatiPossesso | null;
 }
 
 /** Esito di creazione e modifica: che cosa è successo alle scadenze */

@@ -4,14 +4,19 @@
 // modulo del nuovo più la categoria. Il tipo non cambia. Se la categoria
 // cambia, lo dice prima: arrivano le scadenze dei nuovi controlli automatici,
 // quelle che aveva restano. Per una persona, a chi ha vigilo.costi, anche il
-// costo orario della manodopera (passo 8).
+// costo orario della manodopera (passo 8); per un mezzo il costo di possesso
+// (costo dei mezzi), con quota e avviso calcolati dal servizio.
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Input, Sheet } from '@edg/ui';
 
+import { TIPI_CON_POSSESSO } from '../../constants/costoMezzi';
+import { useAnteprimaPossesso } from '../../hooks/useAnteprimaPossesso';
 import { useRiferimenti } from '../../hooks/useRiferimenti';
 import type { DatiSoggetto, Soggetto } from '../../types/soggetti';
 import { campiDi, corpoSoggetto, mancanti, valoriIniziali } from '../../utils/formSoggetto';
+import { datiPossesso, possessoCambiato, valoriPossesso } from '../../utils/formPossesso';
 import { importo as leggiImporto } from '../../utils/numeri';
+import { CampoPossesso } from '../costoMezzi/CampoPossesso';
 import { FormSoggetto } from './FormSoggetto';
 
 interface Props {
@@ -33,21 +38,33 @@ export const ModificaSoggetto: React.FC<Props> = ({ s, aperto, inCorso, onChiudi
   const [costo, setCosto] = useState(testoCosto(s.costoOrario));
   const valoreCosto = leggiImporto(costo);
   const costoValido = !conCosto || !Number.isNaN(valoreCosto);
+  // costo di possesso: solo mezzi e solo a chi ha vigilo.costi (il servizio lo manda solo allora)
+  const conPossesso = TIPI_CON_POSSESSO.includes(s.tipo) && s.possesso !== undefined;
+  const [possesso, setPossesso] = useState(() => valoriPossesso(s.possesso));
+  const dati = conPossesso ? datiPossesso(possesso) : null;
 
   // a ogni apertura si riparte dai dati attuali
   useEffect(() => {
     if (!aperto) return;
     setValori(valoriIniziali(s));
     setCosto(testoCosto(s.costoOrario));
+    setPossesso(valoriPossesso(s.possesso));
   }, [aperto, s]);
 
   const campi = campiDi(r.tutteLeCategorie, valori.categoria);
   const daCompilare = mancanti(valori, campi);
   const nuovaCategoria = (valori.categoria ?? null) !== (s.categoria?.uuid ?? null);
+  const anteprima = useAnteprimaPossesso(aperto && conPossesso ? dati : null, valori.categoria ?? undefined, s.uuid);
+  // si salva solo con dati che il servizio ha già detto validi (o senza possesso)
+  const possessoValido = !conPossesso || dati === null || (!!anteprima.anteprima && anteprima.anteprima.errori.length === 0);
 
   const salva = async () => {
-    const corpo = corpoSoggetto(valori, s.tipo, campi);
-    if (await onSalva(conCosto && valoreCosto !== (s.costoOrario ?? null) ? { ...corpo, costoOrario: valoreCosto } : corpo)) onChiudi();
+    const corpo = {
+      ...corpoSoggetto(valori, s.tipo, campi),
+      ...(conCosto && valoreCosto !== (s.costoOrario ?? null) ? { costoOrario: valoreCosto } : {}),
+      ...(conPossesso && dati !== undefined && possessoCambiato(s.possesso, dati) ? { possesso: dati } : {}),
+    };
+    if (await onSalva(corpo)) onChiudi();
   };
 
   return (
@@ -62,7 +79,7 @@ export const ModificaSoggetto: React.FC<Props> = ({ s, aperto, inCorso, onChiudi
           <Button variant='secondary' onClick={onChiudi} disabled={inCorso}>
             Annulla
           </Button>
-          <Button onClick={() => void salva()} disabled={daCompilare.length > 0 || !r.pronti || !costoValido} isLoading={inCorso} loadingText='Salvo…'>
+          <Button onClick={() => void salva()} disabled={daCompilare.length > 0 || !r.pronti || !costoValido || !possessoValido} isLoading={inCorso} loadingText='Salvo…'>
             Salva
           </Button>
         </>
@@ -86,6 +103,15 @@ export const ModificaSoggetto: React.FC<Props> = ({ s, aperto, inCorso, onChiudi
               helperText='Per la manodopera interna. Vuoto: vale il costo predefinito delle impostazioni.'
             />
           </div>
+        )}
+        {conPossesso && (
+          <CampoPossesso
+            valori={possesso}
+            onValori={setPossesso}
+            anteprima={anteprima.anteprima}
+            inAttesa={anteprima.inAttesa}
+            errore={dati === undefined ? 'Scrivi gli importi come numeri, es. 150.000 o 1.250,50' : anteprima.errore}
+          />
         )}
       </div>
     </Sheet>

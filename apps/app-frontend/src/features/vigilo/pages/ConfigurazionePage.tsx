@@ -29,6 +29,7 @@ import { useAggiornamenti } from '../hooks/useAggiornamenti';
 import { useConfigurazione } from '../hooks/useConfigurazione';
 import { useInterventi } from '../hooks/useInterventi';
 import { useRegoleAvvisi } from '../hooks/useRegoleAvvisi';
+import type { EntitaAggiornamento } from '../types/aggiornamenti';
 import type { Controllo } from '../types/configurazione';
 
 const ConfigurazionePage: React.FC = () => {
@@ -59,8 +60,12 @@ const ConfigurazionePage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- apriAggiornamenti cambia a ogni render ma fa sempre la stessa cosa
     [aggiornamenti.elenco]
   );
-  // il controllo resta impostato durante la chiusura del pannello
-  const [storico, setStorico] = useState<{ c: Controllo | null; aperto: boolean }>({ c: null, aperto: false });
+  // la voce (categoria o controllo) resta impostata durante la chiusura del pannello
+  const [storico, setStorico] = useState<{ entita: EntitaAggiornamento; voce: { uuid: string; nome: string } | null; aperto: boolean }>({
+    entita: 'controllo',
+    voce: null,
+    aperto: false,
+  });
 
   const schede: TabItem[] = gruppi.map(g => ({
     id: g.tipo,
@@ -77,7 +82,7 @@ const ConfigurazionePage: React.FC = () => {
       <SchedaTipo
         gruppo={g}
         onDestinatari={c => setDestinatari({ c, aperto: true })}
-        onStorico={c => setStorico({ c, aperto: true })}
+        onStorico={(entita, voce) => setStorico({ entita, voce, aperto: true })}
         attesa={attesa.voci.size ? attesa : undefined}
       />
     ),
@@ -131,8 +136,8 @@ const ConfigurazionePage: React.FC = () => {
       )}
 
       <PannelloStoricoLibreria
-        entita='controllo'
-        voce={storico.c}
+        entita={storico.entita}
+        voce={storico.voce}
         aperto={storico.aperto}
         onChiudi={() => setStorico(s => ({ ...s, aperto: false }))}
       />

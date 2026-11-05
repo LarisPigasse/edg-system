@@ -73,7 +73,19 @@ const AssistenzePage: React.FC = () => {
       ),
     },
     { header: 'Tenant', accessor: item => item.tenant?.nome ?? '—' },
-    { header: 'Modalità', accessor: item => MODO_LABEL[item.modo] ?? item.modo },
+    {
+      header: 'Modalità',
+      accessor: item => (
+        <div>
+          <div className='text-text-primary'>{MODO_LABEL[item.modo] ?? item.modo}</div>
+          {item.perConto && (
+            <div className='text-xs text-text-secondary' title={item.perConto.email}>
+              come {item.perConto.nome}
+            </div>
+          )}
+        </div>
+      ),
+    },
     {
       header: 'Motivo',
       accessor: item => (

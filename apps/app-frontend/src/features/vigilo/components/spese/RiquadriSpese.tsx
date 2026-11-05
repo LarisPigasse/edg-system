@@ -34,7 +34,7 @@ function voci(d: Spese): Voce[] {
   const t = d.totale;
   return [
     { etichetta: 'Totale speso', cifra: euroTondi(t.spesa), sotto: <Confronto ora={t.spesa} prima={d.totalePrima.spesa} /> },
-    { etichetta: 'Fornitori esterni', cifra: euroTondi(t.importi), sotto: `${t.conImporto} ${t.conImporto === 1 ? 'registrazione' : 'registrazioni'} con importo` },
+    { etichetta: 'Fornitori esterni', cifra: euroTondi(t.importi), sotto: `${t.conImporto} ${t.conImporto === 1 ? 'spesa' : 'spese'} con importo` },
     { etichetta: 'Manodopera interna', cifra: euroTondi(t.manodopera), sotto: t.ore ? `${testoOre(t.ore)} di lavoro interno` : 'nessuna ora registrata' },
     {
       etichetta: 'Riparazioni',

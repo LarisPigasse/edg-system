@@ -15,12 +15,22 @@ const numero = (n: number, o: Intl.NumberFormatOptions = {}): string => new Intl
 /** 27.665 € · 1.492 € */
 export const euroTondi = (n: number): string => numero(n, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
+/** Come euroTondi, ma sotto i 100 € con i centesimi: 1,33 € · 85,42 € · 1.890 € */
+export const euroBrevi = (n: number): string =>
+  Math.abs(n) > 0 && Math.abs(n) < 100 ? numero(n, { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }) : euroTondi(n);
+
 /** 0,055 €/km · 12,500 €/h */
 export const costoUnita = (n: number, unita: 'km' | 'ore'): string =>
   `${numero(n, { minimumFractionDigits: 3, maximumFractionDigits: 3 })} €/${unita === 'km' ? 'km' : 'h'}`;
 
 /** 115.880 km · 512 h */
 export const uso = (n: number, unita: 'km' | 'ore'): string => `${numero(Math.round(n))} ${unita === 'km' ? 'km' : 'h'}`;
+
+/** 412,5 l · 1.230 l (sopra i 100 litri senza decimali) */
+export const litri = (n: number): string => `${numero(n, { maximumFractionDigits: Math.abs(n) < 100 ? 1 : 0 })} l`;
+
+/** Il consumo: 8,4 l/100 km · 6,2 l/h */
+export const consumo = (n: number, unita: 'km' | 'ore'): string => `${numero(n, { maximumFractionDigits: 1 })} ${unita === 'km' ? 'l/100 km' : 'l/h'}`;
 
 /** "+12%", "−20%", "=" */
 export const variazioneTesto = (v: number): string => (v === 0 ? '=' : `${v > 0 ? '+' : '−'}${Math.abs(v)}%`);

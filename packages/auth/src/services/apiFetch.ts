@@ -12,6 +12,7 @@
 
 import apiService from './apiService';
 import { handleSessionInvalid } from './sessionGuard';
+import { MESSAGGIO_SOLA_LETTURA, scritturaBloccata } from './solaLettura';
 import { readAccessToken, readRefreshToken } from './tokenStore';
 
 // ─── Costanti storage (allineate con authSlice.ts) ───────────────────────────
@@ -97,6 +98,9 @@ async function tryRefreshToken(): Promise<string | null> {
  * @param isRetry   Flag interno per evitare loop infiniti — non usare dall'esterno
  */
 export async function apiFetch<T>(url: string, options: RequestInit = {}, isRetry = false): Promise<T> {
+  // Assistenza in sola lettura (AA4): la modifica non parte nemmeno
+  if (scritturaBloccata(options.method, url)) throw new Error(MESSAGGIO_SOLA_LETTURA);
+
   // Content-Type + Authorization di default: senza Content-Type esplicito,
   // fetch() lo deduce dal body (una stringa JSON.stringify diventa
   // 'text/plain', che express.json() ignora silenziosamente — il body non

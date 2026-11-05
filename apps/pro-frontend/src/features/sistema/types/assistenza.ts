@@ -14,6 +14,8 @@ export interface Assistenza {
   motivo: string;
   operatore: { id: number; email: string; nome: string } | null;
   tenant: { id: number; nome: string } | null;
+  /** Solo in Assistenza: l'utente di cui si è vista la vista (AA4) */
+  perConto: { id: number; email: string; nome: string } | null;
   inizio: string;
   scade: string;
   fine: string | null;
@@ -24,6 +26,16 @@ export interface AperturaAssistenzaInput {
   tenantId: number;
   modo: ModoAssistenza;
   motivo: string;
+  /** Obbligatorio in Assistenza, vietato in Preparazione */
+  perConto?: number;
+}
+
+/** Un account attivo del tenant che si può scegliere per l'Assistenza (AA4) */
+export interface AccountAssistibile {
+  id: number;
+  email: string;
+  nome: string;
+  ruolo: string | null;
 }
 
 export interface AperturaAssistenza {

@@ -5,5 +5,6 @@ export { LoginForm } from './LoginForm';
 export { ChangePasswordForm } from './ChangePasswordForm';
 
 export { default as UserMenu } from './UserMenu';
+export type { UserMenuItem } from './UserMenu';
 export { default as ConnectionStatus } from './ConnectionStatus';
 export { AssistenzaBar } from './AssistenzaBar';

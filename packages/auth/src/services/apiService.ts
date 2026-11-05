@@ -9,6 +9,7 @@
  * - Environment-based base URL
  */
 
+import { MESSAGGIO_SOLA_LETTURA, scritturaBloccata } from './solaLettura';
 import { readRefreshToken } from './tokenStore';
 
 export interface ApiResponse<T = unknown> {
@@ -78,6 +79,12 @@ class ApiService {
     isRetry = false
   ): Promise<ApiResponse<T>> {
     const { headers = {}, timeout = this.timeout, signal, ...fetchOptions } = options;
+
+    // Assistenza in sola lettura (AA4): la modifica non parte nemmeno
+    if (scritturaBloccata(fetchOptions.method, this.buildURL(endpoint))) {
+      const bloccata: ApiError = { message: MESSAGGIO_SOLA_LETTURA, status: 403, statusText: 'Forbidden' };
+      throw bloccata;
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);

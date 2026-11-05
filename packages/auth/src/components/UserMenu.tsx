@@ -6,11 +6,22 @@ import { useAuth, useAssistenza } from '../hooks';
 import { UserAvatar } from '@edg/ui';
 import { User, Settings, LogOut, Lock, iconMap } from '@edg/ui';
 
-interface UserMenuProps {
-  className?: string;
+/** Voce in più del menu utente, decisa dall'applicazione (es. secondo i permessi) */
+export interface UserMenuItem {
+  key: string;
+  label: string;
+  description?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  path: string;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
+interface UserMenuProps {
+  className?: string;
+  /** Voci dell'applicazione, dopo profilo e password (es. Accessi dell'assistenza EDG) */
+  items?: UserMenuItem[];
+}
+
+const UserMenu: React.FC<UserMenuProps> = ({ className = '', items = [] }) => {
   const { routes } = useEdgConfig();
   const navigate = useNavigate();
   const { userMenuOpen, closeUserMenu } = useUISettings();
@@ -169,6 +180,25 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
               </button>
               </>
             )}
+
+            {/* Voci dell'applicazione */}
+            {items.map(({ key, label, description, icon: Icona, path }) => (
+              <button
+                key={key}
+                className='w-full px-4 py-3 text-left hover:bg-bg-hover transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed'
+                onClick={() => {
+                  navigate(path);
+                  closeUserMenu();
+                }}
+                disabled={loading}
+              >
+                {Icona ? <Icona className='w-4 h-4 text-text-secondary' /> : <span className='w-4' aria-hidden='true' />}
+                <div>
+                  <span className='text-text-primary font-medium block'>{label}</span>
+                  {description && <span className='text-text-secondary text-sm block'>{description}</span>}
+                </div>
+              </button>
+            ))}
 
             {/* Preferenze */}
             <button

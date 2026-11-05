@@ -164,7 +164,8 @@ export interface AssistenzaInfo {
   modo: ModoAssistenza;
   operatore: { id: number; email: string; nome: string };
   tenant: { id: number; nome: string };
-  perConto?: { id: number; email: string } | null;
+  /** Solo in Assistenza (sola lettura): l'utente di cui si vede la vista */
+  perConto?: { id: number; email: string; nome: string } | null;
   /** Scadenza in ISO 8601 (64 minuti dall'apertura, senza proroga) */
   scade: string;
 }

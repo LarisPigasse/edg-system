@@ -3,6 +3,8 @@
 // Tutte le azioni sul soggetto in un menu "Azioni", a destra sulla riga delle
 // schede (visibile qualunque scheda sia aperta):
 //   Aggiungi scadenza     pannello laterale: controllo o promemoria
+//   Registra rifornimento veicoli, macchine e attrezzature (tappa 2): il
+//                         pannello lo apre la pagina (onRifornimento)
 //   Segnala un guasto     mezzi, attrezzature e sedi: pannello laterale (B10a)
 //   ─────────
 //   Modifica              pannello laterale con il modulo
@@ -23,6 +25,7 @@ import {
   Button,
   ChevronDown,
   ConfirmModal,
+  Fuel,
   Pause,
   Pencil,
   Play,
@@ -59,6 +62,8 @@ interface Props {
   giorniRiparazione: number;
   /** Guasto segnalato: aprirne il pannello (su Registra se già riparato) */
   onGuasto: (uuid: string, giaRiparato: boolean) => void;
+  /** Solo per i mezzi non archiviati: apre il modulo del rifornimento */
+  onRifornimento?: () => void;
 }
 
 interface TestoConferma {
@@ -103,7 +108,7 @@ function testi(s: Soggetto): Record<Conferma, TestoConferma> {
   };
 }
 
-export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModifica, scadenze, onAggiungi, onRicarica, giorniRiparazione, onGuasto }) => {
+export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModifica, scadenze, onAggiungi, onRicarica, giorniRiparazione, onGuasto, onRifornimento }) => {
   const [modifica, setModifica] = useState(false);
   const [guasto, setGuasto] = useState(false);
   const conGuasti = s.stato !== 'dismesso' && TIPI_CON_GUASTI.includes(s.tipo);
@@ -116,7 +121,10 @@ export const AzioniSoggetto: React.FC<Props> = ({ s, inCorso, onStato, onModific
   const azioni: Action[] = [
     // su un soggetto archiviato non si aggiungono scadenze
     ...(s.stato !== 'dismesso'
-      ? [{ id: 'aggiungi', label: 'Aggiungi scadenza', icon: icona(Plus), onClick: () => setAggiungi(true), divider: !conGuasti }]
+      ? [{ id: 'aggiungi', label: 'Aggiungi scadenza', icon: icona(Plus), onClick: () => setAggiungi(true), divider: !conGuasti && !onRifornimento }]
+      : []),
+    ...(onRifornimento && s.stato !== 'dismesso'
+      ? [{ id: 'rifornimento', label: 'Registra rifornimento', icon: icona(Fuel), onClick: onRifornimento, divider: !conGuasti }]
       : []),
     ...(conGuasti ? [{ id: 'guasto', label: 'Segnala un guasto', icon: icona(Wrench), onClick: () => setGuasto(true), divider: true }] : []),
     { id: 'modifica', label: 'Modifica', icon: icona(Pencil), onClick: () => setModifica(true), divider: s.stato === 'dismesso' && s.tipo !== 'persona' },

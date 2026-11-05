@@ -1,4 +1,5 @@
 // src/config/routes.config.ts
+import { ACCESSI_ASSISTENZA_PATH } from '../core/assistenza/constants';
 import { NOTIFICATIONS_PATH } from '../core/notifications/constants';
 
 /**
@@ -30,6 +31,9 @@ export const ROUTES = {
 
   // Avvisi di tutti i moduli (B8d-1 bis): il percorso lo decide core/notifications
   NOTIFICATIONS: NOTIFICATIONS_PATH,
+
+  // Accessi dell'assistenza EDG (AA5): menu utente, solo l'amministratore del cliente
+  ACCESSI_ASSISTENZA: ACCESSI_ASSISTENZA_PATH,
 
   // Footer
   TERMS: '/terms',

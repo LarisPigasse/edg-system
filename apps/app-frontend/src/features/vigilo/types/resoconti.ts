@@ -1,5 +1,9 @@
 // src/features/vigilo/types/resoconti.ts — Spese e consumi (vigilo-service, GET /resoconti/spese, B10c)
+import type { VoceRifornimento } from './rifornimenti';
 import type { NaturaEffettiva, TipoSoggetto } from './valori';
+
+/** Nei resoconti, oltre alle nature delle scadenze, l'uso: i rifornimenti e le altre spese d'uso */
+export type NaturaResoconto = NaturaEffettiva | 'uso';
 
 export type PeriodoSpese = 'anno' | '12m' | 'prec' | 'personalizzato';
 
@@ -51,7 +55,9 @@ export interface Spese {
   totalePrima: TotaliSpese;
   riparazioni: { spesa: number; guasti: number; spesaPrima: number };
   perMese: { mese: string; importi: number; manodopera: number; prima: number }[];
-  perNatura: { natura: NaturaEffettiva; spesa: number; n: number }[];
+  perNatura: { natura: NaturaResoconto; spesa: number; n: number }[];
+  /** I rifornimenti voce per voce, con i litri (carburante e AdBlue) */
+  perVoce: { voce: VoceRifornimento; spesa: number; n: number; litri: number }[];
   perSoggetto: SpesaSoggetto[];
   perFornitore: { uuid: string; nome: string; tipo: { chiave: string; nome: string } | null; importi: number; n: number }[];
   perTipoFornitore: { chiave: string; nome: string; importi: number; n: number }[];

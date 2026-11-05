@@ -5,8 +5,11 @@
 // e il refresh. Poi i riquadri di
 // riepilogo con le azioni sullo stato accanto, e
 // le schede Scadenze (con il pannello delle azioni), Storico, Contatori,
-// Assegnazioni, Documenti (B9a: del soggetto, delle sue scadenze e
-// registrazioni) e Dati. Modifica nel pannello laterale (B7d-3).
+// Rifornimenti (veicoli, macchine e attrezzature, tappa 2), Assegnazioni,
+// Documenti (B9a: del soggetto, delle sue scadenze, registrazioni e
+// rifornimenti) e Dati. Modifica nel pannello laterale (B7d-3). Il modulo del
+// rifornimento è uno solo, aperto dalla scheda o dal menu Azioni: dopo il
+// salvataggio si rileggono soggetto (contatori), costo e rifornimenti.
 // Un guasto segnalato dal menu Azioni riporta sulla scheda Scadenze e ne
 // apre il pannello (B10a).
 import React, { useState } from 'react';
@@ -19,6 +22,13 @@ import { CartaContatore } from '../components/soggetto/CartaContatore';
 import { Documenti } from '../components/documenti/Documenti';
 import { DatiSoggetto } from '../components/soggetto/DatiSoggetto';
 import { RiepilogoSoggetto } from '../components/soggetto/RiepilogoSoggetto';
+import { CostoDelMezzo } from '../components/costoMezzi/CostoDelMezzo';
+import { ModuloRifornimento } from '../components/rifornimenti/ModuloRifornimento';
+import { RifornimentiMezzo } from '../components/rifornimenti/RifornimentiMezzo';
+import { TIPI_CON_RIFORNIMENTI } from '../constants/rifornimenti';
+import { useModuloRifornimento } from '../hooks/useModuloRifornimento';
+import type { Rifornimento } from '../types/rifornimenti';
+import { TIPI_CON_POSSESSO } from '../constants/costoMezzi';
 import { ScadenzeSoggetto } from '../components/soggetto/ScadenzeSoggetto';
 import { StoricoSoggetto } from '../components/soggetto/StoricoSoggetto';
 import { TornaAllElenco } from '../components/TornaAllElenco';
@@ -56,6 +66,16 @@ const SoggettoPage: React.FC = () => {
   const [, setParametri] = useSearchParams();
   /** Cambia per riaprire le schede su Scadenze */
   const [giro, setGiro] = useState(0);
+  // il modulo del rifornimento: nuovo (null) o da correggere; versione rilegge elenco e costo
+  const [rifornimento, setRifornimento] = useState<{ aperto: boolean; r: Rifornimento | null }>({ aperto: false, r: null });
+  const [versione, setVersione] = useState(0);
+  const moduloRif = useModuloRifornimento();
+  const conRifornimenti = !!s && TIPI_CON_RIFORNIMENTI.includes(s.tipo);
+  const puoRegistrare = !!capacita?.write && s?.stato !== 'dismesso';
+  const dopoRifornimento = () => {
+    setVersione(v => v + 1);
+    void x.ricarica();
+  };
 
   // il guasto appena segnalato: si torna su Scadenze e se ne apre il pannello (su Registra se già riparato)
   const dopoGuasto = (uuid: string, giaRiparato: boolean) => {
@@ -91,6 +111,29 @@ const SoggettoPage: React.FC = () => {
                       />
                     ))}
                   </div>
+                ),
+              },
+            ]
+          : []),
+        ...(conRifornimenti
+          ? [
+              {
+                id: 'rifornimenti',
+                label: 'Rifornimenti',
+                content: (
+                  <RifornimentiMezzo
+                    soggetto={s.uuid}
+                    conImporto={!!capacita?.costi}
+                    puoRegistrare={puoRegistrare}
+                    versione={versione}
+                    onRegistra={() => setRifornimento({ aperto: true, r: null })}
+                    onCorreggi={r => setRifornimento({ aperto: true, r })}
+                    onElimina={async r => {
+                      const ok = await moduloRif.elimina(r);
+                      if (ok) dopoRifornimento();
+                      return ok;
+                    }}
+                  />
                 ),
               },
             ]
@@ -142,6 +185,8 @@ const SoggettoPage: React.FC = () => {
             trailingActions={elenco}
           />
           <RiepilogoSoggetto s={s} />
+          {/* costo dei mezzi: solo veicoli, macchine e attrezzature, solo con vigilo.costi; si rilegge dopo una modifica */}
+          {capacita?.costi && TIPI_CON_POSSESSO.includes(s.tipo) && <CostoDelMezzo uuid={s.uuid} chiave={`${s.modificatoIl}:${versione}`} />}
           <Tabs
             key={giro}
             items={schede}
@@ -159,10 +204,21 @@ const SoggettoPage: React.FC = () => {
                   onRicarica={() => void x.ricarica()}
                   giorniRiparazione={profilo.giorniRiparazione}
                   onGuasto={dopoGuasto}
+                  onRifornimento={conRifornimenti ? () => setRifornimento({ aperto: true, r: null }) : undefined}
                 />
               )
             }
           />
+          {conRifornimenti && (
+            <ModuloRifornimento
+              aperto={rifornimento.aperto}
+              mezzo={s}
+              rifornimento={rifornimento.r}
+              conFornitore={!!capacita?.write}
+              onChiudi={() => setRifornimento(v => ({ ...v, aperto: false }))}
+              onSalvato={dopoRifornimento}
+            />
+          )}
         </>
       )}
     </div>

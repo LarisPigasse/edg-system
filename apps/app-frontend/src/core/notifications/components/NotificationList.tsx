@@ -45,11 +45,13 @@ export const NotificationList: React.FC<{ s: PlatformNotificationsState }> = ({ 
           </div>
         )}
         {!primaLettura && <p className='pb-2 text-sm text-text-secondary'>{conteggio(s.total, s.unread)}</p>}
-        <div className='ml-auto pb-0.5'>
-          <Button variant='secondary' size='sm' onClick={() => void s.markAllRead()} disabled={!s.unread}>
-            Segna tutti come letti
-          </Button>
-        </div>
+        {s.puoSegnare && (
+          <div className='ml-auto pb-0.5'>
+            <Button variant='secondary' size='sm' onClick={() => void s.markAllRead()} disabled={!s.unread}>
+              Segna tutti come letti
+            </Button>
+          </div>
+        )}
       </div>
 
       {s.error && (

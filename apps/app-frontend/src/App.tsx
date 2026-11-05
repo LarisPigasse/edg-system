@@ -25,6 +25,7 @@ import store from './app/store';
 import { EDG_CONFIG, MODULE_MANIFESTS, ROUTES, getModules } from './config';
 import { MyModulesProvider, ModuleRoutes, canOpenModule, useMyModules } from './core/modules';
 import { NotificationSourcesProvider, useModuleNotifications, type ActiveNotificationSource } from './core/notifications';
+import { useVociMenuAssistenza } from './core/assistenza';
 import { moduleImages } from './assets/moduli';
 import { Dashboard } from './pages';
 
@@ -32,6 +33,10 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const NotificationsPage = lazy(() => import('./core/notifications/pages/NotificationsPage'));
+const AccessiAssistenzaPage = lazy(() => import('./core/assistenza/pages/AccessiAssistenzaPage'));
+
+/** Menu utente con le voci della piattaforma che dipendono dai permessi (AA5) */
+const MenuUtente: React.FC = () => <UserMenu items={useVociMenuAssistenza()} />;
 
 
 /** Inizializza tema e sessione una volta sola all'avvio. */
@@ -184,6 +189,14 @@ const App: React.FC = () => {
                                   }
                                 />
                                 <Route
+                                  path={ROUTES.ACCESSI_ASSISTENZA}
+                                  element={
+                                    <PrivateRoute>
+                                      <AccessiAssistenzaPage />
+                                    </PrivateRoute>
+                                  }
+                                />
+                                <Route
                                   path={ROUTES.TERMS}
                                   element={
                                     <PrivateRoute>
@@ -204,7 +217,7 @@ const App: React.FC = () => {
                               </Routes>
                             </MainLayout>
 
-                            <UserMenu />
+                            <MenuUtente />
                             <MobileMenu />
                           </div>
                         }

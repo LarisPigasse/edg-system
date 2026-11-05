@@ -126,6 +126,15 @@ export const PERMISSION_CATALOG: PermissionModuleDef[] = [
       { value: 'assistenza', label: 'Accesso assistito' }, // ADR085
     ],
   },
+  {
+    // AA5: permessi sull'account del cliente, dentro il suo tenant
+    module: 'account',
+    label: 'Account del cliente',
+    active: true,
+    allowWildcard: false,
+    note: 'Valgono nel tenant del cliente.',
+    actions: [{ value: 'assistenze', label: "Accessi dell'assistenza EDG" }],
+  },
 ];
 
 /**

@@ -21,6 +21,7 @@ import type {
   IngressoAssistenzaResponse,
 } from '../types';
 import { handleSessionInvalid } from '../services/sessionGuard';
+import { MESSAGGIO_SOLA_LETTURA, scritturaBloccata } from '../services/solaLettura';
 import { readAccessToken, readRefreshToken } from '../services/tokenStore';
 
 // ============================================================================
@@ -67,6 +68,9 @@ const SESSION_GUARD_EXCLUDED_SUFFIXES = ['/login', '/me', '/refresh', '/request-
  * - Ritorna sempre una struttura ApiResponse<T>
  */
 async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  // Assistenza in sola lettura (AA4): la modifica non parte nemmeno (l'uscita sì)
+  if (scritturaBloccata(options.method, url)) return { success: false, error: MESSAGGIO_SOLA_LETTURA };
+
   // Recupera il token dal localStorage o sessionStorage (quello attivo)
   const token = getAccessToken();
 

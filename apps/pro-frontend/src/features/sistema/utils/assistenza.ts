@@ -25,6 +25,9 @@ export const MODO_LABEL: Record<ModoAssistenza, string> = {
   assistenza: 'Assistenza',
 };
 
+/** Voce dell'account nel menu dell'Assistenza: «Mario Rossi (addetto)» */
+export const etichettaAccount = (a: { nome: string; ruolo: string | null }): string => (a.ruolo ? `${a.nome} (${a.ruolo})` : a.nome);
+
 export const STATO_LABEL: Record<StatoAssistenza, string> = {
   aperta: 'Aperta',
   uscita: 'Uscita',

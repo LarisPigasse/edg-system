@@ -1,5 +1,9 @@
 // src/features/vigilo/constants/resoconti.ts — Spese e consumi (B10c)
-import type { PeriodoSpese } from '../types/resoconti';
+import type { NaturaResoconto, PeriodoSpese } from '../types/resoconti';
+import { NATURE_TESTO } from './nature';
+
+/** La natura nei resoconti: quelle delle scadenze e l'uso dei mezzi */
+export const NATURE_RESOCONTO: Record<NaturaResoconto, string> = { ...NATURE_TESTO, uso: 'Rifornimenti e uso' };
 
 export const PERIODI_SPESE: { value: PeriodoSpese; label: string }[] = [
   { value: 'anno', label: 'Anno in corso' },

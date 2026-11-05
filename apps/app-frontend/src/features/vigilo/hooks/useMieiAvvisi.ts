@@ -4,7 +4,9 @@
 // soggetto, pagine da 32 ("Mostra altri"), "letto" mostrato subito e
 // confermato al servizio (se rifiuta, si rilegge). Solo l'ultima lettura
 // conta: cambiando in fretta i filtri non si mescolano risposte vecchie.
+// In Assistenza (sola lettura, AA4) si guarda soltanto: puoSegnare è false.
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSolaLettura } from '@edg/auth';
 
 import { useNotificationSources } from '../../../core/notifications';
 import { leggiAvvisi, segnaAvvisiLetti, segnaAvvisoLetto } from '../api/avvisi';
@@ -21,6 +23,7 @@ export function useMieiAvvisi() {
   const turno = useRef(0);
   // dopo un "letto" la campanella si aggiorna subito (B8d-1 bis)
   const { refresh } = useNotificationSources();
+  const solaLettura = useSolaLettura();
 
   const carica = useCallback(
     async (offset: number) => {
@@ -49,17 +52,18 @@ export function useMieiAvvisi() {
   /** Un avviso aperto: da leggere → letto */
   const segnaLetto = useCallback(
     (v: VoceAvviso) => {
-      if (v.consegna !== 'inviato') return;
+      if (v.consegna !== 'inviato' || solaLettura) return;
       setVoci(l => l.map(x => (x.uuid === v.uuid ? { ...x, consegna: 'letto' } : x)));
       setNonLetti(n => Math.max(0, n - 1));
       segnaAvvisoLetto(v.uuid)
         .then(refresh)
         .catch(() => void carica(0));
     },
-    [carica, refresh]
+    [carica, refresh, solaLettura]
   );
 
   const segnaTutti = useCallback(async () => {
+    if (solaLettura) return;
     setVoci(l => l.map(x => (x.consegna === 'inviato' ? { ...x, consegna: 'letto' } : x)));
     setNonLetti(0);
     try {
@@ -68,7 +72,7 @@ export function useMieiAvvisi() {
       refresh();
       void carica(0);
     }
-  }, [carica, refresh]);
+  }, [carica, refresh, solaLettura]);
 
   return {
     filtri,
@@ -83,6 +87,8 @@ export function useMieiAvvisi() {
     ricarica: () => carica(0),
     segnaLetto,
     segnaTutti,
+    /** false in Assistenza (sola lettura): niente "letto" */
+    puoSegnare: !solaLettura,
   };
 }
 

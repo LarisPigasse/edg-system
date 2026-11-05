@@ -21,6 +21,8 @@ export function titoloAppartenenza(di: AppartenenzaAllegato, dentroScadenza = fa
   const quando = di.eseguitaIl ? giornoBreve(di.eseguitaIl) : '?';
   if (di.entita === 'soggetto') return 'Del soggetto';
   if (di.entita === 'scadenza') return dentroScadenza ? 'Della scadenza' : (di.titolo ?? 'Scadenza');
+  // lo scontrino di un rifornimento: "Carburante del 3 nov 2026"
+  if (di.entita === 'rifornimento') return `${di.titolo ?? 'Rifornimento'} del ${quando}`;
   return dentroScadenza ? `Registrazione del ${quando}` : `${di.titolo ?? 'Scadenza'} · registrazione del ${quando}`;
 }
 

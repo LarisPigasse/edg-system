@@ -5,19 +5,43 @@
 // avvisi. Del controllo si cambiano per ora solo i destinatari, dal menu
 // Azioni della riga (B8d-3); il resto è in sola lettura. Le voci con un
 // aggiornamento della libreria hanno un segno che apre il dettaglio; lo
-// Storico della libreria è nel menu del controllo (B10b).
+// Storico della libreria è nel menu del controllo (B10b) e in quello della
+// categoria, che per ora ha solo questa voce (solo se viene dalla libreria).
 import React from 'react';
-import { ActionMenu, Badge, Bell, Clock, LayoutGrid, MoreVertical, cn } from '@edg/ui';
+import { ActionMenu, Badge, Bell, Clock, LayoutGrid, MoreVertical, cn, type Action } from '@edg/ui';
 
 import { DescrizioneControllo } from '../DescrizioneControllo';
 import { IconaLibreria } from '../IconaLibreria';
 import { TIPI } from '../../constants/tipiSoggetto';
-import type { TipoProposta } from '../../types/aggiornamenti';
+import type { EntitaAggiornamento, TipoProposta } from '../../types/aggiornamenti';
 import type { Categoria, Controllo } from '../../types/configurazione';
 import type { GruppoConfigurazione } from '../../hooks/useConfigurazione';
 import { fraseDestinatari } from '../../utils/destinatari';
 
 const quanti = (n: number | undefined, uno: string, molti: string) => (n ? `${n} ${n === 1 ? uno : molti}` : null);
+
+/** Apre lo Storico della libreria di una voce (categoria o controllo) */
+export type ApriStorico = (entita: EntitaAggiornamento, voce: { uuid: string; nome: string }) => void;
+
+const ICONA_STORICO = <Clock className='h-4 w-4' />;
+
+/** Il menu "⋮" delle azioni, uguale per categorie e controlli */
+const MenuAzioni: React.FC<{ nome: string; azioni: Action[] }> = ({ nome, azioni }) => (
+  <ActionMenu
+    align='end'
+    actions={azioni}
+    trigger={
+      <button
+        type='button'
+        aria-label={`Azioni per ${nome}`}
+        title='Azioni'
+        className='rounded-md p-1.5 text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary'
+      >
+        <MoreVertical className='h-4 w-4' />
+      </button>
+    }
+  />
+);
 
 /** Le voci con qualcosa da decidere sulla libreria (uuid → aggiornamento o ritiro) e come aprirle */
 export interface InAttesa {
@@ -41,7 +65,7 @@ const SegnoAggiornamento: React.FC<{ tipo: TipoProposta; maschile: boolean; onAp
   </button>
 );
 
-const SchedaCategoria: React.FC<{ c: Categoria; attesa?: InAttesa }> = ({ c, attesa }) => (
+const SchedaCategoria: React.FC<{ c: Categoria; onStorico?: ApriStorico; attesa?: InAttesa }> = ({ c, onStorico, attesa }) => (
   <article
     className={cn(
       'flex items-start gap-3 rounded-lg border border-border-default bg-bg-primary p-4',
@@ -66,13 +90,21 @@ const SchedaCategoria: React.FC<{ c: Categoria; attesa?: InAttesa }> = ({ c, att
           .join(' · ')}
       </span>
     </span>
+    {c.libreria && onStorico && (
+      <span className='-mr-1.5 -mt-1.5'>
+        <MenuAzioni
+          nome={c.nome}
+          azioni={[{ id: 'storico', label: 'Storico della libreria', icon: ICONA_STORICO, onClick: () => onStorico('categoria', c) }]}
+        />
+      </span>
+    )}
   </article>
 );
 
 interface PropsRiga {
   c: Controllo;
   onDestinatari: (c: Controllo) => void;
-  onStorico?: (c: Controllo) => void;
+  onStorico?: ApriStorico;
   attesa?: InAttesa;
 }
 
@@ -101,22 +133,12 @@ const RigaControllo: React.FC<PropsRiga> = ({ c, onDestinatari, onStorico, attes
         }
       />
     </div>
-    <ActionMenu
-      align='end'
-      actions={[
+    <MenuAzioni
+      nome={c.nome}
+      azioni={[
         { id: 'destinatari', label: 'Destinatari degli avvisi', icon: <Bell className='h-4 w-4' />, onClick: () => onDestinatari(c) },
-        ...(c.libreria && onStorico ? [{ id: 'storico', label: 'Storico della libreria', icon: <Clock className='h-4 w-4' />, onClick: () => onStorico(c) }] : []),
+        ...(c.libreria && onStorico ? [{ id: 'storico', label: 'Storico della libreria', icon: ICONA_STORICO, onClick: () => onStorico('controllo', c) }] : []),
       ]}
-      trigger={
-        <button
-          type='button'
-          aria-label={`Azioni per ${c.nome}`}
-          title='Azioni'
-          className='rounded-md p-1.5 text-text-secondary transition-colors hover:bg-bg-hover hover:text-text-primary'
-        >
-          <MoreVertical className='h-4 w-4' />
-        </button>
-      }
     />
   </li>
 );
@@ -124,7 +146,7 @@ const RigaControllo: React.FC<PropsRiga> = ({ c, onDestinatari, onStorico, attes
 interface Props {
   gruppo: GruppoConfigurazione;
   onDestinatari: (c: Controllo) => void;
-  onStorico?: (c: Controllo) => void;
+  onStorico?: ApriStorico;
   attesa?: InAttesa;
 }
 
@@ -135,7 +157,7 @@ export const SchedaTipo: React.FC<Props> = ({ gruppo, onDestinatari, onStorico, 
         <h3 className='text-sm font-semibold uppercase tracking-wide text-text-secondary'>Categorie</h3>
         <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'>
           {gruppo.categorie.map(c => (
-            <SchedaCategoria key={c.uuid} c={c} attesa={attesa} />
+            <SchedaCategoria key={c.uuid} c={c} onStorico={onStorico} attesa={attesa} />
           ))}
         </div>
       </section>

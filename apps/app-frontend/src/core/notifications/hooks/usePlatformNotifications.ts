@@ -4,8 +4,10 @@
 // dal più recente, a pagine da 32: filtro (tutti, da leggere, non più
 // attuali) e modulo. Solo l'ultima lettura conta. Un modulo che non
 // risponde non spegne gli altri: lo si dice per nome. "Letto" si mostra
-// subito, si conferma al modulo e si rilegge la campanella.
+// subito, si conferma al modulo e si rilegge la campanella. In Assistenza
+// (sola lettura, AA4) si guarda soltanto: puoSegnare è false.
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSolaLettura } from '@edg/auth';
 
 import { NOTIFICATIONS_PAGE_SIZE } from '../constants';
 import type { NotificationFilter, PlatformNotification } from '../types';
@@ -14,6 +16,7 @@ import { useNotificationSources } from './useNotificationSources';
 
 export function usePlatformNotifications() {
   const { sources, refresh } = useNotificationSources();
+  const solaLettura = useSolaLettura();
   const sfogliabili = sources.filter(s => s.source.list);
   const chiave = sfogliabili.map(s => s.key).join(',');
   const rif = useRef(sfogliabili);
@@ -72,7 +75,7 @@ export function usePlatformNotifications() {
   /** Un avviso aperto: da leggere → letto, nel modulo e nella campanella */
   const markRead = useCallback(
     (n: PlatformNotification) => {
-      if (!n.unread) return;
+      if (!n.unread || solaLettura) return;
       setItems(l => l.map(x => (x.key === n.key ? { ...x, unread: false } : x)));
       setUnread(u => Math.max(0, u - 1));
       const s = rif.current.find(x => x.key === n.module);
@@ -81,17 +84,18 @@ export function usePlatformNotifications() {
         .then(refresh)
         .catch(() => void carica(true));
     },
-    [carica, refresh]
+    [carica, refresh, solaLettura]
   );
 
   /** Tutti letti, nei moduli scelti */
   const markAllRead = useCallback(async () => {
+    if (solaLettura) return;
     setItems(l => l.map(x => ({ ...x, unread: false })));
     setUnread(0);
     await Promise.allSettled(rif.current.filter(s => !module || s.key === module).map(s => s.source.markAllRead()));
     refresh();
     void carica(true);
-  }, [carica, module, refresh]);
+  }, [carica, module, refresh, solaLettura]);
 
   return {
     modules: sfogliabili.map(s => ({ key: s.key, name: s.name })),
@@ -109,6 +113,8 @@ export function usePlatformNotifications() {
     reload: () => carica(true),
     markRead,
     markAllRead,
+    /** false in Assistenza (sola lettura): niente "letto" */
+    puoSegnare: !solaLettura,
   };
 }
 

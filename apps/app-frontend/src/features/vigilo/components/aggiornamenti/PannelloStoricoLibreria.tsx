@@ -1,6 +1,6 @@
 // src/features/vigilo/components/aggiornamenti/PannelloStoricoLibreria.tsx
 //
-// Lo Storico della libreria di un controllo (B10b, ADR074): ogni scelta fatta
+// Lo Storico della libreria di un controllo o di una categoria (B10b, ADR074): ogni scelta fatta
 // sulla voce, dalla più recente all'avvio. Per ogni riga che cosa e quando è
 // stato proposto, quando è stato visto, chi ha deciso e campo per campo che
 // cosa è stato preso o tenuto. Le righe non si modificano: è il registro.

@@ -55,7 +55,8 @@ export function useSpese(testo: string) {
     void carica();
   }, [carica]);
 
-  return { filtri, setFiltri, dati, caricamento, errore, avvisoDate, ricarica: carica };
+  // richiesta: i filtri come li vede il servizio (anche per il CSV)
+  return { filtri, setFiltri, richiesta, dati, caricamento, errore, avvisoDate, ricarica: carica };
 }
 
 export type StatoSpese = ReturnType<typeof useSpese>;

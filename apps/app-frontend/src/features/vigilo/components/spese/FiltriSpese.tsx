@@ -1,22 +1,25 @@
 // src/features/vigilo/components/spese/FiltriSpese.tsx
 //
 // Periodo (con le date se personalizzato), tipo di soggetto e sede della vista
-// Spese e consumi; a destra il periodo guardato e quello di confronto.
+// Spese e consumi; poi il periodo guardato e quello di confronto e, in fondo
+// a destra, Esporta (PDF e CSV).
 import React from 'react';
 import { DatePicker, Select } from '@edg/ui';
 
 import { PERIODI_SPESE } from '../../constants/resoconti';
 import { TIPI } from '../../constants/tipiSoggetto';
 import type { StatoSpese } from '../../hooks/useSpese';
+import type { CostoMezzi } from '../../types/costoMezzi';
 import type { PeriodoSpese } from '../../types/resoconti';
 import type { RiferimentoSoggetto } from '../../types/scadenze';
 import { TIPI_SOGGETTO, type TipoSoggetto } from '../../types/valori';
 import { aGiorno, daGiorno, oggiLocale } from '../../utils/giorni';
 import { periodoTesto } from '../../utils/resoconti';
+import { EsportaSpese } from './EsportaSpese';
 
 const TUTTI = 'tutti';
 
-export const FiltriSpese: React.FC<{ s: StatoSpese; sedi: RiferimentoSoggetto[] }> = ({ s, sedi }) => {
+export const FiltriSpese: React.FC<{ s: StatoSpese; sedi: RiferimentoSoggetto[]; mezzi?: CostoMezzi | null }> = ({ s, sedi, mezzi }) => {
   const f = s.filtri;
   const imposta = (cambi: Partial<typeof f>) => s.setFiltri({ ...f, ...cambi });
   return (
@@ -59,6 +62,9 @@ export const FiltriSpese: React.FC<{ s: StatoSpese; sedi: RiferimentoSoggetto[] 
           {periodoTesto(s.dati.periodo)} · confronto con {periodoTesto(s.dati.confronto)}
         </p>
       )}
+      <div className='ml-auto pb-0.5'>
+        <EsportaSpese s={s} sedi={sedi} mezzi={mezzi} />
+      </div>
     </div>
   );
 };
