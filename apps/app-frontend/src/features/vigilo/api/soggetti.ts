@@ -2,7 +2,7 @@
 import type { RiferimentoSoggetto } from '../types/scadenze';
 import type { AccountCollegabile, Assegnazione, DatiSoggetto, EsitoSalvataggio, EsitoStato, FiltriSoggetti, OrdinaSoggetti, RegistrazioneStorico, Soggetto, StatoSoggetto } from '../types/soggetti';
 import type { TipoSoggetto } from '../types/valori';
-import { leggi, leggiTutti, richiesta } from './client';
+import { leggi, leggiFinoA, leggiTutti, richiesta } from './client';
 import { query } from './scadenze';
 
 /** Le sedi, per i filtri */
@@ -20,6 +20,10 @@ export async function leggiSoggetti(r: RichiestaSoggetti) {
   const risposta = await richiesta<Soggetto[]>(`/soggetti${query({ ...r })}`);
   return { righe: risposta.data, totale: risposta.meta?.total ?? risposta.data.length, altre: !!risposta.meta?.hasNext };
 }
+
+/** Tutti i soggetti dell'elenco filtrato, fino a `massimo` (per l'esportazione) */
+export const leggiTuttiSoggetti = (r: Omit<RichiestaSoggetti, 'pagina' | 'righe'>, massimo = 1024) =>
+  leggiFinoA<Soggetto>((pagina, righe) => leggiSoggetti({ ...r, pagina, righe }), massimo);
 
 // --- Un soggetto ------------------------------------------------------------
 
@@ -40,6 +44,10 @@ export async function leggiStorico(soggetto: string, pagina: number, righe: numb
   const r = await richiesta<RegistrazioneStorico[]>(`/registrazioni${query({ soggetto, pagina, righe })}`);
   return { righe: r.data, totale: r.meta?.total ?? r.data.length, altre: !!r.meta?.hasNext };
 }
+
+/** Tutto lo storico di un soggetto, fino a `massimo` (per l'esportazione) */
+export const leggiTuttoStorico = (soggetto: string, massimo = 1024) =>
+  leggiFinoA<RegistrazioneStorico>((pagina, righe) => leggiStorico(soggetto, pagina, righe), massimo);
 
 /** Chi usa un mezzo (soggetto) o quali mezzi usa una persona (persona) */
 export const leggiAssegnazioni = (filtro: { soggetto: string } | { persona: string }) =>

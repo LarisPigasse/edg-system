@@ -36,6 +36,19 @@ export const giornoBreve = (giorno: string): string => {
   return new Date(Date.UTC(a, m - 1, g)).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 };
 
+/**
+ * Una data con "da" o "a" davanti, con l'articolo giusto: "dal 3 nov 2026",
+ * "dall'11 nov 2026", "all'8 dic 2026", "al 1° gen 2027" (come conArticolo
+ * del servizio)
+ */
+export function giornoCon(preposizione: 'da' | 'a', giorno: string): string {
+  const g = Number(giorno.slice(8, 10));
+  const breve = giornoBreve(giorno);
+  const testo = g === 1 ? breve.replace(/^1 /, '1° ') : breve;
+  const elisa = g === 8 || g === 11;
+  return `${preposizione === 'da' ? (elisa ? "dall'" : 'dal ') : elisa ? "all'" : 'al '}${testo}`;
+}
+
 /** Oggi sul calendario di chi usa la pagina, come 'YYYY-MM-DD' */
 export const oggiLocale = (): string => aGiorno(new Date());
 

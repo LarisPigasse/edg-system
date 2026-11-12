@@ -4,14 +4,15 @@
 // identificativo e categoria; a destra il ritorno all'elenco (TornaAllElenco)
 // e il refresh. Poi i riquadri di
 // riepilogo con le azioni sullo stato accanto, e
-// le schede Scadenze (con il pannello delle azioni), Storico, Contatori,
+// le schede Scadenze (con il pannello delle azioni), Controlli (quali si
+// seguono, con lo storico delle decisioni, 2026-11-11), Storico, Contatori,
 // Rifornimenti (veicoli, macchine e attrezzature, tappa 2), Assegnazioni,
 // Documenti (B9a: del soggetto, delle sue scadenze, registrazioni e
 // rifornimenti) e Dati. Modifica nel pannello laterale (B7d-3). Il modulo del
 // rifornimento è uno solo, aperto dalla scheda o dal menu Azioni: dopo il
 // salvataggio si rileggono soggetto (contatori), costo e rifornimenti.
 // Un guasto segnalato dal menu Azioni riporta sulla scheda Scadenze e ne
-// apre il pannello (B10a).
+// apre il pannello (B10a). Esporta (report, 2026-11-12): la scheda in PDF.
 import React, { useState } from 'react';
 import { Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, ChevronRight, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
@@ -23,6 +24,8 @@ import { Documenti } from '../components/documenti/Documenti';
 import { DatiSoggetto } from '../components/soggetto/DatiSoggetto';
 import { RiepilogoSoggetto } from '../components/soggetto/RiepilogoSoggetto';
 import { CostoDelMezzo } from '../components/costoMezzi/CostoDelMezzo';
+import { MenuEsporta } from '../components/MenuEsporta';
+import { useEsportaSchedaSoggetto } from '../hooks/useEsportaSchedaSoggetto';
 import { ModuloRifornimento } from '../components/rifornimenti/ModuloRifornimento';
 import { RifornimentiMezzo } from '../components/rifornimenti/RifornimentiMezzo';
 import { TIPI_CON_RIFORNIMENTI } from '../constants/rifornimenti';
@@ -31,6 +34,7 @@ import type { Rifornimento } from '../types/rifornimenti';
 import { TIPI_CON_POSSESSO } from '../constants/costoMezzi';
 import { ScadenzeSoggetto } from '../components/soggetto/ScadenzeSoggetto';
 import { StoricoSoggetto } from '../components/soggetto/StoricoSoggetto';
+import { ControlliSoggetto } from '../components/soggetto/ControlliSoggetto';
 import { TornaAllElenco } from '../components/TornaAllElenco';
 import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
 import { useSoggetto } from '../hooks/useSoggetto';
@@ -93,7 +97,12 @@ const SoggettoPage: React.FC = () => {
             <ScadenzeSoggetto scadenze={x.scadenze} capacita={capacita} onCambiate={() => void x.ricarica()} />
           ),
         },
-        { id: 'storico', label: 'Storico', content: <StoricoSoggetto soggetto={s.uuid} /> },
+        {
+          id: 'controlli',
+          label: 'Controlli',
+          content: <ControlliSoggetto soggetto={s.uuid} puoModificare={!!capacita?.write} onCambiate={() => void x.ricarica()} />,
+        },
+        { id: 'storico', label: 'Storico', content: <StoricoSoggetto soggetto={s.uuid} nome={s.nome} conCosti={!!capacita?.costi} /> },
         ...(s.contatori.length
           ? [
               {
@@ -123,6 +132,7 @@ const SoggettoPage: React.FC = () => {
                 content: (
                   <RifornimentiMezzo
                     soggetto={s.uuid}
+                    nome={s.nome}
                     conImporto={!!capacita?.costi}
                     puoRegistrare={puoRegistrare}
                     versione={versione}
@@ -157,6 +167,7 @@ const SoggettoPage: React.FC = () => {
     : [];
 
   const elenco = <TornaAllElenco tipo={s?.tipo} />;
+  const scheda = useEsportaSchedaSoggetto(x, !!capacita?.costi);
 
   // l'addetto arriva qui dai collegamenti delle email: la sua scadenza è in "Le mie scadenze" (B9b)
   if (addetto) return <Navigate to={`/vigilo/mie-scadenze${search}`} replace />;
@@ -182,7 +193,13 @@ const SoggettoPage: React.FC = () => {
             title={<Titolo nome={s.nome} />}
             onRefresh={() => void x.ricarica()}
             isLoading={x.caricamento}
-            trailingActions={elenco}
+            trailingActions={
+              <div className='flex items-center gap-2'>
+                {/* report (2026-11-12): la scheda in PDF */}
+                <MenuEsporta voci={[{ id: 'scheda', label: 'Scheda del soggetto (PDF)', onClick: () => void scheda.esporta() }]} inCorso={scheda.inCorso} />
+                {elenco}
+              </div>
+            }
           />
           <RiepilogoSoggetto s={s} />
           {/* costo dei mezzi: solo veicoli, macchine e attrezzature, solo con vigilo.costi; si rilegge dopo una modifica */}

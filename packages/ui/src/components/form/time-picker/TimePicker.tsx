@@ -1,9 +1,9 @@
 // src/core/components/form/time-picker/TimePicker.tsx
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Clock } from '../../../utils/icons';
 
-import { cn } from '../../../utils';
+import { cn, placeFloating, safePortalProps } from '../../../utils';
 import { useClickOutside } from '../../../hooks';
 import { FloatingFieldShell } from '../floating-field-shell/FloatingFieldShell';
 
@@ -158,7 +158,11 @@ export const TimePicker: React.FC<TimePickerProps> = ({
   const updatePanelPosition = useCallback(() => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    setPanelPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+    // sotto il campo, o sopra se in fondo alla finestra non c'è posto (utils/floatingPosition);
+    // alla prima apertura il pannello non c'è ancora: si misura subito dopo (useLayoutEffect)
+    const panel = panelRef.current?.getBoundingClientRect() ?? { width: 0, height: 0 };
+    const { top, left } = placeFloating(rect, panel, { width: window.innerWidth, height: window.innerHeight });
+    setPanelPosition({ top, left, width: rect.width });
   }, []);
 
   const openPanel = () => {
@@ -166,6 +170,11 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     updatePanelPosition();
     setIsOpen(true);
   };
+
+  // appena aperto il pannello si misura e si riposiziona, prima di comparire
+  useLayoutEffect(() => {
+    if (isOpen) updatePanelPosition();
+  }, [isOpen, updatePanelPosition]);
 
   useClickOutside([triggerRef, panelRef], () => setIsOpen(false), isOpen);
 
@@ -254,8 +263,8 @@ export const TimePicker: React.FC<TimePickerProps> = ({
         createPortal(
           <div
             ref={panelRef}
-            data-modal-safe-portal='true'
-            style={{ position: 'fixed', top: panelPosition.top, left: panelPosition.left }}
+            // dentro un Modal o uno Sheet il body non riceve clic: il portale li riattiva (utils/safePortal)
+            {...safePortalProps({ position: 'fixed', top: panelPosition.top, left: panelPosition.left })}
             className='z-50'
           >
             <div

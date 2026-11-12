@@ -5,14 +5,19 @@
 // (solo a chi segue i costi), km o ore letti, fornitore e riferimento.
 // Sopra, "Registra rifornimento" (vigilo.write, mezzo non archiviato); dal
 // menu della riga Correggi ed Elimina. Gli scontrini stanno in Documenti.
+// Accanto, Esporta (report, 2026-11-12): tutti i rifornimenti in PDF o CSV.
 import React, { useState } from 'react';
 import { Alert, Button, ConfirmModal, Fuel, Pencil, Table, Trash2, type TableColumn, type TableRowAction } from '@edg/ui';
 
+import { leggiTuttiRifornimenti } from '../../api/rifornimenti';
 import { RIGHE_RIFORNIMENTI } from '../../constants/rifornimenti';
+import { nomeFileDi, useEsportazione } from '../../hooks/useEsportazione';
 import { useRifornimenti } from '../../hooks/useRifornimenti';
 import type { Rifornimento } from '../../types/rifornimenti';
 import { giornoBreve } from '../../utils/giorni';
+import { colonneCsvRifornimenti, colonnePdfRifornimenti } from '../../utils/esportaRifornimenti';
 import { euroEsatti, letturaTesto, litriTesto, prezzoLitroTesto } from '../../utils/rifornimenti';
+import { MenuEsporta } from '../MenuEsporta';
 
 const icona = (I: typeof Pencil) => <I className='h-4 w-4' />;
 const Vuoto: React.FC = () => <span className='text-text-secondary'>—</span>;
@@ -57,6 +62,8 @@ function colonne(conImporto: boolean): TableColumn<Rifornimento>[] {
 
 interface Props {
   soggetto: string;
+  /** Per il titolo e il nome del file dell'esportazione */
+  nome: string;
   /** vigilo.costi: importo e prezzo al litro */
   conImporto: boolean;
   /** Si può registrare (vigilo.write e mezzo non archiviato) */
@@ -68,8 +75,17 @@ interface Props {
   onElimina: (r: Rifornimento) => Promise<boolean>;
 }
 
-export const RifornimentiMezzo: React.FC<Props> = ({ soggetto, conImporto, puoRegistrare, versione, onRegistra, onCorreggi, onElimina }) => {
+export const RifornimentiMezzo: React.FC<Props> = ({ soggetto, nome, conImporto, puoRegistrare, versione, onRegistra, onCorreggi, onElimina }) => {
   const x = useRifornimenti(soggetto, RIGHE_RIFORNIMENTI, versione);
+  const esporta = useEsportazione({
+    leggi: () => leggiTuttiRifornimenti(soggetto),
+    nomeFile: `rifornimenti-${nomeFileDi(nome)}`,
+    titolo: `Rifornimenti · ${nome}`,
+    sottotitolo: n => `${n} ${n === 1 ? 'rifornimento' : 'rifornimenti'}, dal più recente`,
+    colonnePdf: colonnePdfRifornimenti(conImporto),
+    colonneCsv: colonneCsvRifornimenti(conImporto),
+    vuoto: 'Nessun rifornimento registrato.',
+  });
   const [daEliminare, setDaEliminare] = useState<Rifornimento | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
@@ -83,13 +99,20 @@ export const RifornimentiMezzo: React.FC<Props> = ({ soggetto, conImporto, puoRe
 
   return (
     <div className='space-y-4'>
-      {puoRegistrare && (
-        <div className='flex justify-end'>
+      <div className='flex justify-end gap-2'>
+        <MenuEsporta
+          size='sm'
+          onPdf={() => void esporta.esporta('pdf')}
+          onCsv={() => void esporta.esporta('csv')}
+          inCorso={esporta.inCorso}
+          disabilitato={x.righe.length === 0}
+        />
+        {puoRegistrare && (
           <Button size='sm' leftIcon={<Fuel className='h-4 w-4' />} onClick={onRegistra}>
             Registra rifornimento
           </Button>
-        </div>
-      )}
+        )}
+      </div>
       {x.errore && (
         <Alert variant='danger' title='Impossibile leggere i rifornimenti'>
           {x.errore}

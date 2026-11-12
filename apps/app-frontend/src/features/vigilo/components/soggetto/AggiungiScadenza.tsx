@@ -6,10 +6,15 @@
 //               automatici; la data si può lasciare a Vigilo (se la calcola
 //               dai dati) o inserire dopo;
 //   Promemoria  titolo e data liberi, per ciò che non è un controllo.
+// Se nessun controllo è proponibile (tutti hanno già una scadenza aperta, una
+// sola per controllo) data e note non compaiono: il riquadro spiega perché e
+// propone il promemoria. Finché i controlli non sono arrivati si dice che si
+// stanno caricando, non che mancano.
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, DatePicker, Input, Select, Sheet, TextArea, cn } from '@edg/ui';
 
 import { leggiControlli } from '../../api/configurazione';
+import { leggiControlliSoggetto } from '../../api/controlliSoggetto';
 import type { Controllo } from '../../types/configurazione';
 import type { Scadenza } from '../../types/scadenze';
 import type { Soggetto } from '../../types/soggetti';
@@ -28,18 +33,22 @@ interface Props {
   onAggiungi: (dati: { controllo: string | null; titolo?: string; scadeIl?: string; note?: string | null }) => Promise<boolean>;
 }
 
-/** I controlli che valgono per il soggetto e non hanno già una scadenza aperta */
-function proponibili(controlli: Controllo[], s: Soggetto, aperte: Scadenza[]): Controllo[] {
+/** I controlli che valgono per il soggetto, si seguono e non hanno già una scadenza aperta */
+function proponibili(controlli: Controllo[], s: Soggetto, aperte: Scadenza[], nonSeguiti: ReadonlySet<string>): Controllo[] {
   const usati = new Set(aperte.map(x => x.controllo?.uuid).filter(Boolean));
   return controlli
-    .filter(c => c.attivo && c.tipoSoggetto === s.tipo && !usati.has(c.uuid))
+    .filter(c => c.attivo && c.tipoSoggetto === s.tipo && !usati.has(c.uuid) && !nonSeguiti.has(c.uuid))
     .filter(c => c.categorie.length === 0 || (s.categoria && c.categorie.some(k => k.uuid === s.categoria!.uuid)))
     .sort((a, b) => Number(a.automatico) - Number(b.automatico) || a.nome.localeCompare(b.nome, 'it'));
 }
 
 export const AggiungiScadenza: React.FC<Props> = ({ s, aperte, aperto, modoIniziale, inCorso, onChiudi, onAggiungi }) => {
   const [modo, setModo] = useState<Modo>(modoIniziale);
-  const [controlli, setControlli] = useState<Controllo[]>([]);
+  /** null finché non sono arrivati */
+  const [controlli, setControlli] = useState<Controllo[] | null>(null);
+  /** I controlli che per questo soggetto non si seguono (scheda Controlli) */
+  const [nonSeguiti, setNonSeguiti] = useState<ReadonlySet<string>>(new Set());
+  const [erroreControlli, setErroreControlli] = useState(false);
   const [controllo, setControllo] = useState('');
   const [titolo, setTitolo] = useState('');
   const [scadeIl, setScadeIl] = useState('');
@@ -52,12 +61,22 @@ export const AggiungiScadenza: React.FC<Props> = ({ s, aperte, aperto, modoInizi
     setTitolo('');
     setScadeIl('');
     setNote('');
-    leggiControlli()
-      .then(setControlli)
-      .catch(() => setControlli([]));
-  }, [aperto, modoIniziale]);
+    setControlli(null);
+    setErroreControlli(false);
+    Promise.all([leggiControlli(), leggiControlliSoggetto(s.uuid)])
+      .then(([tutti, delSoggetto]) => {
+        setNonSeguiti(new Set(delSoggetto.controlli.filter(c => !c.seguito).map(c => c.uuid)));
+        setControlli(tutti);
+      })
+      .catch(() => {
+        setControlli([]);
+        setErroreControlli(true);
+      });
+  }, [aperto, modoIniziale, s.uuid]);
 
-  const scelte = useMemo(() => proponibili(controlli, s, aperte), [controlli, s, aperte]);
+  const scelte = useMemo(() => proponibili(controlli ?? [], s, aperte, nonSeguiti), [controlli, s, aperte, nonSeguiti]);
+  /** In modalità controllo: niente da proporre (o non letto), quindi niente data e note */
+  const senzaScelte = modo === 'controllo' && (controlli === null || scelte.length === 0);
   const pronto = modo === 'controllo' ? !!controllo : !!titolo.trim() && !!scadeIl;
 
   const aggiungi = async () => {
@@ -110,14 +129,27 @@ export const AggiungiScadenza: React.FC<Props> = ({ s, aperte, aperto, modoInizi
 
         {modo === 'controllo' ? (
           <>
-            <p className='text-sm text-text-secondary'>
-              I controlli del suo tipo e della sua categoria che non hanno già una scadenza aperta. Se non inserisci la data, Vigilo la calcola dai dati
-              quando può; altrimenti resta da completare.
-            </p>
-            {scelte.length === 0 ? (
-              <p className='rounded-lg border border-dashed border-border-default p-4 text-center text-sm text-text-secondary'>
-                Tutti i controlli che valgono per questo soggetto hanno già una scadenza aperta.
+            {(controlli === null || scelte.length > 0) && (
+              <p className='text-sm text-text-secondary'>
+                I controlli del suo tipo e della sua categoria che non hanno già una scadenza aperta. Se non inserisci la data, Vigilo la calcola dai
+                dati quando può; altrimenti resta da completare.
               </p>
+            )}
+            {controlli === null ? (
+              <p className='text-sm text-text-secondary' aria-live='polite'>
+                Carico i controlli…
+              </p>
+            ) : scelte.length === 0 ? (
+              <div className='space-y-3 rounded-lg border border-dashed border-border-default p-4 text-center text-sm text-text-secondary'>
+                <p>
+                  {erroreControlli
+                    ? 'Non riesco a leggere i controlli: chiudi e riprova fra poco.'
+                    : 'Tutti i controlli che valgono per questo soggetto hanno già una scadenza aperta o non si seguono (scheda Controlli): per aggiornarne uno, apri la sua scadenza dalla scheda.'}
+                </p>
+                <Button variant='outline' size='sm' onClick={() => setModo('promemoria')}>
+                  Crea un promemoria
+                </Button>
+              </div>
             ) : (
               <Select
                 label='Controllo'
@@ -135,13 +167,17 @@ export const AggiungiScadenza: React.FC<Props> = ({ s, aperte, aperto, modoInizi
           </>
         )}
 
-        <DatePicker
-          label={modo === 'controllo' ? 'Scade il (facoltativa)' : 'Scade il'}
-          required={modo === 'promemoria'}
-          value={scadeIl ? daGiorno(scadeIl) : undefined}
-          onChange={d => setScadeIl(d ? aGiorno(d) : '')}
-        />
-        <TextArea label='Note' value={note} onChange={e => setNote(e.target.value)} maxLength={4096} minRows={1} autoResize />
+        {!senzaScelte && (
+          <>
+            <DatePicker
+              label={modo === 'controllo' ? 'Scade il (facoltativa)' : 'Scade il'}
+              required={modo === 'promemoria'}
+              value={scadeIl ? daGiorno(scadeIl) : undefined}
+              onChange={d => setScadeIl(d ? aGiorno(d) : '')}
+            />
+            <TextArea label='Note' value={note} onChange={e => setNote(e.target.value)} maxLength={4096} minRows={1} autoResize />
+          </>
+        )}
       </div>
     </Sheet>
   );

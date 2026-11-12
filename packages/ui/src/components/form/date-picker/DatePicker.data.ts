@@ -81,6 +81,6 @@ max.setDate(max.getDate() + 30);
   ],
   notes:
     "Il componente gestisce sia l'input manuale (con validazione basata sul formato) sia la selezione dal calendario. Il pannello calendario è renderizzato tramite Portal React nativo (non Radix) con posizionamento calcolato via getBoundingClientRect, ricalcolato su scroll/resize — così non viene mai tagliato da contenitori scrollabili come le modali. Apertura/chiusura sono gestite manualmente tramite l'hook useClickOutside (mousedown esterno, tasto Escape, selezione di una data) per un comportamento prevedibile, senza dipendere dal dismiss automatico di alcuna libreria. " +
-    "IMPORTANTE — il pannello porta l'attributo data-modal-safe-portal='true': è la convenzione che permette al componente Modal del template di riconoscerlo come portale legittimo e non chiudersi quando l'utente interagisce con il calendario aperto al suo interno (vedi note di Modal.data.ts). Se usato fuori da una Modal, questo attributo è ininfluente. " +
+    "IMPORTANTE — il pannello usa safePortalProps (utils/safePortal): porta l'attributo data-modal-safe-portal='true' e pointer-events: auto. Il primo permette a Modal e Sheet (keepOpenOnSafeInteraction) di riconoscerlo come portale legittimo e non chiudersi quando l'utente interagisce con il calendario; il secondo riattiva i clic, che un dialog Radix aperto blocca su tutto il body. Fuori da un dialog entrambi sono ininfluenti. " +
     'La navigazione del calendario è possibile anche tramite tastiera (Invio o Freccia giù per aprire, Escape per chiudere).',
 };

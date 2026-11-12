@@ -43,3 +43,27 @@ export async function leggiTutti<T>(percorso: string): Promise<T[]> {
   }
   return righe;
 }
+
+/** Le righe lette per un'esportazione: troncate se ce n'erano più del massimo */
+export interface LetturaCompleta<T> {
+  righe: T[];
+  troncate: boolean;
+}
+
+/**
+ * Tutte le righe di un elenco filtrato, a pagine da 128, fino a `massimo`:
+ * per le esportazioni (PDF e CSV), che vogliono ciò che si vede, non solo le
+ * pagine già caricate. `leggiPagina` è la lettura di una pagina dell'elenco.
+ */
+export async function leggiFinoA<T>(
+  leggiPagina: (pagina: number, righe: number) => Promise<{ righe: T[]; altre: boolean }>,
+  massimo = 1024
+): Promise<LetturaCompleta<T>> {
+  const righe: T[] = [];
+  for (let pagina = 1; righe.length < massimo; pagina++) {
+    const l = await leggiPagina(pagina, RIGHE);
+    righe.push(...l.righe);
+    if (!l.altre) return { righe, troncate: false };
+  }
+  return { righe: righe.slice(0, massimo), troncate: true };
+}

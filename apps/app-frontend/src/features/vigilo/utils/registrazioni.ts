@@ -3,6 +3,7 @@
 // Una registrazione in parole: che cosa è successo e con quali dettagli.
 // Usate dal pannello della scadenza e dallo storico del soggetto. In più,
 // dal modulo Registra ai dati della conferma di una segnalazione (B9c).
+// Nei dettagli, per primo, chi l'ha registrata (revisione 2026-11-10).
 import type { DatiConferma, DatiEsecuzione, Registrazione } from '../types/scadenze';
 import { giornoBreve } from './giorni';
 import { euro, testoEsecuzione, testoOre } from './manodopera';
@@ -21,13 +22,22 @@ export function descrizioneRegistrazione(r: Registrazione): string {
 export const testoManodopera = (r: Registrazione): string | null =>
   r.manodopera.length ? `${testoOre(r.oreManodopera)}: ${r.manodopera.map(m => `${m.nome ?? 'dipendente'} ${testoOre(m.ore)}`).join(', ')}` : null;
 
+/** "da Mario Rossi", "segnalata da Luca Bianchi, confermata da Mario Rossi", "automatica"; null se il nome non si è letto */
+export function autoreRegistrazione(r: Registrazione): string | null {
+  if (r.automatica) return 'automatica';
+  if (r.confermataDa) return r.registrataDa ? `segnalata da ${r.registrataDa}, confermata da ${r.confermataDa}` : `confermata da ${r.confermataDa}`;
+  if (r.stato === 'da-confermare' || r.stato === 'respinta') return r.registrataDa ? `segnalata da ${r.registrataDa}` : null;
+  return r.registrataDa ? `da ${r.registrataDa}` : null;
+}
+
 /**
- * "Officina Rossi · FT 123 · 3,5 h: Mario Rossi… · 250,00 € · note": gli euro
- * solo a chi li vede; con la manodopera il costo totale (importo + manodopera)
+ * "da Mario Rossi · Officina Rossi · FT 123 · 3,5 h: Mario Rossi… · 250,00 € · note":
+ * chi l'ha registrata per primo (resta visibile anche quando la riga si tronca);
+ * gli euro solo a chi li vede; con la manodopera il costo totale (importo + manodopera)
  */
 export function dettagliRegistrazione(r: Registrazione): string {
   const soldi = r.manodopera.length && r.costoTotale != null ? `totale ${euro(r.costoTotale)}` : r.importo != null ? euro(r.importo) : null;
-  return [r.fornitore?.nome, r.riferimento, testoManodopera(r), soldi, r.note].filter(Boolean).join(' · ');
+  return [autoreRegistrazione(r), r.fornitore?.nome, r.riferimento, testoManodopera(r), soldi, r.note].filter(Boolean).join(' · ');
 }
 
 /** I campi del modulo Registra che valgono per la conferma: niente esito (è positivo) né nuova data */

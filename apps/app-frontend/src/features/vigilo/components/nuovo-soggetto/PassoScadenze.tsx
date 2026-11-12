@@ -22,7 +22,7 @@ interface Props {
 }
 
 export const PassoScadenze: React.FC<Props> = ({ scadenze, completamenti, onCompleta }) => (
-  <Riquadro titolo='Le date delle scadenze' accanto={scadenze.length ? `${scadenze.length}` : undefined}>
+  <Riquadro titolo='Le date delle scadenze' conteggio={scadenze.length || undefined}>
     {scadenze.length === 0 ? (
       <p className='text-sm text-text-secondary'>
         Nessuna scadenza creata: la categoria non ha controlli automatici. Potrai aggiungere scadenze dalla scheda.

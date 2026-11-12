@@ -2,7 +2,8 @@
 //
 // Tipo, natura, sede e ordinamento delle cose "Da fare" (la ricerca sta
 // in testa alla pagina). Valgono anche per i numeri della dashboard. Li usa
-// anche il calendario, senza l'ordinamento.
+// anche il calendario, senza l'ordinamento. A destra, sulla stessa riga,
+// le azioni facoltative (Esporta PDF nella dashboard).
 import React from 'react';
 import { Select, cn } from '@edg/ui';
 
@@ -23,6 +24,8 @@ interface Props {
   onOrdina?: (o: Ordina) => void;
   filtriAttivi: boolean;
   onAzzera: () => void;
+  /** A destra sulla riga dei filtri */
+  azioni?: React.ReactNode;
 }
 
 const opzioni = <T extends string>(tutti: string, valori: readonly T[], etichetta: (v: T) => string) => [
@@ -30,7 +33,7 @@ const opzioni = <T extends string>(tutti: string, valori: readonly T[], etichett
   ...valori.map(v => ({ value: v, label: etichetta(v) })),
 ];
 
-export const FiltriDaFare: React.FC<Props> = ({ filtri, onFiltri, sedi, ordina, onOrdina, filtriAttivi, onAzzera }) => {
+export const FiltriDaFare: React.FC<Props> = ({ filtri, onFiltri, sedi, ordina, onOrdina, filtriAttivi, onAzzera, azioni }) => {
   const imposta = (chiave: keyof typeof filtri) => (v: string) => onFiltri({ ...filtri, [chiave]: v === TUTTI ? undefined : v });
   return (
     <div className='mb-5 flex flex-wrap items-end gap-3'>
@@ -77,6 +80,7 @@ export const FiltriDaFare: React.FC<Props> = ({ filtri, onFiltri, sedi, ordina, 
           Azzera filtri
         </button>
       )}
+      {azioni && <div className='ml-auto flex items-center gap-2'>{azioni}</div>}
     </div>
   );
 };

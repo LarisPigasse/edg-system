@@ -11,7 +11,7 @@ import type {
   Registrazione,
   Scadenza,
 } from '../types/scadenze';
-import { leggi, richiesta } from './client';
+import { leggi, leggiFinoA, richiesta } from './client';
 
 /** Solo i parametri valorizzati, codificati */
 export const query = (parametri: Record<string, string | number | boolean | undefined>) => {
@@ -31,6 +31,8 @@ export interface RichiestaScadenze extends FiltriScadenze {
   aperte?: boolean;
   verso?: 'asc' | 'desc';
   entro?: number;
+  /** Con `entro`: solo quelle oltre questi giorni (fascia "Entro 32 giorni": oltre 8, entro 32) */
+  oltre?: number;
   /** Solo quelle con una segnalazione dell'addetto da confermare (B9c) */
   segnalate?: boolean;
   ordina?: 'urgenza' | 'soggetto' | 'scadeIl' | 'stato' | 'chiusaIl';
@@ -44,15 +46,8 @@ export async function leggiScadenze(r: RichiestaScadenze) {
 }
 
 /** Tutte le scadenze di una richiesta, a pagine da 128 (per il PDF), fino a `massimo` */
-export async function leggiTutteScadenze(r: Omit<RichiestaScadenze, 'pagina' | 'righe'>, massimo = 1024) {
-  const righe: Scadenza[] = [];
-  for (let pagina = 1; righe.length < massimo; pagina++) {
-    const l = await leggiScadenze({ ...r, pagina, righe: 128 });
-    righe.push(...l.righe);
-    if (!l.altre) return { righe, troncate: false };
-  }
-  return { righe, troncate: true };
-}
+export const leggiTutteScadenze = (r: Omit<RichiestaScadenze, 'pagina' | 'righe'>, massimo = 1024) =>
+  leggiFinoA<Scadenza>((pagina, righe) => leggiScadenze({ ...r, pagina, righe }), massimo);
 
 // --- Una scadenza e le sue azioni -------------------------------------------
 

@@ -41,10 +41,9 @@ export function useSoggetti(tipoIniziale: TipoSoggetto | null) {
   /** Solo l'ultima richiesta conta */
   const turno = useRef(0);
 
-  const richiesta = useCallback(
-    (p: number) => ({ ...filtri, tipo: tipo ?? undefined, testo: testoRitardato || undefined, ordina, pagina: p, righe: RIGHE }),
-    [filtri, tipo, testoRitardato, ordina]
-  );
+  /** La richiesta dell'elenco senza le pagine (l'elenco la sfoglia, l'esportazione la legge tutta) */
+  const base = useMemo(() => ({ ...filtri, tipo: tipo ?? undefined, testo: testoRitardato || undefined, ordina }), [filtri, tipo, testoRitardato, ordina]);
+  const richiesta = useCallback((p: number) => ({ ...base, pagina: p, righe: RIGHE }), [base]);
 
   const carica = useCallback(async () => {
     const mio = ++turno.current;
@@ -119,6 +118,7 @@ export function useSoggetti(tipoIniziale: TipoSoggetto | null) {
   }, []);
 
   return {
+    base,
     tipo,
     setTipo,
     testo,

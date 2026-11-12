@@ -4,7 +4,7 @@
 // nuovo, correzione ed eliminazione. Gli scontrini sono allegati con entità
 // "rifornimento" (api/allegati.ts).
 import type { DatiRifornimento, Rifornimento } from '../types/rifornimenti';
-import { richiesta } from './client';
+import { leggiFinoA, richiesta } from './client';
 import { query } from './scadenze';
 
 /** I rifornimenti di un mezzo, dal più recente */
@@ -12,6 +12,10 @@ export async function leggiRifornimenti(soggetto: string, pagina: number, righe:
   const r = await richiesta<Rifornimento[]>(`/rifornimenti${query({ soggetto, pagina, righe })}`);
   return { righe: r.data, totale: r.meta?.total ?? r.data.length, altre: !!r.meta?.hasNext };
 }
+
+/** Tutti i rifornimenti di un mezzo, fino a `massimo` (per l'esportazione) */
+export const leggiTuttiRifornimenti = (soggetto: string, massimo = 1024) =>
+  leggiFinoA<Rifornimento>((pagina, righe) => leggiRifornimenti(soggetto, pagina, righe), massimo);
 
 export const creaRifornimento = async (dati: DatiRifornimento) => (await richiesta<Rifornimento>('/rifornimenti', 'POST', dati)).data;
 

@@ -118,7 +118,9 @@ export const Select = React.forwardRef<any, SelectProps>(
               onCloseAutoFocus={e => e.preventDefault()}
               // Almeno largo quanto il campo, ma si allarga per le etichette lunghe
               // (fino a 32rem): le voci restano su una riga sola.
-              className='z-50 w-max min-w-[var(--radix-select-trigger-width)] max-w-[min(32rem,calc(100vw-2rem))] bg-bg-primary rounded-lg border border-border-default shadow-lg'
+              // Alto al massimo quanto lo spazio libero calcolato da Radix e comunque
+              // non oltre 32rem (512 px): oltre, l'elenco scorre dentro il Viewport.
+              className='z-50 w-max min-w-[var(--radix-select-trigger-width)] max-w-[min(32rem,calc(100vw-2rem))] max-h-[min(32rem,var(--radix-select-content-available-height))] bg-bg-primary rounded-lg border border-border-default shadow-lg'
             >
               <SelectPrimitive.Viewport className='p-1'>
                 {options.map(option => (

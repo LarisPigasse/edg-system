@@ -3,7 +3,7 @@
 // Lo stato dell'elenco dei fornitori (F1): ricerca, stato (attivi,
 // disattivati, tutti), tipo, ordinamento e pagine da 32 ("Mostra altri").
 // Solo l'ultima richiesta conta.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { leggiElencoFornitori } from '../api/fornitori';
 import { RIGHE_FORNITORI } from '../constants/fornitori';
@@ -27,10 +27,9 @@ export function useElencoFornitori() {
   const testoRitardato = useRitardato(testo.trim());
   const turno = useRef(0);
 
-  const richiesta = useCallback(
-    (p: number) => ({ ...filtri, testo: testoRitardato || undefined, ordina, pagina: p, righe: RIGHE_FORNITORI }),
-    [filtri, testoRitardato, ordina]
-  );
+  /** La richiesta dell'elenco senza le pagine (l'elenco la sfoglia, l'esportazione la legge tutta) */
+  const base = useMemo(() => ({ ...filtri, testo: testoRitardato || undefined, ordina }), [filtri, testoRitardato, ordina]);
+  const richiesta = useCallback((p: number) => ({ ...base, pagina: p, righe: RIGHE_FORNITORI }), [base]);
 
   const leggi = useCallback(
     async (p: number) => {
@@ -66,7 +65,7 @@ export function useElencoFornitori() {
     setFiltri(FILTRI_INIZIALI);
   }, []);
 
-  return { testo, setTesto, filtri, setFiltri, ordina, setOrdina, righe, totale, altre, mostraAltri, caricamento, errore, ricarica, filtriAttivi, azzera };
+  return { base, testo, setTesto, filtri, setFiltri, ordina, setOrdina, righe, totale, altre, mostraAltri, caricamento, errore, ricarica, filtriAttivi, azzera };
 }
 
 export type ElencoFornitori = ReturnType<typeof useElencoFornitori>;

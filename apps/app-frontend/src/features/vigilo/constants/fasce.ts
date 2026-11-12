@@ -5,6 +5,8 @@
 //   scaduta rosso · in tolleranza arancio · entro 8 giorni ambra ·
 //   entro 32 giorni verde · più avanti verde chiaro · da completare ciano ·
 //   in regola grigio chiaro (gray-200, testo scuro; scelto il 2026-10-15).
+// Le schede "più avanti" hanno un velo verde con bordo verde e testo normale
+// (2026-11-09): non stanno in nessun riquadro e non vanno confuse con le verdi.
 // `numero` per le cifre grandi, `fondo` per etichette e pallini (calendario)
 // e `card` per le schede colorate: lo stesso
 // tono 500, testo bianco sulle schede (in regola: gray-200 con testo scuro,
@@ -51,7 +53,8 @@ export const FASCE_ASPETTO: Record<Fascia, AspettoFascia> = {
     etichetta: 'Più avanti',
     numero: 'text-green-500',
     fondo: 'bg-green-400 text-white',
-    card: 'bg-green-400 text-white border-transparent hover:border-white/70',
+    // velo verde e testo dal token: vale per il tema chiaro e lo scuro (le varianti dark: seguono il sistema, non il tema dell'app)
+    card: 'bg-green-500/10 text-text-primary border-green-500 hover:border-green-600',
   },
   'da-completare': {
     etichetta: 'Da completare',

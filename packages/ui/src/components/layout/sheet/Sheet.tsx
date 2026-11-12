@@ -3,7 +3,7 @@ import React from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
-import { cn } from "../../../utils";
+import { cn, keepOpenOnSafeEscape, keepOpenOnSafeInteraction } from "../../../utils";
 
 export type SheetSide = "top" | "bottom" | "left" | "right";
 
@@ -58,6 +58,9 @@ export const Sheet: React.FC<SheetProps> = ({
             sideConfig[side],
             className
           )}
+          // il calendario di DatePicker (e TimePicker, i popper Radix) non chiude lo Sheet (utils/safePortal)
+          onInteractOutside={keepOpenOnSafeInteraction}
+          onEscapeKeyDown={keepOpenOnSafeEscape}
         >
           <div className="bg-bg-modal h-full flex flex-col">
             {/* Header */}

@@ -5,19 +5,24 @@
 // stato; il clic sulla riga apre il dettaglio con le registrazioni. Con
 // vigilo.write: Nuovo fornitore, Modifica, Disattiva/Riattiva ed Elimina
 // (solo se nessuna registrazione lo cita; chiede conferma). Un pannello alla
-// volta: "Modifica" dal dettaglio chiude il dettaglio (L067).
+// volta: "Modifica" dal dettaglio chiude il dettaglio (L067). Esporta
+// (report, 2026-11-12): la rubrica come si vede in PDF o CSV.
 import React, { useState } from 'react';
 import { Alert, Button, ConfirmModal, PageHeader } from '@edg/ui';
 
+import { leggiTuttiFornitori } from '../api/fornitori';
+import { MenuEsporta } from '../components/MenuEsporta';
 import { DettaglioFornitore } from '../components/fornitori/DettaglioFornitore';
 import { FiltriFornitori } from '../components/fornitori/FiltriFornitori';
 import { PannelloFornitore } from '../components/fornitori/PannelloFornitore';
 import { TabellaFornitori } from '../components/fornitori/TabellaFornitori';
 import { useAzioniFornitore } from '../hooks/useAzioniFornitore';
 import { useElencoFornitori } from '../hooks/useElencoFornitori';
+import { useEsportazione } from '../hooks/useEsportazione';
 import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
 import { useTipiFornitore } from '../hooks/useTipiFornitore';
 import type { Fornitore } from '../types/fornitori';
+import { colonneCsvFornitori, colonnePdfFornitori, filtriFornitori } from '../utils/esportaFornitori';
 
 /** Un pannello: che cosa mostra e se è aperto (il contenuto resta durante la chiusura) */
 interface Aperto<T> {
@@ -30,6 +35,16 @@ const FornitoriPage: React.FC = () => {
   const modificabile = !!profilo?.capacita.write;
   const e = useElencoFornitori();
   const { tipi } = useTipiFornitore();
+  // report (2026-11-12): la rubrica come si vede, in PDF o CSV
+  const esporta = useEsportazione({
+    leggi: () => leggiTuttiFornitori(e.base),
+    nomeFile: 'fornitori',
+    titolo: 'Fornitori',
+    sottotitolo: n => filtriFornitori({ filtri: e.filtri, testo: e.base.testo, ordina: e.ordina, tipi, righe: n }),
+    colonnePdf: colonnePdfFornitori,
+    colonneCsv: colonneCsvFornitori,
+    vuoto: 'Nessun fornitore con questi filtri.',
+  });
   const a = useAzioniFornitore(e.ricarica);
 
   const [dettaglio, setDettaglio] = useState<Aperto<Fornitore | null>>({ di: null, aperto: false });
@@ -48,7 +63,17 @@ const FornitoriPage: React.FC = () => {
         subtitle='Officine, enti, compagnie e studi che eseguono i controlli: si indicano nelle registrazioni.'
         onRefresh={() => void e.ricarica()}
         isLoading={e.caricamento}
-        trailingActions={modificabile ? <Button onClick={() => apriPannello(null)}>Nuovo fornitore</Button> : undefined}
+        trailingActions={
+          <div className='flex items-center gap-2'>
+            <MenuEsporta
+              onPdf={() => void esporta.esporta('pdf')}
+              onCsv={() => void esporta.esporta('csv')}
+              inCorso={esporta.inCorso}
+              disabilitato={e.caricamento || e.totale === 0}
+            />
+            {modificabile && <Button onClick={() => apriPannello(null)}>Nuovo fornitore</Button>}
+          </div>
+        }
       />
 
       <FiltriFornitori e={e} tipi={tipi} />

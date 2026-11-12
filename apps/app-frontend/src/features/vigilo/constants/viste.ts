@@ -21,7 +21,7 @@ interface DefinizioneVista {
   conteggio: (c: Conteggi) => number;
   /** Riga sotto l'etichetta del riquadro */
   sotto: (c: Conteggi) => string;
-  richiesta: Pick<RichiestaScadenze, 'stati' | 'entro'>;
+  richiesta: Pick<RichiestaScadenze, 'stati' | 'entro' | 'oltre'>;
   /** Frase dell'elenco vuoto */
   vuoto: string;
 }
@@ -66,11 +66,16 @@ export const DEFINIZIONI: Record<Vista, DefinizioneVista> = {
   entro32: {
     etichetta: 'Entro 32 giorni',
     fascia: 'entro32',
-    info: 'In scadenza nelle prossime settimane',
+    info: 'In scadenza fra 9 e 32 giorni: le più vicine sono in Entro 8 giorni',
     conteggio: c => c.entro32,
-    sotto: c => (c.entro32 ? `di cui ${c.entro8} entro 8 giorni` : 'nessuna'),
-    richiesta: { stati: 'in-scadenza', entro: 32 },
-    vuoto: 'Niente in scadenza nei prossimi 32 giorni.',
+    // le fasce non si sovrappongono: qui le schede verdi; quelle più avanti (verde chiaro) sono solo in Da fare
+    sotto: c => {
+      const avanti = c.piuAvanti ? `${c.piuAvanti} più avanti` : '';
+      if (!c.entro32) return avanti ? `nessuna, ${avanti}` : 'nessuna';
+      return avanti ? `e ${avanti}` : 'nelle prossime settimane';
+    },
+    richiesta: { stati: 'in-scadenza', oltre: 8, entro: 32 },
+    vuoto: 'Niente in scadenza fra 9 e 32 giorni.',
   },
   'da-completare': {
     etichetta: 'Da completare',

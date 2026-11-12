@@ -111,8 +111,19 @@ export const PannelloScadenza: React.FC<Props> = ({ uuid, aperto, capacita, onCh
             </section>
           )}
 
-          {/* l'addetto carica documenti sulle sue cose (B9b) */}
-          <Documenti key={s.uuid} entita='scadenza' id={s.uuid} attivo={aperto} puoModificare={capacita.write || capacita.own} soloTuoi={!capacita.write} titolo='Documenti' />
+          {/* l'addetto carica documenti sulle sue cose (B9b); distinti dal documento della registrazione nel modulo */}
+          <Documenti
+            key={s.uuid}
+            entita='scadenza'
+            id={s.uuid}
+            attivo={aperto}
+            puoModificare={capacita.write || capacita.own}
+            soloTuoi={!capacita.write}
+            titolo='Documenti della scadenza'
+            descrizione='Contratti, foto, preventivi: si salvano subito.'
+            etichettaCarica='Carica sulla scadenza'
+            testoRilascio='Rilascia per caricare sulla scadenza'
+          />
 
           {capacita.read && <DestinatariScadenza s={s} aperto={aperto} puoModificare={capacita.write} />}
 

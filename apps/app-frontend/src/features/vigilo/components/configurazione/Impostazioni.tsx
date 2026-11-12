@@ -10,18 +10,8 @@ import { Button, Card } from '@edg/ui';
 import type { StatoAvvio } from '../../types/avvio';
 import type { SchedaInterventi, SchedaRegoleAvvisi } from '../../types/impostazioni';
 import { euro } from '../../utils/manodopera';
+import { frasePreavvisi, fraseTolleranza } from '../../utils/predefiniti';
 import { fraseRegole } from '../../utils/regoleAvvisi';
-
-/** "32, 8 e 1": come le frasi del servizio */
-const elenco = (xs: number[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} e ${xs[xs.length - 1]}`);
-
-/** Dal più lontano; il nome si accorda con l'ultimo numero: "a 32, 8 e 1 giorno" */
-const giorni = (g: number[]) => {
-  const ordinati = [...g].sort((a, b) => b - a);
-  return ordinati.length
-    ? `avvisi a ${elenco(ordinati)} ${ordinati[ordinati.length - 1] === 1 ? 'giorno' : 'giorni'}`
-    : 'nessun preavviso';
-};
 
 /** "guasti da riparare entro 8 giorni · manodopera 28,50 €/h" */
 const fraseInterventi = (s: SchedaInterventi) =>
@@ -42,7 +32,6 @@ interface Props {
 
 export const Impostazioni: React.FC<Props> = ({ stato, regole, onModificaRegole, interventi, onModificaInterventi }) => {
   const applicati = stato.modelli.filter(m => m.applicato).map(m => m.nome);
-  const t = stato.predefiniti.tolleranza.giorni;
   return (
     <Card padding='md'>
       <dl className='grid gap-x-8 gap-y-2 text-sm sm:grid-cols-[auto_1fr]'>
@@ -50,7 +39,7 @@ export const Impostazioni: React.FC<Props> = ({ stato, regole, onModificaRegole,
         <dd className='text-text-primary'>{applicati.length ? applicati.join(', ') : 'nessuno (partito da zero)'}</dd>
         <dt className='font-medium text-text-label'>Per i controlli nuovi</dt>
         <dd className='text-text-primary'>
-          {giorni(stato.predefiniti.preavvisi.giorni)} · {t ? `tolleranza ${t} ${t === 1 ? 'giorno' : 'giorni'}` : 'nessuna tolleranza'}
+          {frasePreavvisi(stato.predefiniti.preavvisi.giorni)} · {fraseTolleranza(stato.predefiniti.tolleranza.giorni)}
         </dd>
         {regole && (
           <>

@@ -28,4 +28,5 @@ export const MOTIVI_CHIUSURA: Record<string, string> = {
   'fine-ricorrenza': 'fine della serie',
   'soggetto-dismesso': 'soggetto archiviato',
   'controllo-disattivato': 'controllo disattivato',
+  'non-seguita': 'non più seguita',
 };

@@ -6,13 +6,15 @@
 // scorrimento interno; sotto i 1024 px vanno sopra il calendario, alte quanto
 // serve), a destra il mese (MonthCalendar di @edg/ui, etichette brevi o
 // pallini); un clic apre il pannello della scadenza. Il mese sta
-// nell'indirizzo (?mese=AAAA-MM).
+// nell'indirizzo (?mese=AAAA-MM). Esporta (report, 2026-11-12): l'agenda del
+// mese in PDF, con i filtri (utils/pdfCalendario.ts).
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Alert, MonthCalendar, PageHeader } from '@edg/ui';
+import { Alert, MonthCalendar, PageHeader, exportReportToPdf, useToast } from '@edg/ui';
 
 import { leggiSedi } from '../api/soggetti';
 import { CampoRicerca } from '../components/CampoRicerca';
+import { MenuEsporta } from '../components/MenuEsporta';
 import { CellaGiorno } from '../components/calendario/CellaGiorno';
 import { ElencoGiorno } from '../components/calendario/ElencoGiorno';
 import { FiltriDaFare } from '../components/dashboard/FiltriDaFare';
@@ -20,6 +22,7 @@ import { PannelloScadenza } from '../components/scadenza/PannelloScadenza';
 import { useCalendario } from '../hooks/useCalendario';
 import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
 import type { RiferimentoSoggetto } from '../types/scadenze';
+import { calendarioPdf } from '../utils/pdfCalendario';
 
 const CalendarioPage: React.FC = () => {
   const c = useCalendario();
@@ -40,6 +43,17 @@ const CalendarioPage: React.FC = () => {
   }, []);
 
   const arretrato = c.dati?.arretrato ?? 0;
+  const toast = useToast();
+
+  /** L'agenda del mese mostrato, con i dati già letti */
+  const esportaMese = () => {
+    if (!c.dati) return;
+    try {
+      exportReportToPdf(calendarioPdf({ mese: c.mese, dati: c.dati, filtri: c.filtri, testo: c.testo.trim(), sedi }));
+    } catch (e) {
+      toast?.danger({ title: 'PDF non creato', description: (e as Error).message });
+    }
+  };
 
   return (
     <div className='space-y-6'>
@@ -48,6 +62,7 @@ const CalendarioPage: React.FC = () => {
         subtitle='Le scadenze aperte giorno per giorno: un clic su un giorno mostra che cosa c’è da fare.'
         onRefresh={c.ricarica}
         isLoading={c.caricamento}
+        trailingActions={<MenuEsporta voci={[{ id: 'mese', label: 'Agenda del mese (PDF)', onClick: esportaMese }]} disabilitato={!c.dati} />}
       />
 
       <div className='flex flex-wrap items-end justify-between gap-3'>

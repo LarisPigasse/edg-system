@@ -4,9 +4,10 @@
 // spazio disponibile (griglia a riempimento). Nella vista di partenza le
 // scadenze senza data non si mostrano una per una: una scheda le riassume e
 // apre la loro vista, così non coprono le cose urgenti. Un clic su una
-// scheda apre il pannello della scadenza (onApri).
+// scheda apre il pannello della scadenza (onApri). Esporta PDF a destra dei
+// filtri: la vista scelta con i suoi filtri (useDashboard.esportaPdf).
 import React from 'react';
-import { Button, Skeleton } from '@edg/ui';
+import { Button, ExportPdfAction, Skeleton } from '@edg/ui';
 
 import { FASCE_ASPETTO } from '../../constants/fasce';
 import { fasciaDi } from '../../utils/fasce';
@@ -31,16 +32,19 @@ export const DaFare: React.FC<Props> = ({ d, sedi, onApri }) => {
   const primoCaricamento = d.caricamento && !d.dati;
   const riassumi = d.vista === 'da-fare';
   const senzaData = riassumi ? (d.dati?.conteggi.daCompletare ?? 0) : 0;
+  // il numero nel colore della fascia scelta, come nei riquadri in alto (grigio se zero)
+  const coloreConteggio = !d.totale ? 'text-text-disabled' : vista.fascia ? FASCE_ASPETTO[vista.fascia].numero : undefined;
 
   return (
     <Riquadro
       titolo={vista.etichetta}
-      accanto={primoCaricamento ? undefined : d.totale}
+      conteggio={primoCaricamento ? undefined : d.totale}
+      coloreConteggio={coloreConteggio}
       azioni={
         d.vista !== 'da-fare' && (
-          <button type='button' onClick={() => d.scegliVista(d.vista)} className='text-sm text-text-link hover:underline'>
+          <Button variant='outline' size='sm' onClick={() => d.scegliVista(d.vista)}>
             Mostra tutto ciò che è da fare
-          </button>
+          </Button>
         )
       }
     >
@@ -52,6 +56,14 @@ export const DaFare: React.FC<Props> = ({ d, sedi, onApri }) => {
         onOrdina={d.setOrdina}
         filtriAttivi={d.filtriAttivi}
         onAzzera={d.azzeraFiltri}
+        azioni={
+          <ExportPdfAction
+            onClick={() => void d.esportaPdf(sedi)}
+            disabled={primoCaricamento || (d.totale === 0 && senzaData === 0)}
+            isLoading={d.esporto}
+            loadingText='Preparo il PDF…'
+          />
+        }
       />
 
       {primoCaricamento && (

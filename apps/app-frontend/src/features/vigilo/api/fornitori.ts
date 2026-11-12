@@ -4,7 +4,7 @@
 // (F0), nuovo, modifica, attiva/disattiva, elimina (solo se nessuna
 // registrazione lo cita) e le registrazioni che lo citano.
 import type { DatiFornitore, FiltriFornitori, Fornitore, OrdinaFornitori, RegistrazioneFornitore, TipoFornitore } from '../types/fornitori';
-import { leggiTutti, richiesta } from './client';
+import { leggiFinoA, leggiTutti, richiesta } from './client';
 import { query } from './scadenze';
 
 /** I fornitori attivi, per sceglierli nel modulo Registra */
@@ -24,6 +24,10 @@ export async function leggiElencoFornitori(r: RichiestaFornitori) {
   const risposta = await richiesta<Fornitore[]>(`/fornitori${query({ ...r })}`);
   return { righe: risposta.data, totale: risposta.meta?.total ?? risposta.data.length, altre: !!risposta.meta?.hasNext };
 }
+
+/** Tutti i fornitori dell'elenco filtrato, fino a `massimo` (per l'esportazione) */
+export const leggiTuttiFornitori = (r: Omit<RichiestaFornitori, 'pagina' | 'righe'>, massimo = 1024) =>
+  leggiFinoA<Fornitore>((pagina, righe) => leggiElencoFornitori({ ...r, pagina, righe }), massimo);
 
 export const creaFornitore = (dati: DatiFornitore) => richiesta<Fornitore>('/fornitori', 'POST', dati);
 

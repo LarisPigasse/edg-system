@@ -5,10 +5,13 @@
 // appartenenza quando i gruppi sono più di uno, Carica e "Scatta una foto",
 // trascinamento dei file su tutta la sezione, eliminazione con conferma.
 // Si carica sempre su ciò che la sezione mostra (il soggetto o la scadenza).
+// Nel pannello della scadenza etichetta e descrizione dicono dove va il
+// file, per distinguerlo dal documento della registrazione nel modulo.
 import React, { useState } from 'react';
 import { Alert, ConfirmModal, Skeleton, cn } from '@edg/ui';
 
 import { useAllegati } from '../../hooks/useAllegati';
+import { useTrascinaFile } from '../../hooks/useTrascinaFile';
 import type { EntitaAllegato, VoceAllegato } from '../../types/allegati';
 import { gruppiAllegati } from '../../utils/allegati';
 import { InArrivo, PulsantiCarica } from './CaricaDocumenti';
@@ -24,41 +27,39 @@ interface Props {
   titolo?: string;
   /** Si eliminano solo i documenti caricati da chi guarda (l'addetto, B9b) */
   soloTuoi?: boolean;
+  /** Sotto il titolo: che cosa ci va (es. "contratti, foto, preventivi") */
+  descrizione?: string;
+  /** Il pulsante (predefinito "Carica") */
+  etichettaCarica?: string;
+  /** La scritta mentre si trascina un file (predefinita "Rilascia per caricare") */
+  testoRilascio?: string;
 }
 
-export const Documenti: React.FC<Props> = ({ entita, id, attivo = true, puoModificare, titolo, soloTuoi = false }) => {
+export const Documenti: React.FC<Props> = ({
+  entita,
+  id,
+  attivo = true,
+  puoModificare,
+  titolo,
+  soloTuoi = false,
+  descrizione,
+  etichettaCarica = 'Carica',
+  testoRilascio = 'Rilascia per caricare',
+}) => {
   const d = useAllegati(entita, id, attivo);
   const [daEliminare, setDaEliminare] = useState<VoceAllegato | null>(null);
-  const [sopra, setSopra] = useState(false);
 
   const propri = (d.voci ?? []).filter(v => v.di.entita === entita && v.di.uuid === id).length;
   const pieno = !!d.limiti && propri >= d.limiti.perEntita;
   const puoCaricare = puoModificare && !pieno;
   const gruppi = gruppiAllegati(d.voci ?? [], entita === 'scadenza');
 
-  const trascina = puoCaricare
-    ? {
-        onDragOver: (e: React.DragEvent) => {
-          if (![...e.dataTransfer.types].includes('Files')) return;
-          e.preventDefault();
-          setSopra(true);
-        },
-        onDragLeave: (e: React.DragEvent) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setSopra(false);
-        },
-        onDrop: (e: React.DragEvent) => {
-          e.preventDefault();
-          setSopra(false);
-          const files = [...e.dataTransfer.files];
-          if (files.length) void d.carica(files);
-        },
-      }
-    : {};
+  const { sopra, gestori: trascina } = useTrascinaFile(puoCaricare, files => void d.carica(files));
 
   const nota = d.limiti
     ? pieno
       ? `Ci sono già ${d.limiti.perEntita} documenti: per aggiungerne uno, eliminane un altro.`
-      : `PDF o immagini, al massimo ${d.limiti.mb} MB l’uno${puoCaricare ? ': trascinali qui o usa Carica' : ''}.`
+      : `PDF o immagini, al massimo ${d.limiti.mb} MB l’uno${puoCaricare ? `: trascinali qui o usa ${etichettaCarica}` : ''}.`
     : null;
 
   return (
@@ -72,10 +73,15 @@ export const Documenti: React.FC<Props> = ({ entita, id, attivo = true, puoModif
       aria-label={titolo ?? 'Documenti'}
     >
       <header className='flex flex-wrap items-center gap-x-3 gap-y-2'>
-        {titolo && <h3 className='text-sm font-semibold text-text-primary'>{titolo}</h3>}
+        {titolo && (
+          <div className='min-w-0'>
+            <h3 className='text-sm font-semibold text-text-primary'>{titolo}</h3>
+            {descrizione && <p className='text-xs text-text-secondary'>{descrizione}</p>}
+          </div>
+        )}
         {puoCaricare && (
           <div className={cn(titolo && 'ml-auto')}>
-            <PulsantiCarica onFile={files => void d.carica(files)} disabilitato={d.inArrivo.length > 0} />
+            <PulsantiCarica onFile={files => void d.carica(files)} disabilitato={d.inArrivo.length > 0} etichetta={etichettaCarica} />
           </div>
         )}
       </header>
@@ -116,7 +122,7 @@ export const Documenti: React.FC<Props> = ({ entita, id, attivo = true, puoModif
 
       {sopra && (
         <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg bg-bg-primary/80 text-sm font-semibold text-action-primary'>
-          Rilascia per caricare
+          {testoRilascio}
         </div>
       )}
 

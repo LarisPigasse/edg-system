@@ -6,7 +6,11 @@ export interface Conteggi {
   scadute: number;
   inTolleranza: number;
   entro8: number;
+  /** Da 9 a 32 giorni: non comprende le entro 8 (fasce che non si sovrappongono) */
   entro32: number;
+  /** In scadenza oltre i 32 giorni (preavvisi lunghi) */
+  piuAvanti: number;
+  /** entro8 + entro32 + piuAvanti */
   inScadenza: number;
   daCompletare: number;
   inRegola: number;

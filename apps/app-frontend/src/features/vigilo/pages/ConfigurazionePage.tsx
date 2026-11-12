@@ -11,6 +11,8 @@
 // ?aggiornamenti=1 (dall'avviso o dall'email) apre il pannello,
 // ?aggiornamenti=<uuid> (dal segno su una riga) il dettaglio di quella voce;
 // lo Storico della libreria di un controllo si apre dal menu della sua riga.
+// Esporta (report, 2026-11-12): il Piano dei controlli e "Controlli non
+// seguiti", in corso o con lo storico.
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Button, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
@@ -25,8 +27,10 @@ import { PannelloDestinatariControllo } from '../components/configurazione/Panne
 import { PannelloInterventi } from '../components/configurazione/PannelloInterventi';
 import { PannelloRegoleAvvisi } from '../components/configurazione/PannelloRegoleAvvisi';
 import { SchedaTipo } from '../components/configurazione/SchedaTipo';
+import { MenuEsporta } from '../components/MenuEsporta';
 import { useAggiornamenti } from '../hooks/useAggiornamenti';
 import { useConfigurazione } from '../hooks/useConfigurazione';
+import { useEsportaConfigurazione } from '../hooks/useEsportaConfigurazione';
 import { useInterventi } from '../hooks/useInterventi';
 import { useRegoleAvvisi } from '../hooks/useRegoleAvvisi';
 import type { EntitaAggiornamento } from '../types/aggiornamenti';
@@ -36,6 +40,7 @@ const ConfigurazionePage: React.FC = () => {
   const navigate = useNavigate();
   const { gruppi, stato, errore, caricamento, ricarica, vuota } = useConfigurazione();
   const regole = useRegoleAvvisi();
+  const esporta = useEsportaConfigurazione();
   const [regoleAperte, setRegoleAperte] = useState(false);
   const interventi = useInterventi();
   const [interventiAperti, setInterventiAperti] = useState(false);
@@ -100,7 +105,22 @@ const ConfigurazionePage: React.FC = () => {
           void aggiornamenti.ricarica();
         }}
         isLoading={caricamento}
-        actions={<Button onClick={() => navigate('/vigilo/avvio')}>Aggiungi dalla libreria</Button>}
+        trailingActions={
+          <div className='flex items-center gap-2'>
+            <MenuEsporta
+              inCorso={esporta.inCorso}
+              disabilitato={vuota}
+              voci={[
+                ...(stato
+                  ? [{ id: 'piano', label: 'Piano dei controlli', onClick: () => esporta.piano({ gruppi, stato, regole: regole.scheda?.regole ?? null }) }]
+                  : []),
+                { id: 'non-seguiti', label: 'Controlli non seguiti', onClick: () => void esporta.nonSeguiti('in-corso') },
+                { id: 'non-seguiti-storico', label: 'Controlli non seguiti, con lo storico', onClick: () => void esporta.nonSeguiti('tutte') },
+              ]}
+            />
+            <Button onClick={() => navigate('/vigilo/avvio')}>Aggiungi dalla libreria</Button>
+          </div>
+        }
       />
 
       {errore && (

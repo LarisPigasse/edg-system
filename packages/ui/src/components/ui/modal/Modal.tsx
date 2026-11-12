@@ -1,7 +1,7 @@
 // src/core/components/ui/Modal.tsx
 import React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { iconMap } from '../../../utils';
+import { iconMap, keepOpenOnSafeEscape, keepOpenOnSafeInteraction } from '../../../utils';
 
 import { cn } from '../../../utils/';
 
@@ -100,7 +100,7 @@ const Modal: React.FC<ModalProps> = ({
         <Dialog.Content
           className={cn(contentClasses, 'bg-bg-modal border border-border-default rounded-xl shadow-xl flex flex-col')}
           onCloseAutoFocus={e => e.preventDefault()}
-          onEscapeKeyDown={preventClose ? e => e.preventDefault() : undefined}
+          onEscapeKeyDown={preventClose ? e => e.preventDefault() : keepOpenOnSafeEscape}
           onInteractOutside={e => {
             if (preventClose) {
               e.preventDefault();
@@ -112,13 +112,8 @@ const Modal: React.FC<ModalProps> = ({
             // - un ALTRO dialog aperto (es. un modale figlio come "Aggiungi documento" aperto
             //   sopra questo) — necessario perché due <Modal> "fratelli" nell'albero React
             //   non si riconoscono automaticamente a vicenda come annidati
-            const target = e.target as Element | null;
-            const isInsideAnotherDialog = Boolean(target?.closest('[role="dialog"]'));
-            const hasOpenSafePortal =
-              document.querySelector('[data-radix-popper-content-wrapper], [data-modal-safe-portal]') !== null;
-            if (hasOpenSafePortal || isInsideAnotherDialog) {
-              e.preventDefault();
-            }
+            // La regola è condivisa con Sheet (utils/safePortal).
+            keepOpenOnSafeInteraction(e);
           }}
         >
           {/* Header */}

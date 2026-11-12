@@ -1,12 +1,15 @@
 // src/features/vigilo/components/scadenza/RiepilogoScadenza.tsx
 //
 // In testa al pannello: lo stato e i dati che servono per decidere. Per un
-// guasto (B10a): da riparare entro, la descrizione e se blocca l'uso.
+// guasto (B10a): da riparare entro, la descrizione e se blocca l'uso. Per
+// un guasto o un promemoria anche chi l'ha segnalato (aggiunto) e quando;
+// per una scadenza chiusa quando, perché e da chi.
 import React from 'react';
 
 import { StatoScadenza } from '../StatoScadenza';
 import type { DettaglioScadenza } from '../../types/scadenze';
-import { giornoBreve, giornoEsteso } from '../../utils/giorni';
+import { chiusuraDi } from '../../utils/descrizioneScadenza';
+import { aGiorno, giornoBreve, giornoEsteso } from '../../utils/giorni';
 import { misura, nomeContatore } from '../../utils/misure';
 
 export const RiepilogoScadenza: React.FC<{ s: DettaglioScadenza }> = ({ s }) => {
@@ -23,6 +26,10 @@ export const RiepilogoScadenza: React.FC<{ s: DettaglioScadenza }> = ({ s }) => 
     ...(s.limiteIl && s.limiteIl !== s.scadeIl ? [['Ultimo giorno utile', giornoEsteso(s.limiteIl)] as [string, string]] : []),
     ...(guasto ? [] : [['Cadenza', s.impostazioni.frasi.cadenza] as [string, string]]),
     ...(s.note ? [[guasto ? 'Descrizione' : 'Note', s.note] as [string, string]] : []),
+    ...(s.aggiunta?.da
+      ? [[guasto ? 'Segnalato da' : 'Aggiunto da', `${s.aggiunta.da} · ${giornoBreve(aGiorno(new Date(s.aggiunta.il)))}`] as [string, string]]
+      : []),
+    ...(s.chiusa ? [['Chiusa', chiusuraDi(s)] as [string, string]] : []),
   ];
   return (
     <div className='rounded-lg border border-border-default bg-bg-primary px-4 py-3'>

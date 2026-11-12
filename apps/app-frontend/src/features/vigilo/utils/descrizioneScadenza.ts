@@ -21,6 +21,9 @@ export function quandoDi(s: Scadenza): string {
   return parti.length ? parti.join(' o ') : '—';
 }
 
-/** "Chiusa il 14 ott 2026 · eseguita e rinnovata" */
-export const chiusuraDi = (s: Scadenza) =>
-  s.chiusa ? `${giornoBreve(s.chiusa.il.slice(0, 10))} · ${MOTIVI_CHIUSURA[s.chiusa.motivo] ?? s.chiusa.motivo}` : '';
+/** "14 ott 2026 · eseguita e rinnovata · da Mario Rossi" (o "· automatica" per il rinnovo tacito) */
+export function chiusuraDi(s: Scadenza): string {
+  if (!s.chiusa) return '';
+  const chi = s.chiusa.automatica ? 'automatica' : s.chiusa.da ? `da ${s.chiusa.da}` : null;
+  return [giornoBreve(s.chiusa.il.slice(0, 10)), MOTIVI_CHIUSURA[s.chiusa.motivo] ?? s.chiusa.motivo, chi].filter(Boolean).join(' · ');
+}

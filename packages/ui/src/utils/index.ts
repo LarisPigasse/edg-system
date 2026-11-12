@@ -2,6 +2,9 @@ export * from './date';
 export * from './exportPdf';
 export * from './errors';
 export * from './icons';
+export * from './safePortal';
+export * from './floatingPosition';
+export * from './exportCsv';
 
 import { House, Settings, Puzzle, LayoutGrid, Palette, ArrowBigLeft, ArrowBigRight, Check, Upload, Download, Timer, File, X, RefreshCw } from './icons';
 

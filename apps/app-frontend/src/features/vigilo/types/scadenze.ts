@@ -31,7 +31,8 @@ export interface Scadenza {
   limiteIl: string | null;
   stimataIl: string | null;
   urgenzaIl: string | null;
-  chiusa: { il: string; motivo: string } | null;
+  /** Chiusa: quando, perché e da chi (da: null se il nome non si è letto; automatica: rinnovo tacito) */
+  chiusa: { il: string; motivo: string; da: string | null; automatica: boolean } | null;
   note: string | null;
   /** C'è una segnalazione dell'addetto da confermare (B9c) */
   segnalata: boolean;
@@ -79,6 +80,13 @@ export interface Registrazione {
   motivoRifiuto: string | null;
   /** L'ha inserita l'utente (l'addetto ritira solo le sue segnalazioni) */
   tua: boolean;
+  /** Chi l'ha registrata; null se automatica o se il nome non si è letto */
+  registrataDa: string | null;
+  /** Scritta da un processo (rinnovo tacito) */
+  automatica: boolean;
+  /** Segnalazione dell'addetto confermata: da chi e quando (B9c) */
+  confermataDa: string | null;
+  confermataIl: string | null;
   /** Chi ha fatto il lavoro (passo 8) */
   esecuzione: Esecuzione | null;
   /** Manodopera interna: costoOrario e costo solo a chi ha vigilo.costi */
@@ -121,6 +129,8 @@ export interface DettaglioScadenza extends Scadenza {
   segnalazione: SegnalazioneInAttesa | null;
   /** Riparando questo guasto il mezzo sospeso può tornare in servizio */
   rimettiInServizio: boolean;
+  /** Guasto o promemoria: chi l'ha aggiunto (segnalato) e quando; null per le scadenze dei controlli */
+  aggiunta: { da: string | null; il: string } | null;
 }
 
 export interface DatiEsecuzione {

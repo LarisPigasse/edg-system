@@ -21,6 +21,8 @@ export interface Rifornimento {
   lettura: { valore: number; unita: 'km' | 'ore'; anomala: boolean } | null;
   /** L'ha scritto chi guarda */
   mio: boolean;
+  /** Chi l'ha registrato; null se il nome non si è letto */
+  registratoDa: string | null;
   /** Chi guarda può correggerlo ed eliminarlo */
   modificabile: boolean;
   creatoIl: string;
