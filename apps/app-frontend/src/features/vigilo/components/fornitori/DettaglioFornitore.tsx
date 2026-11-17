@@ -15,6 +15,8 @@ interface Props {
   modificabile: boolean;
   onChiudi: () => void;
   onModifica: (f: Fornitore) => void;
+  /** Con i costi: il report Interventi e costi di questo fornitore (report, 2026-11-12) */
+  onInterventi?: (f: Fornitore) => void;
 }
 
 const Voce: React.FC<{ etichetta: string; children: React.ReactNode }> = ({ etichetta, children }) => (
@@ -24,7 +26,7 @@ const Voce: React.FC<{ etichetta: string; children: React.ReactNode }> = ({ etic
   </div>
 );
 
-export const DettaglioFornitore: React.FC<Props> = ({ fornitore: f, aperto, modificabile, onChiudi, onModifica }) => (
+export const DettaglioFornitore: React.FC<Props> = ({ fornitore: f, aperto, modificabile, onChiudi, onModifica, onInterventi }) => (
   <Sheet
     isOpen={aperto}
     onOpenChange={o => !o && onChiudi()}
@@ -36,6 +38,11 @@ export const DettaglioFornitore: React.FC<Props> = ({ fornitore: f, aperto, modi
         <Button variant='secondary' onClick={onChiudi}>
           Chiudi
         </Button>
+        {onInterventi && f && (
+          <Button variant='outline' onClick={() => onInterventi(f)}>
+            Interventi e costi
+          </Button>
+        )}
         {modificabile && f && <Button onClick={() => onModifica(f)}>Modifica</Button>}
       </>
     }

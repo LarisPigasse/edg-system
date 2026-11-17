@@ -80,12 +80,14 @@ export interface Lettura {
   uuid: string;
   valore: number;
   lettoIl: string;
-  fonte: 'manuale' | 'registrazione' | 'telematica' | 'importazione';
+  fonte: 'manuale' | 'registrazione' | 'rifornimento' | 'telematica' | 'importazione';
   /** Minore di una precedente: da controllare */
   anomala: boolean;
   note: string | null;
   /** L'ha inserita chi chiede (l'addetto corregge solo le sue, B9b) */
   tua: boolean;
+  /** Da dove viene se non è manuale (nell'elenco): non si elimina da sola, si corregge da lì */
+  origine?: { tipo: 'registrazione' | 'rifornimento'; il: string; titolo: string | null } | null;
 }
 
 export interface Assegnazione {

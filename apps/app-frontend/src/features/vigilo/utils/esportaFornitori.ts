@@ -15,7 +15,7 @@ export const colonnePdfFornitori: PdfColumn<Fornitore>[] = [
   { header: 'Telefono', accessor: f => f.telefono ?? '—' },
   { header: 'Email', accessor: f => f.email ?? '—' },
   { header: 'Referente', accessor: f => f.referente ?? '—' },
-  { header: 'Interventi', accessor: f => String(f.registrazioni ?? 0) },
+  { header: 'Interventi', accessor: f => String(f.registrazioni ?? 0), align: 'right' },
   { header: 'Ultimo intervento', accessor: f => (f.ultimaIl ? giornoBreve(f.ultimaIl.slice(0, 10)) : '—') },
 ];
 

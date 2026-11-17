@@ -6,13 +6,15 @@
 // vigilo.write: Nuovo fornitore, Modifica, Disattiva/Riattiva ed Elimina
 // (solo se nessuna registrazione lo cita; chiede conferma). Un pannello alla
 // volta: "Modifica" dal dettaglio chiude il dettaglio (L067). Esporta
-// (report, 2026-11-12): la rubrica come si vede in PDF o CSV.
+// (report, 2026-11-12): la rubrica come si vede in PDF o CSV e, con i costi,
+// "Interventi e costi" per fornitore (tutti, un tipo o uno dal suo dettaglio).
 import React, { useState } from 'react';
 import { Alert, Button, ConfirmModal, PageHeader } from '@edg/ui';
 
 import { leggiTuttiFornitori } from '../api/fornitori';
 import { MenuEsporta } from '../components/MenuEsporta';
 import { DettaglioFornitore } from '../components/fornitori/DettaglioFornitore';
+import { EsportaInterventi } from '../components/fornitori/EsportaInterventi';
 import { FiltriFornitori } from '../components/fornitori/FiltriFornitori';
 import { PannelloFornitore } from '../components/fornitori/PannelloFornitore';
 import { TabellaFornitori } from '../components/fornitori/TabellaFornitori';
@@ -50,6 +52,15 @@ const FornitoriPage: React.FC = () => {
   const [dettaglio, setDettaglio] = useState<Aperto<Fornitore | null>>({ di: null, aperto: false });
   const [pannello, setPannello] = useState<Aperto<Fornitore | null>>({ di: null, aperto: false });
   const [daEliminare, setDaEliminare] = useState<Fornitore | null>(null);
+  /** La finestra del report Interventi e costi: tutti/un tipo (null) o un fornitore */
+  const [interventi, setInterventi] = useState<Aperto<Fornitore | null>>({ di: null, aperto: false });
+  const conCosti = !!profilo?.capacita.costi;
+
+  /** Un pannello alla volta (L067): dal dettaglio si chiude il dettaglio */
+  const apriInterventi = (f: Fornitore | null) => {
+    setDettaglio(d => ({ ...d, aperto: false }));
+    setInterventi({ di: f, aperto: true });
+  };
 
   const apriPannello = (f: Fornitore | null) => {
     setDettaglio(d => ({ ...d, aperto: false }));
@@ -70,6 +81,7 @@ const FornitoriPage: React.FC = () => {
               onCsv={() => void esporta.esporta('csv')}
               inCorso={esporta.inCorso}
               disabilitato={e.caricamento || e.totale === 0}
+              voci={conCosti ? [{ id: 'interventi', label: 'Interventi e costi…', onClick: () => apriInterventi(null) }] : []}
             />
             {modificabile && <Button onClick={() => apriPannello(null)}>Nuovo fornitore</Button>}
           </div>
@@ -99,6 +111,15 @@ const FornitoriPage: React.FC = () => {
         modificabile={modificabile}
         onChiudi={() => setDettaglio(d => ({ ...d, aperto: false }))}
         onModifica={apriPannello}
+        onInterventi={conCosti ? apriInterventi : undefined}
+      />
+
+      <EsportaInterventi
+        aperto={interventi.aperto}
+        onChiudi={() => setInterventi(x => ({ ...x, aperto: false }))}
+        fornitore={interventi.di}
+        tipoIniziale={e.filtri.tipo}
+        tipi={tipi}
       />
 
       <PannelloFornitore

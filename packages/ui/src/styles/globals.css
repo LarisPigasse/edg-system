@@ -300,6 +300,16 @@ input:-webkit-autofill:focus {
   }
 }
 
+/* Comparsa: dissolvenza breve, senza spostamenti (animate-comparsa) */
+@keyframes comparsa {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Progress shimmer animation */
 @keyframes shimmer {
   0% {

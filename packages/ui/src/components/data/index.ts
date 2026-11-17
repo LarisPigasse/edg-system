@@ -2,6 +2,7 @@
 export { default as Table } from './table/Table';
 export { tableData } from './table/Table.data';
 export type { TableColumn, TableSize, TableRowActions, TableRowAction } from './table/Table';
+export { allineamentoColonna, type AllineamentoColonna } from './table/allineamento';
 
 // Table capabilities (Dati tecnici automatici per root — vedi ADR021/022)
 export { TableCapabilitiesProvider, useTableCapabilities } from './table/TableCapabilities';

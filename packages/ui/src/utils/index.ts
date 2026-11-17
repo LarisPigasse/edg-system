@@ -5,6 +5,7 @@ export * from './icons';
 export * from './safePortal';
 export * from './floatingPosition';
 export * from './exportCsv';
+export * from './svgImmagine';
 
 import { House, Settings, Puzzle, LayoutGrid, Palette, ArrowBigLeft, ArrowBigRight, Check, Upload, Download, Timer, File, X, RefreshCw } from './icons';
 

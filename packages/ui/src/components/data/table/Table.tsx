@@ -7,6 +7,7 @@ import type { Action } from '../../actions';
 import { X, ArrowUp, ArrowDown, ArrowUpDown, ChevronRight, Database } from '../../../utils/icons';
 import TechnicalDetailsModal from '../../ui/technical-details-modal/TechnicalDetailsModal';
 import { useTableCapabilities } from './TableCapabilities';
+import { INTESTAZIONE_ALLINEATA, TESTO_ALLINEATO, allineamentoColonna, type AllineamentoColonna } from './allineamento';
 
 export interface TableColumn<T> {
   header: string | (() => ReactNode);
@@ -16,11 +17,18 @@ export interface TableColumn<T> {
    *  Il sorting avviene sul valore di accessor, la visualizzazione usa render. */
   render?: (item: T) => ReactNode;
   className?: string;
+  /**
+   * Allineamento della colonna, per i valori E per l'intestazione (regola
+   * generale: l'intestazione segue i suoi valori, i numeri vanno a destra).
+   * Se manca si ricava dalla className ('text-right', 'text-center'), poi a sinistra.
+   */
+  align?: AllineamentoColonna;
   sortable?: boolean;
   clickable?: boolean;
   onCellClick?: (item: T) => void;
   clickVariant?: 'primary' | 'secondary' | 'danger' | 'success';
 }
+
 
 /**
  * Azione personalizzata di riga: l'icona è obbligatoria, perché le voci
@@ -495,12 +503,13 @@ function Table<T>({
                     headerPaddingClasses[size],
                     'text-xs font-medium text-text-secondary uppercase tracking-wider',
                     fit && 'truncate',
-                    column.className?.includes('text-right') ? 'text-right' : 'text-left',
+                    TESTO_ALLINEATO[allineamentoColonna(column)],
                     column.sortable && 'cursor-pointer hover:bg-bg-hover transition-colors',
                     column.className
                   )}
                 >
-                  <div className='flex items-center space-x-1'>
+                  {/* l'intestazione segue l'allineamento dei valori della colonna */}
+                  <div className={cn('flex items-center gap-1', INTESTAZIONE_ALLINEATA[allineamentoColonna(column)])}>
                     <span>{typeof column.header === 'function' ? column.header() : column.header}</span>
                     {column.sortable && getSortIcon(column)}
                   </div>
@@ -591,6 +600,7 @@ function Table<T>({
                             cellPaddingClasses[size],
                             cellTextClass,
                             'text-text-primary',
+                            TESTO_ALLINEATO[allineamentoColonna(column)],
                             getClickableCellClasses(column),
                             column.className
                           )}

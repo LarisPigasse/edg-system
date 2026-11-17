@@ -62,3 +62,44 @@ export interface Spese {
   perFornitore: { uuid: string; nome: string; tipo: { chiave: string; nome: string } | null; importi: number; n: number }[];
   perTipoFornitore: { chiave: string; nome: string; importi: number; n: number }[];
 }
+
+// --- Interventi e costi per fornitore (GET /resoconti/fornitori, report 2026-11-12) ---
+
+export interface RichiestaInterventiFornitori {
+  periodo: PeriodoSpese;
+  dal?: string;
+  al?: string;
+  /** Un fornitore (uuid) */
+  fornitore?: string;
+  /** Un tipo di fornitore (chiave) */
+  tipoFornitore?: string;
+}
+
+export interface RigaInterventoFornitore {
+  giorno: string;
+  soggetto: { nome: string; identificativo: string | null } | null;
+  /** Il titolo della scadenza o "Rifornimento: Carburante" */
+  intervento: string;
+  natura: NaturaResoconto;
+  riferimento: string | null;
+  importo: number;
+  litri: number | null;
+}
+
+export interface InterventiDelFornitore {
+  uuid: string;
+  nome: string;
+  tipo: { chiave: string; nome: string } | null;
+  interventi: number;
+  totale: number;
+  /** Percentuale sul totale del periodo */
+  quota: number;
+  righe: RigaInterventoFornitore[];
+}
+
+export interface InterventiFornitori {
+  periodo: Intervallo;
+  totale: number;
+  interventi: number;
+  fornitori: InterventiDelFornitore[];
+}

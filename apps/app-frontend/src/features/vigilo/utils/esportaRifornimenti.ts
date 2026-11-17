@@ -12,14 +12,14 @@ import { euroEsatti, letturaTesto, litriTesto, prezzoLitroTesto } from './riforn
 export const colonnePdfRifornimenti = (conImporto: boolean): PdfColumn<Rifornimento>[] => [
   { header: 'Data', accessor: r => giornoBreve(r.fattoIl) },
   { header: 'Voce', accessor: r => r.nomeVoce },
-  { header: 'Litri', accessor: r => (r.litri != null ? litriTesto(r.litri) : '—') },
+  { header: 'Litri', accessor: r => (r.litri != null ? litriTesto(r.litri) : '—'), align: 'right' },
   ...(conImporto
     ? [
-        { header: 'Importo', accessor: (r: Rifornimento) => (r.importo != null ? euroEsatti(r.importo) : '—') },
-        { header: '€/l', accessor: (r: Rifornimento) => (r.prezzoAlLitro != null ? prezzoLitroTesto(r.prezzoAlLitro) : '—') },
+        { header: 'Importo', accessor: (r: Rifornimento) => (r.importo != null ? euroEsatti(r.importo) : '—'), align: 'right' as const },
+        { header: '€/l', accessor: (r: Rifornimento) => (r.prezzoAlLitro != null ? prezzoLitroTesto(r.prezzoAlLitro) : '—'), align: 'right' as const },
       ]
     : []),
-  { header: 'Km / ore', accessor: r => (r.lettura ? letturaTesto(r.lettura) : '—') },
+  { header: 'Km / ore', accessor: r => (r.lettura ? letturaTesto(r.lettura) : '—'), align: 'right' },
   { header: 'Fornitore e riferimento', accessor: r => [r.fornitore?.nome, r.riferimento].filter(Boolean).join(' · ') || '—' },
   { header: 'Registrato da', accessor: r => r.registratoDa ?? '—' },
 ];

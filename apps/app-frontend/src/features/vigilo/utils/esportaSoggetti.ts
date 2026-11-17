@@ -44,7 +44,7 @@ export const colonnePdfSoggetti = (tipo: TipoSoggetto | null): PdfColumn<Soggett
   { header: 'Categoria', accessor: s => s.categoria?.nome ?? '—' },
   ...(conSede(tipo) ? [{ header: 'Sede', accessor: (s: Soggetto) => s.sede?.nome ?? '—' }] : []),
   { header: 'Stato', accessor: statoDi },
-  { header: 'Scadenze aperte', accessor: s => String(s.scadenze?.aperte ?? 0) },
+  { header: 'Scadenze aperte', accessor: s => String(s.scadenze?.aperte ?? 0), align: 'right' },
   { header: 'Situazione', accessor: situazioneDi },
 ];
 

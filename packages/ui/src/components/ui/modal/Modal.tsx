@@ -16,6 +16,8 @@ interface ModalProps {
   title?: string;
   /** Descrizione sotto il titolo */
   description?: string;
+  /** Nota piccola sotto la descrizione, nell'intestazione (es. come si leggono i dati) */
+  note?: React.ReactNode;
   /** Contenuto principale del modal */
   children: React.ReactNode;
   /** Dimensione del modal */
@@ -43,6 +45,7 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   description,
+  note,
   children,
   size = 'md',
   hideCloseButton = false,
@@ -130,6 +133,7 @@ const Modal: React.FC<ModalProps> = ({
                     <p className='text-text-secondary mt-1 text-sm'>{description}</p>
                   </Dialog.Description>
                 )}
+                {note && <p className='text-text-secondary mt-1 text-xs'>{note}</p>}
               </div>
 
               {/* Close Button */}

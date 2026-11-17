@@ -7,12 +7,13 @@ import React from 'react';
 import { Alert, Button, Table } from '@edg/ui';
 
 import { leggiTuttoStorico } from '../../api/soggetti';
-import { nomeFileDi, useEsportazione } from '../../hooks/useEsportazione';
+import { useEsportazione } from '../../hooks/useEsportazione';
 import { useStorico } from '../../hooks/useStorico';
 import { colonneCsvStorico, colonnePdfStorico } from '../../utils/esportaStorico';
 import { MenuEsporta } from '../MenuEsporta';
 import { giornoBreve } from '../../utils/giorni';
 import { dettagliRegistrazione, descrizioneRegistrazione } from '../../utils/registrazioni';
+import { nomeFileDi } from '../../utils/testo';
 
 interface Props {
   soggetto: string;

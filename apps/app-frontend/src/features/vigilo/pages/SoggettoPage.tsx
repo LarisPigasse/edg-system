@@ -109,7 +109,8 @@ const SoggettoPage: React.FC = () => {
                 id: 'contatori',
                 label: <Conteggio testo='Contatori' n={s.contatori.length} />,
                 content: (
-                  <div className='grid gap-4 xl:grid-cols-2'>
+                  // un contatore per riga, a tutta larghezza: grafico e letture affiancati (2026-11-16)
+                  <div className='space-y-4'>
                     {s.contatori.map(c => (
                       <CartaContatore
                         key={c.uuid}
@@ -201,31 +202,41 @@ const SoggettoPage: React.FC = () => {
               </div>
             }
           />
-          <RiepilogoSoggetto s={s} />
-          {/* costo dei mezzi: solo veicoli, macchine e attrezzature, solo con vigilo.costi; si rilegge dopo una modifica */}
-          {capacita?.costi && TIPI_CON_POSSESSO.includes(s.tipo) && <CostoDelMezzo uuid={s.uuid} chiave={`${s.modificatoIl}:${versione}`} />}
-          <Tabs
-            key={giro}
-            items={schede}
-            defaultTab='scadenze'
-            actions={
-              capacita?.write &&
-              profilo && (
-                <AzioniSoggetto
-                  s={s}
-                  inCorso={x.inCorso}
-                  onStato={x.cambiaStato}
-                  onModifica={x.modifica}
-                  scadenze={x.scadenze}
-                  onAggiungi={x.aggiungiScadenza}
-                  onRicarica={() => void x.ricarica()}
-                  giorniRiparazione={profilo.giorniRiparazione}
-                  onGuasto={dopoGuasto}
-                  onRifornimento={conRifornimenti ? () => setRifornimento({ aperto: true, r: null }) : undefined}
-                />
-              )
-            }
-          />
+          {/* due colonne dai 1280 px (2026-11-16): a sinistra, stretta (30rem, scelta dall'utente), riquadri e costo;
+              il resto alle schede. Sotto i 1280 px una dopo l'altra */}
+          <div className='grid items-start gap-6 xl:grid-cols-[30rem_minmax(0,1fr)]'>
+            <div className='space-y-6'>
+              <RiepilogoSoggetto s={s} />
+              {/* costo dei mezzi: solo veicoli, macchine e attrezzature, solo con vigilo.costi; si rilegge dopo una modifica */}
+              {capacita?.costi && TIPI_CON_POSSESSO.includes(s.tipo) && (
+                <CostoDelMezzo uuid={s.uuid} nome={s.nome} chiave={`${s.modificatoIl}:${versione}`} possesso={s.possesso} />
+              )}
+            </div>
+            <div className='min-w-0'>
+              <Tabs
+                key={giro}
+                items={schede}
+                defaultTab='scadenze'
+                actions={
+                  capacita?.write &&
+                  profilo && (
+                    <AzioniSoggetto
+                      s={s}
+                      inCorso={x.inCorso}
+                      onStato={x.cambiaStato}
+                      onModifica={x.modifica}
+                      scadenze={x.scadenze}
+                      onAggiungi={x.aggiungiScadenza}
+                      onRicarica={() => void x.ricarica()}
+                      giorniRiparazione={profilo.giorniRiparazione}
+                      onGuasto={dopoGuasto}
+                      onRifornimento={conRifornimenti ? () => setRifornimento({ aperto: true, r: null }) : undefined}
+                    />
+                  )
+                }
+              />
+            </div>
+          </div>
           {conRifornimenti && (
             <ModuloRifornimento
               aperto={rifornimento.aperto}

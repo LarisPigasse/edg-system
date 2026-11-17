@@ -16,6 +16,9 @@ const numero = (n: number, o: Intl.NumberFormatOptions = {}): string => new Intl
 export const euroTondi = (n: number): string => numero(n, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 
 /** Come euroTondi, ma sotto i 100 € con i centesimi: 1,33 € · 85,42 € · 1.890 € */
+/** "1.170,50 €": al centesimo, con il punto delle migliaia (report per fornitore) */
+export const euroCentesimi = (n: number): string => numero(n, { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export const euroBrevi = (n: number): string =>
   Math.abs(n) > 0 && Math.abs(n) < 100 ? numero(n, { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }) : euroTondi(n);
 

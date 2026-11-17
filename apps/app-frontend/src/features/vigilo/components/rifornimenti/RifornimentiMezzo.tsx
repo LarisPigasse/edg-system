@@ -11,12 +11,13 @@ import { Alert, Button, ConfirmModal, Fuel, Pencil, Table, Trash2, type TableCol
 
 import { leggiTuttiRifornimenti } from '../../api/rifornimenti';
 import { RIGHE_RIFORNIMENTI } from '../../constants/rifornimenti';
-import { nomeFileDi, useEsportazione } from '../../hooks/useEsportazione';
+import { useEsportazione } from '../../hooks/useEsportazione';
 import { useRifornimenti } from '../../hooks/useRifornimenti';
 import type { Rifornimento } from '../../types/rifornimenti';
 import { giornoBreve } from '../../utils/giorni';
 import { colonneCsvRifornimenti, colonnePdfRifornimenti } from '../../utils/esportaRifornimenti';
 import { euroEsatti, letturaTesto, litriTesto, prezzoLitroTesto } from '../../utils/rifornimenti';
+import { nomeFileDi } from '../../utils/testo';
 import { MenuEsporta } from '../MenuEsporta';
 
 const icona = (I: typeof Pencil) => <I className='h-4 w-4' />;

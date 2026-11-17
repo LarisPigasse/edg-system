@@ -19,6 +19,8 @@ export interface PdfColumn<T> {
   header: string;
   /** Valore testuale della colonna per la riga — niente componenti React, solo testo per la stampa */
   accessor: (item: T) => string;
+  /** Allineamento di valori e intestazione (i numeri a destra); predefinito a sinistra */
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface ExportPdfOptions<T> {
@@ -58,10 +60,17 @@ export function exportTableToPdf<T>({ filename, title, subtitle, columns, data }
   }
 
   // --- Tabella ------------------------------------------------------------
+  // l'intestazione segue l'allineamento dei valori della colonna (i numeri a destra)
+  const allineate = Object.fromEntries(columns.flatMap((c, i) => (c.align && c.align !== 'left' ? [[i, { halign: c.align }]] : [])));
   autoTable(doc, {
     startY: tableStartY,
     head: [columns.map(c => c.header)],
     body: data.map(item => columns.map(c => c.accessor(item))),
+    columnStyles: allineate,
+    didParseCell: cella => {
+      const a = columns[cella.column.index]?.align;
+      if (cella.section === 'head' && a && a !== 'left') cella.cell.styles.halign = a;
+    },
     styles: { fontSize: 9, cellPadding: 3, lineColor: [230, 226, 219], lineWidth: 0.1 },
     headStyles: { fillColor: BRAND_COLOR, textColor: 255, fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [248, 242, 234] },
@@ -92,7 +101,8 @@ export function exportTableToPdf<T>({ filename, title, subtitle, columns, data }
 // principali (facoltativa) e poi una tabella per sezione, ognuna col suo
 // titolo, intestazioni, righe ed eventuale riga dei totali. Le righe sono già
 // testo: chi chiama decide formati e parole. Piè di pagina con data e
-// "Pagina n di m" su ogni pagina.
+// "Pagina n di m" su ogni pagina. Facoltativi un'immagine (es. un grafico,
+// svgImmagine.ts) dopo le cifre, con la sua legenda, e una nota in fondo.
 
 export interface PdfSummaryItem {
   label: string;
@@ -113,13 +123,28 @@ export interface PdfSection {
   empty?: string;
 }
 
+/** Un'immagine nel resoconto (es. un grafico): larga quanto la pagina, con la legenda sotto */
+export interface PdfImage {
+  /** PNG come data URL */
+  dataUrl: string;
+  /** Dimensioni originali (per le proporzioni) */
+  width: number;
+  height: number;
+  /** Voci della legenda: un quadratino del colore e l'etichetta */
+  legend?: { label: string; color: string }[];
+}
+
 export interface ExportReportOptions {
   /** Nome del file, senza estensione */
   filename: string;
   title: string;
   subtitle?: string;
   summary?: PdfSummaryItem[];
+  /** Dopo le cifre principali e prima delle sezioni */
+  image?: PdfImage;
   sections: PdfSection[];
+  /** Testo piccolo dopo l'ultima sezione (avvertenze, come si legge) */
+  footnote?: string;
   orientation?: 'portrait' | 'landscape';
 }
 
@@ -130,7 +155,7 @@ export interface ExportReportOptions {
 export const testoPdf = (s: string): string => s.replace(/\u2212/g, '-').replace(/[\u202F\u2009]/g, ' ');
 
 /** Esporta un resoconto a più sezioni in PDF e ne avvia il download */
-export function exportReportToPdf({ filename, title, subtitle, summary, sections, orientation = 'portrait' }: ExportReportOptions): void {
+export function exportReportToPdf({ filename, title, subtitle, summary, image, sections, footnote, orientation = 'portrait' }: ExportReportOptions): void {
   // compresso: un resoconto di poche pagine resta di pochi kB
   const doc = new jsPDF({ orientation, unit: 'mm', format: 'a4', compress: true });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -174,6 +199,31 @@ export function exportReportToPdf({ filename, title, subtitle, summary, sections
     y = fine() + 8;
   }
 
+  // --- Immagine (un grafico) con la legenda -------------------------------------
+  if (image) {
+    const larghezza = pageWidth - margin * 2;
+    const altezza = (larghezza * image.height) / Math.max(image.width, 1);
+    if (y + altezza + 12 > doc.internal.pageSize.getHeight() - 16) {
+      doc.addPage();
+      y = 16;
+    }
+    doc.addImage(image.dataUrl, 'PNG', margin, y, larghezza, altezza);
+    y += altezza + 4;
+    if (image.legend?.length) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60);
+      let x = margin;
+      for (const voce of image.legend) {
+        doc.setFillColor(voce.color);
+        doc.rect(x, y - 2.6, 4, 2.6, 'F');
+        doc.text(testoPdf(voce.label), x + 6, y);
+        x += 6 + doc.getTextWidth(testoPdf(voce.label)) + 8;
+      }
+      y += 8;
+    }
+  }
+
   // --- Sezioni --------------------------------------------------------------
   for (const s of sections) {
     // il titolo non resta da solo in fondo alla pagina
@@ -212,6 +262,19 @@ export function exportReportToPdf({ filename, title, subtitle, summary, sections
       margin: { left: margin, right: margin, top: 16, bottom: 16 },
     });
     y = fine() + 10;
+  }
+
+  // --- Nota in fondo ------------------------------------------------------------
+  if (footnote) {
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    const righe = doc.splitTextToSize(testoPdf(footnote), pageWidth - margin * 2);
+    if (y + righe.length * 4 > doc.internal.pageSize.getHeight() - 16) {
+      doc.addPage();
+      y = 16;
+    }
+    doc.text(righe, margin, y);
   }
 
   // --- Piè di pagina su tutte le pagine ------------------------------------------

@@ -69,3 +69,41 @@ export interface CostoMezzi {
   sogliaScostamento: number;
   mezzi: CostoMezzo[];
 }
+
+// --- Andamento dei costi di un mezzo (GET /resoconti/mezzi/:id/andamento, 2026-11-16) ---
+
+/** I periodi dell'andamento: ultimi 12 mesi chiusi (predefinito), come la scheda (12m, fino a oggi), anno, anno precedente, da quando c'è, dal… al… */
+export type PeriodoAndamento = 'chiusi' | '12m' | 'anno' | 'prec' | 'inizio' | 'personalizzato';
+
+/** I tipi di grafico dell'andamento */
+export type TipoGraficoAndamento = 'linee' | 'barre' | 'aree' | 'ciambella';
+
+export interface MeseCosti {
+  /** "AAAA-MM" */
+  mese: string;
+  quota: number;
+  /** Ripartiti sui 12 mesi dal pagamento */
+  obblighi: number;
+  /** quota + obblighi */
+  possesso: number;
+  manutenzione: number;
+  uso: number;
+  totale: number;
+}
+
+export interface AndamentoCosti {
+  periodo: { dal: string; al: string };
+  /** "Da quando c'è" oltre i 4 anni: si mostrano gli ultimi 4 */
+  troncato: boolean;
+  /** Il periodo non contiene ancora mesi chiusi (solo dati consolidati: es. anno in corso a gennaio) */
+  nessunMeseChiuso: boolean;
+  /** false nel periodo "Ultimi 12 mesi": obblighi per intero nel mese del pagamento, come la scheda */
+  obblighiRipartiti: boolean;
+  /** "AAAA-MM" del mese in corso, parziale fino a oggi (solo nel periodo "Ultimi 12 mesi") */
+  meseInCorso: string | null;
+  possesso: { mensile: number; modo: ModoPossesso; dal: string | null } | null;
+  mesi: MeseCosti[];
+  totali: { quota: number; obblighi: number; possesso: number; manutenzione: number; uso: number; totale: number };
+  /** Percentuale di ogni blocco sul totale del periodo */
+  quote: { possesso: number; manutenzione: number; uso: number };
+}

@@ -144,4 +144,7 @@
 
   /* Spinner animation */
   --animate-spinner-pulse: spinnerPulse 1.4s infinite ease-in-out both;
+
+  /* Comparsa: dissolvenza breve per elementi che appaiono (es. i suggerimenti dei grafici) */
+  --animate-comparsa: comparsa 256ms ease-out both;
 }

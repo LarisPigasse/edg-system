@@ -26,15 +26,6 @@ export interface Esportazione<T> {
 
 export type FormatoEsportazione = 'pdf' | 'csv';
 
-/** "DAF XF 01" → "daf-xf-01" */
-export const nomeFileDi = (testo: string) =>
-  testo
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-
 export function useEsportazione<T>(e: Esportazione<T>) {
   const [inCorso, setInCorso] = useState(false);
   const toast = useToast();

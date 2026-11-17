@@ -42,14 +42,18 @@ export function confrontoTesto(c: CostoMezzo, soglia: number, conGruppo = true):
 }
 
 /** "410 l di carburante · 8,4 l/100 km" · "nessun rifornimento" (il consumo solo se l'uso basta) */
-export function rifornimentiTesto(c: Pick<CostoMezzo, 'rifornimenti' | 'base'>, breve = false): string {
+/** Le parti della nota dei rifornimenti, una per riga: ["45.776 l di carburante", "36,6 l/100 km"] */
+export function rifornimentiRighe(c: Pick<CostoMezzo, 'rifornimenti' | 'base'>, breve = false): string[] {
   const r = c.rifornimenti;
-  if (!r.totale && !r.litri) return 'nessun rifornimento';
-  if (!r.litri) return 'senza carburante';
+  if (!r.totale && !r.litri) return ['nessun rifornimento'];
+  if (!r.litri) return ['senza carburante'];
   // breve, nelle schede: "41.381 l · 35,8 l/100 km"
   const quanto = breve ? litri(r.litri) : `${litri(r.litri)} di carburante`;
-  return r.consumo != null && c.base !== 'mese' ? `${quanto} · ${consumo(r.consumo, c.base)}` : quanto;
+  return r.consumo != null && c.base !== 'mese' ? [quanto, consumo(r.consumo, c.base)] : [quanto];
 }
+
+/** La stessa nota su una riga: "45.776 l di carburante · 36,6 l/100 km" */
+export const rifornimentiTesto = (c: Pick<CostoMezzo, 'rifornimenti' | 'base'>, breve = false): string => rifornimentiRighe(c, breve).join(' · ');
 
 /** "3 guasti" · "nessun guasto" */
 export const guastiTesto = (n: number): string => (n ? `${n} ${n === 1 ? 'guasto' : 'guasti'}` : 'nessun guasto');
