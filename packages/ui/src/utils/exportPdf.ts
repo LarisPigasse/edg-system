@@ -48,14 +48,14 @@ export function exportTableToPdf<T>({ filename, title, subtitle, columns, data }
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...BRAND_COLOR);
-  doc.text(title, 14, 15);
+  doc.text(testoPdf(title), 14, 15);
 
   let tableStartY = 22;
   if (subtitle) {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
-    doc.text(subtitle, 14, 21);
+    doc.text(testoPdf(subtitle), 14, 21);
     tableStartY = 26;
   }
 
@@ -64,8 +64,8 @@ export function exportTableToPdf<T>({ filename, title, subtitle, columns, data }
   const allineate = Object.fromEntries(columns.flatMap((c, i) => (c.align && c.align !== 'left' ? [[i, { halign: c.align }]] : [])));
   autoTable(doc, {
     startY: tableStartY,
-    head: [columns.map(c => c.header)],
-    body: data.map(item => columns.map(c => c.accessor(item))),
+    head: [columns.map(c => testoPdf(c.header))],
+    body: data.map(item => columns.map(c => testoPdf(c.accessor(item)))),
     columnStyles: allineate,
     didParseCell: cella => {
       const a = columns[cella.column.index]?.align;
@@ -150,9 +150,16 @@ export interface ExportReportOptions {
 
 /**
  * I caratteri che i font standard del PDF (WinAnsi) non hanno: meno
- * tipografico, spazi stretti e unificatori che Intl mette in alcune cifre.
+ * tipografico, spazi stretti e unificatori che Intl mette in alcune cifre,
+ * frecce (es. "Nereto → Milano" nelle descrizioni scritte a mano) che
+ * diventano › e ‹, che il font ha.
  */
-export const testoPdf = (s: string): string => s.replace(/\u2212/g, '-').replace(/[\u202F\u2009]/g, ' ');
+export const testoPdf = (s: string): string =>
+  s
+    .replace(/\u2212/g, '-')
+    .replace(/[\u202F\u2009]/g, ' ')
+    .replace(/[\u2192\u21D2\u2794\u279C\u27A1]/g, '\u203A')
+    .replace(/[\u2190\u21D0\u2B05]/g, '\u2039');
 
 /** Esporta un resoconto a più sezioni in PDF e ne avvia il download */
 export function exportReportToPdf({ filename, title, subtitle, summary, image, sections, footnote, orientation = 'portrait' }: ExportReportOptions): void {

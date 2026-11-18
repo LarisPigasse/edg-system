@@ -10,7 +10,7 @@ import { Clock } from '@edg/ui';
 import type { AppModuleManifest } from '../../core/modules/types';
 import { sorgenteAvvisi } from './api/avvisi';
 import { dopoAvvio } from './components/dopoAvvio';
-import { soloAddetto, ufficio } from './utils/capacita';
+import { conCosti, soloAddetto, ufficio } from './utils/capacita';
 
 const BASE = '/vigilo';
 
@@ -36,6 +36,8 @@ export const vigiloModule: AppModuleManifest = {
     // La rubrica dei fornitori (F1): la legge l'ufficio, la modifica chi ha vigilo.write
     { path: 'fornitori', component: dopoAvvio(() => import('./pages/FornitoriPage')), quando: ufficio },
     { path: 'calendario', component: dopoAvvio(() => import('./pages/CalendarioPage')), quando: ufficio },
+    // Stima dei costi di un servizio (2026-11-17): solo l'ufficio che vede i costi
+    { path: 'stima', component: dopoAvvio(() => import('./pages/StimaCostiPage')), quando: conCosti },
     { path: 'mie-scadenze', component: lazy(() => import('./pages/MieScadenzePage')), quando: soloAddetto },
     { path: 'miei-mezzi', component: lazy(() => import('./pages/MieiMezziPage')), quando: soloAddetto },
     // Gli avvisi del solo Vigilo; quelli di tutti i moduli sono in /avvisi (B8d-1 bis)
@@ -48,6 +50,7 @@ export const vigiloModule: AppModuleManifest = {
     { id: 'soggetti', label: 'Soggetti', path: 'soggetti', quando: ufficio },
     { id: 'fornitori', label: 'Fornitori', path: 'fornitori', quando: ufficio },
     { id: 'calendario', label: 'Calendario', path: 'calendario', quando: ufficio },
+    { id: 'stima', label: 'Stima costi', path: 'stima', quando: conCosti },
     { id: 'mie-scadenze', label: 'Le mie scadenze', path: 'mie-scadenze', quando: soloAddetto },
     { id: 'miei-mezzi', label: 'I miei mezzi', path: 'miei-mezzi', quando: soloAddetto },
     { id: 'avvisi', label: 'Avvisi', path: 'avvisi' },

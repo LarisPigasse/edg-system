@@ -56,6 +56,10 @@ export const leggiAssegnazioni = (filtro: { soggetto: string } | { persona: stri
 /** Le persone, per scegliere il referente */
 export const leggiPersone = () => leggiTutti<RiferimentoSoggetto>('/soggetti?tipo=persona&ordina=nome');
 
+/** I mezzi in servizio di un tipo, per nome (es. per la stima dei costi) */
+export const leggiMezziDelTipo = (tipo: 'veicolo' | 'macchina' | 'attrezzatura') =>
+  leggiTutti<RiferimentoSoggetto>(`/soggetti?tipo=${tipo}&stato=in-servizio&ordina=nome`);
+
 /** Nuovo soggetto: il servizio crea anche contatori e scadenze dei controlli automatici */
 export const creaSoggetto = (dati: DatiSoggetto) => richiesta<Soggetto & EsitoSalvataggio>('/soggetti', 'POST', dati);
 

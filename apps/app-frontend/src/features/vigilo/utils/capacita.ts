@@ -24,6 +24,12 @@ export function capacitaDa(permessi: readonly string[]): Capacita {
 /** L'ufficio: chi legge tutto il tenant (read, write o config) */
 export const ufficio = (permessi: readonly string[]): boolean => capacitaDa(permessi).read;
 
+/** L'ufficio che vede i costi (read e costi): la stima dei costi di un servizio */
+export const conCosti = (permessi: readonly string[]): boolean => {
+  const c = capacitaDa(permessi);
+  return c.read && c.costi;
+};
+
 /** Solo addetto: vigilo.own senza lettura del tenant */
 export const soloAddetto = (permessi: readonly string[]): boolean => {
   const c = capacitaDa(permessi);
