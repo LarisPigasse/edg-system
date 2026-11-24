@@ -12,9 +12,11 @@ import type { StimaRiga, StimaSalvata } from '../../types/stima';
 import { aGiorno, giornoBreve } from '../../utils/giorni';
 import { euroCentesimi } from '../../utils/resoconti';
 import { DettaglioStima } from './DettaglioStima';
+import { TestoMargine } from './TestoMargine';
 import { TestoScostamento } from './TestoScostamento';
+import { testoNumero } from '../../utils/numeri';
 
-const numero = (n: number) => n.toLocaleString('it-IT', { maximumFractionDigits: 1 });
+const numero = (n: number) => testoNumero(n, 1);
 
 const colonne: TableColumn<StimaRiga>[] = [
   { header: 'Data', accessor: s => giornoBreve(aGiorno(new Date(s.salvataIl))) },
@@ -31,6 +33,7 @@ const colonne: TableColumn<StimaRiga>[] = [
   { header: 'Stimato', accessor: s => <span className='font-semibold tabular-nums text-action-primary'>{euroCentesimi(s.totale)}</span>, align: 'right' },
   { header: 'Reale', accessor: s => <span className='tabular-nums'>{s.costoReale == null ? '—' : euroCentesimi(s.costoReale)}</span>, align: 'right' },
   { header: 'Scostamento', accessor: s => <TestoScostamento scostamento={s.scostamento} />, align: 'right' },
+  { header: 'Margine', accessor: s => <TestoMargine margine={s.margine} />, align: 'right' },
   { header: 'Salvata da', accessor: s => <span className='text-text-secondary'>{s.salvataDa ?? '—'}</span>, className: 'hidden md:table-cell' },
 ];
 
@@ -59,7 +62,7 @@ export const StimeSalvate: React.FC<{ onDuplica: (s: StimaSalvata) => void }> = 
           quickActions: { delete: { enabled: true, onDelete: s => setDaEliminare(s), canDelete: s => s.eliminabile, requireConfirmation: false } },
         }}
       />
-      <DettaglioStima stima={x.aperta} inCorso={x.inCorso} onChiudi={x.chiudi} onReale={x.reale} onDuplica={onDuplica} />
+      <DettaglioStima stima={x.aperta} inCorso={x.inCorso} onChiudi={x.chiudi} onReale={x.reale} onPrezzo={x.prezzo} onDuplica={onDuplica} />
       <ConfirmModal
         isOpen={!!daEliminare}
         onClose={() => setDaEliminare(null)}

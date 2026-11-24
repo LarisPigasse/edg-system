@@ -55,6 +55,8 @@ export interface CostoMezzo {
   uso: { unita: 'km' | 'ore'; valore: number | null } | null;
   base: BaseCosto;
   costoPerUnita: number | null;
+  /** Le due componenti (2026-11-18): fissa per ora di impiego, variabile per km o ora motore */
+  componenti?: { fissoOra: number | null; variabile: number | null; unita: 'km' | 'ore' | null; oreImpiego: number };
   confronto: {
     totale: ConfrontoCosto | null;
     manutenzione: ConfrontoCosto | null;

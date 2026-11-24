@@ -1,8 +1,9 @@
 // src/features/vigilo/components/dashboard/Dashboard.tsx
 //
-// La dashboard di Vigilo (home del modulo dopo l'avvio). Due viste:
+// La dashboard di Vigilo (home del modulo dopo l'avvio). Tre viste:
 //   Da fare          "che cosa devo fare, e entro quando?"
 //   Spese e consumi  "quanto spendo, quanto consumo?" (B10c, solo con vigilo.costi)
+//   Analisi          "come sta andando, e che cosa conviene fare?" (2026-11-23, solo con vigilo.costi)
 // In testa il titolo (PageHeader come le altre pagine) con il saluto e la
 // sintesi come sottotitolo; sotto, la barra con vista e ricerca. Poi i riquadri
 // numerici e due colonne indipendenti, così l'altezza variabile dell'elenco
@@ -31,6 +32,7 @@ import { Saluto } from './Saluto';
 import { Soggetti } from './Soggetti';
 import { useDashboard } from '../../hooks/useDashboard';
 import { VistaSpese } from './VistaSpese';
+import { VistaAnalisi } from '../analisi/VistaAnalisi';
 
 /** Il nome per il saluto: la persona collegata in Vigilo, altrimenti il nome dell'account (ADR081) */
 const nomeDi = (profilo: ProfiloVigilo, daAccount: string) => (profilo.persona?.nome.split(' ')[0] ?? daAccount) || null;
@@ -84,6 +86,8 @@ export const Dashboard: React.FC<{ profilo: ProfiloVigilo }> = ({ profilo }) => 
 
       {vuota ? (
         <PrimiPassi capacita={profilo.capacita} />
+      ) : vista === 'analisi' && profilo.capacita.costi ? (
+        <VistaAnalisi />
       ) : vista === 'spese' && profilo.capacita.costi ? (
         <VistaSpese testo={d.testo} sedi={sedi} />
       ) : (

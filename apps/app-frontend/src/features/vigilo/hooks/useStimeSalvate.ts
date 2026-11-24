@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '@edg/ui';
 
-import { eliminaStima, leggiStima, leggiStime, registraCostoReale } from '../api/stima';
+import { eliminaStima, leggiStima, leggiStime, registraCostoReale, registraPrezzo } from '../api/stima';
 import type { StimaRiga, StimaSalvata } from '../types/stima';
 
 export function useStimeSalvate() {
@@ -34,6 +34,22 @@ export function useStimeSalvate() {
       setAperta(await leggiStima(uuid));
     } catch (e) {
       toast?.danger({ title: 'Stima non letta', description: (e as Error).message });
+    }
+  };
+
+  /** Il prezzo applicato; resta nel pannello per vedere il margine (2026-11-23) */
+  const prezzo = async (uuid: string, valore: number | null): Promise<boolean> => {
+    setInCorso(true);
+    try {
+      setAperta(await registraPrezzo(uuid, valore));
+      toast?.({ title: valore === null ? 'Prezzo tolto' : 'Prezzo salvato' });
+      void carica();
+      return true;
+    } catch (e) {
+      toast?.danger({ title: 'Non salvato', description: (e as Error).message });
+      return false;
+    } finally {
+      setInCorso(false);
     }
   };
 
@@ -68,5 +84,5 @@ export function useStimeSalvate() {
     }
   };
 
-  return { righe, errore, aperta, apri, chiudi: () => setAperta(null), reale, elimina, inCorso, ricarica: carica };
+  return { righe, errore, aperta, apri, chiudi: () => setAperta(null), reale, prezzo, elimina, inCorso, ricarica: carica };
 }

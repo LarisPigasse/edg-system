@@ -2,8 +2,9 @@
 //
 // Una stima salvata nel pannello laterale (2026-11-18, fase 3): la
 // scomposizione con i valori di allora, il costo reale dopo il servizio (con
-// note, chi e quando) e lo scostamento in euro e in percentuale, il PDF e
-// "Duplica come nuova", che la riapre nella scheda Nuova stima.
+// note, chi e quando; salvato, il pannello si chiude) e lo scostamento in
+// euro e in percentuale, il PDF e "Duplica come nuova", che la riapre nella
+// scheda Nuova stima.
 import React, { useEffect, useState } from 'react';
 import { Button, Copy, FileText, Input, Sheet, TextArea, exportReportToPdf, useToast } from '@edg/ui';
 
@@ -13,6 +14,7 @@ import { importo } from '../../utils/numeri';
 import { stimaPdf } from '../../utils/pdfStima';
 import { euroCentesimi } from '../../utils/resoconti';
 import { ScomposizioneStima } from './ScomposizioneStima';
+import { TestoMargine } from './TestoMargine';
 import { TestoScostamento } from './TestoScostamento';
 
 interface Props {
@@ -20,13 +22,16 @@ interface Props {
   inCorso: boolean;
   onChiudi: () => void;
   onReale: (uuid: string, costo: number | null, note: string | null) => Promise<boolean>;
+  /** Il prezzo applicato al cliente; il pannello resta aperto per vedere il margine */
+  onPrezzo: (uuid: string, prezzo: number | null) => Promise<boolean>;
   onDuplica: (s: StimaSalvata) => void;
 }
 
 const quando = (iso: string) => giornoBreve(aGiorno(new Date(iso)));
 
-export const DettaglioStima: React.FC<Props> = ({ stima: s, inCorso, onChiudi, onReale, onDuplica }) => {
+export const DettaglioStima: React.FC<Props> = ({ stima: s, inCorso, onChiudi, onReale, onPrezzo, onDuplica }) => {
   const [costo, setCosto] = useState('');
+  const [prezzo, setPrezzo] = useState('');
   const [note, setNote] = useState('');
   const toast = useToast();
 
@@ -34,10 +39,18 @@ export const DettaglioStima: React.FC<Props> = ({ stima: s, inCorso, onChiudi, o
     // "1.250,50": come si scrive (il punto delle migliaia sempre, i centesimi)
     setCosto(s?.costoReale != null ? s.costoReale.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' } as unknown as Intl.NumberFormatOptions) : '');
     setNote(s?.noteReale ?? '');
+    setPrezzo(s?.prezzo != null ? s.prezzo.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' } as unknown as Intl.NumberFormatOptions) : '');
   }, [s]);
 
   const valore = importo(costo);
+  const valorePrezzo = importo(prezzo);
+  const errorePrezzo = valorePrezzo !== null && Number.isNaN(valorePrezzo) ? 'Un importo in euro, es. 1.400,00' : undefined;
   const errore = valore !== null && Number.isNaN(valore) ? 'Un importo in euro, es. 1.250,50' : undefined;
+
+  /** Salva (o toglie) il costo reale; riuscito, il pannello si chiude */
+  const salvaReale = async (c: number | null, n: string | null) => {
+    if (s && (await onReale(s.uuid, c, n))) onChiudi();
+  };
 
   const pdf = () => {
     if (!s) return;
@@ -72,6 +85,31 @@ export const DettaglioStima: React.FC<Props> = ({ stima: s, inCorso, onChiudi, o
         <div className='space-y-6'>
           <ScomposizioneStima calcolo={{ usati: s.usati, risultato: s.risultato }} />
 
+          {/* il prezzo applicato al cliente (si sa anche prima del servizio) e il margine */}
+          <section className='space-y-3 rounded-lg border border-border-default p-4'>
+            <div className='flex flex-wrap items-baseline justify-between gap-2'>
+              <h3 className='text-sm font-semibold'>Prezzo applicato</h3>
+              {s.margine && (
+                <span className='text-sm'>
+                  Margine <TestoMargine margine={s.margine} conBase />
+                </span>
+              )}
+            </div>
+            <div className='flex flex-wrap items-start gap-2'>
+              <div className='min-w-0 flex-1'>
+                <Input label='Prezzo (€)' inputMode='decimal' value={prezzo} onChange={e => setPrezzo(e.target.value)} error={errorePrezzo} helperText='Facoltativo: quanto paga il cliente. Dà il margine.' />
+              </div>
+              {s.prezzo != null && (
+                <Button variant='outline' size='sm' className='mt-5' onClick={() => void onPrezzo(s.uuid, null)} disabled={inCorso}>
+                  Togli
+                </Button>
+              )}
+              <Button size='sm' className='mt-5' onClick={() => void onPrezzo(s.uuid, valorePrezzo)} disabled={valorePrezzo === null || !!errorePrezzo} isLoading={inCorso} loadingText='Salvo…'>
+                Salva
+              </Button>
+            </div>
+          </section>
+
           {/* dopo il servizio: quanto è costato davvero */}
           <section className='space-y-3 rounded-lg border border-border-default p-4'>
             <h3 className='text-sm font-semibold'>Costo reale</h3>
@@ -87,11 +125,11 @@ export const DettaglioStima: React.FC<Props> = ({ stima: s, inCorso, onChiudi, o
             <TextArea label='Note' value={note} onChange={e => setNote(e.target.value)} maxLength={1024} minRows={1} autoResize />
             <div className='flex justify-end gap-2'>
               {s.costoReale != null && (
-                <Button variant='outline' size='sm' onClick={() => void onReale(s.uuid, null, null)} disabled={inCorso}>
+                <Button variant='outline' size='sm' onClick={() => void salvaReale(null, null)} disabled={inCorso}>
                   Togli
                 </Button>
               )}
-              <Button size='sm' onClick={() => void onReale(s.uuid, valore, note.trim() || null)} disabled={valore === null || !!errore} isLoading={inCorso} loadingText='Salvo…'>
+              <Button size='sm' onClick={() => void salvaReale(valore, note.trim() || null)} disabled={valore === null || !!errore} isLoading={inCorso} loadingText='Salvo…'>
                 Salva il costo reale
               </Button>
             </div>

@@ -29,4 +29,5 @@ export const MOTIVI_CHIUSURA: Record<string, string> = {
   'soggetto-dismesso': 'soggetto archiviato',
   'controllo-disattivato': 'controllo disattivato',
   'non-seguita': 'non più seguita',
+  'fuori-ambito': 'categoria tolta dal controllo',
 };

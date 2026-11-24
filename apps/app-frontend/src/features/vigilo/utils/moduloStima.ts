@@ -4,7 +4,7 @@
 // campi come si scrivono (testo, all'italiana) e la richiesta di calcolo che
 // ne deriva, con gli errori per campo secondo i limiti del servizio. Regole pure.
 import type { Limite, ParametriStima, RichiestaCalcolo, TipoServizio } from '../types/stima';
-import { costoUnitario, importo } from './numeri';
+import { costoUnitario, importo, testoNumero } from './numeri';
 
 export interface RigaExtra {
   id: number;
@@ -16,7 +16,10 @@ export interface ModuloStima {
   tipo: TipoServizio;
   descrizione: string;
   mezzo: string | null;
+  /** Parte variabile: €/km in movimento (a km) o €/h motore (a ore) */
   costoMezzo: string;
+  /** Parte fissa: € per ora di impiego */
+  costoMezzoOra: string;
   km: string;
   ritornoAVuoto: boolean;
   kmAutostrada: string;
@@ -34,6 +37,7 @@ export const MODULO_VUOTO: ModuloStima = {
   descrizione: '',
   mezzo: null,
   costoMezzo: '',
+  costoMezzoOra: '',
   km: '',
   ritornoAVuoto: false,
   kmAutostrada: '',
@@ -46,9 +50,9 @@ export const MODULO_VUOTO: ModuloStima = {
   extra: [],
 };
 
-export type Campo = 'costoMezzo' | 'km' | 'kmAutostrada' | 'oreLavoro' | 'oreAggiuntive' | 'costoOrario' | 'pernottamenti' | 'pedaggi' | `extra-${number}`;
+export type Campo = 'costoMezzo' | 'costoMezzoOra' | 'km' | 'kmAutostrada' | 'oreLavoro' | 'oreAggiuntive' | 'costoOrario' | 'pernottamenti' | 'pedaggi' | `extra-${number}`;
 
-const testoLimite = (l: Limite) => `Da ${l.min.toLocaleString('it-IT')} a ${l.max.toLocaleString('it-IT')}`;
+const testoLimite = (l: Limite) => `Da ${testoNumero(l.min)} a ${testoNumero(l.max)}`;
 
 /** La richiesta di calcolo e gli errori per campo; la richiesta è null se manca il dato principale o c'è un errore (pura) */
 export function richiestaDa(m: ModuloStima, limiti: ParametriStima['limiti']): { richiesta: RichiestaCalcolo | null; errori: Partial<Record<Campo, string>> } {
@@ -71,6 +75,7 @@ export function richiestaDa(m: ModuloStima, limiti: ParametriStima['limiti']): {
   const pernottamenti = aKm ? null : leggi('pernottamenti', m.pernottamenti, limiti.pernottamenti, true);
   // al millesimo, come i costi per km o per ora che calcola Vigilo
   const costoMezzo = leggi('costoMezzo', m.costoMezzo, limiti.costoMezzo, false, true);
+  const costoMezzoOra = leggi('costoMezzoOra', m.costoMezzoOra, limiti.costoMezzo);
   const costoOrario = leggi('costoOrario', m.costoOrario, limiti.costoOrarioConducente);
   const pedaggi = leggi('pedaggi', m.pedaggi, limiti.importo);
   const extra = m.extra.flatMap(e => {
@@ -86,6 +91,7 @@ export function richiestaDa(m: ModuloStima, limiti: ParametriStima['limiti']): {
       tipo: m.tipo,
       mezzo: m.mezzo,
       costoMezzo,
+      costoMezzoOra,
       ...(aKm ? { km: km!, ritornoAVuoto: m.ritornoAVuoto, kmAutostrada } : { oreLavoro: oreLavoro!, pernottamenti: pernottamenti ?? 0 }),
       oreAggiuntive: oreAggiuntive ?? 0,
       persona: m.persona,
@@ -97,7 +103,7 @@ export function richiestaDa(m: ModuloStima, limiti: ParametriStima['limiti']): {
   };
 }
 
-const testo = (n: number | null | undefined) => (n == null ? '' : n.toLocaleString('it-IT', { maximumFractionDigits: 3 }));
+const testo = (n: number | null | undefined) => (n == null ? '' : testoNumero(n, 3));
 
 /** Il modulo da una stima salvata: per duplicarla come nuova (pura) */
 export function moduloDa(dati: RichiestaCalcolo, descrizione: string): ModuloStima {
@@ -107,6 +113,7 @@ export function moduloDa(dati: RichiestaCalcolo, descrizione: string): ModuloSti
     descrizione,
     mezzo: dati.mezzo ?? null,
     costoMezzo: testo(dati.costoMezzo),
+    costoMezzoOra: testo(dati.costoMezzoOra),
     km: testo(dati.km),
     ritornoAVuoto: !!dati.ritornoAVuoto,
     kmAutostrada: testo(dati.kmAutostrada),
@@ -117,5 +124,26 @@ export function moduloDa(dati: RichiestaCalcolo, descrizione: string): ModuloSti
     pernottamenti: testo(dati.pernottamenti),
     pedaggi: testo(dati.pedaggi),
     extra: (dati.extra ?? []).map((e, i) => ({ id: i + 1, descrizione: e.descrizione, importo: testo(e.importo) })),
+  };
+}
+
+/** I costi che Vigilo propone per il servizio: quello del mezzo e il costo orario */
+export interface ProposteStima {
+  /** null = nessun mezzo scelto; valore = parte variabile, fissoOra = parte fissa per ora di impiego */
+  costoMezzo: { valore: number | null; fissoOra: number | null; base: string | null; nome: string } | null;
+  costoOrario: { valore: number | null; fonte: 'persona' | 'media'; nome?: string } | null;
+}
+
+/**
+ * La richiesta con i costi lasciati come proposti messi a null: il servizio li
+ * riprende da Vigilo e la stima li registra come "dal mezzo" o "dalla persona",
+ * non come scritti a mano (pura)
+ */
+export function conProposte(r: RichiestaCalcolo, p: ProposteStima): RichiestaCalcolo {
+  return {
+    ...r,
+    costoMezzo: r.costoMezzo != null && r.costoMezzo === p.costoMezzo?.valore ? null : r.costoMezzo,
+    costoMezzoOra: r.costoMezzoOra != null && r.costoMezzoOra === p.costoMezzo?.fissoOra ? null : r.costoMezzoOra,
+    costoOrario: r.costoOrario != null && r.costoOrario === p.costoOrario?.valore ? null : r.costoOrario,
   };
 }

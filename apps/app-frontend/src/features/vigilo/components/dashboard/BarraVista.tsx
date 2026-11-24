@@ -12,10 +12,11 @@ import { CampoRicerca } from '../CampoRicerca';
 const VISTE: readonly (readonly [VistaDashboard, string])[] = [
   ['fare', 'Da fare'],
   ['spese', 'Spese e consumi'],
+  ['analisi', 'Analisi'],
 ];
 
 interface Props {
-  /** vigilo.costi: c'è anche la vista Spese e consumi */
+  /** vigilo.costi: ci sono anche le viste Spese e consumi e Analisi */
   conSpese: boolean;
   vista: VistaDashboard;
   onVista: (v: VistaDashboard) => void;
@@ -26,7 +27,7 @@ interface Props {
 export const BarraVista: React.FC<Props> = ({ conSpese, vista, onVista, testo, onTesto }) => (
   <div className='flex flex-wrap items-center justify-between gap-3'>
     <div className='flex rounded-lg border border-border-default bg-bg-primary p-0.5' role='group' aria-label='Vista'>
-      {VISTE.filter(([v]) => conSpese || v !== 'spese').map(([v, etichetta]) => (
+      {VISTE.filter(([v]) => conSpese || v === 'fare').map(([v, etichetta]) => (
         <button
           key={v}
           type='button'
@@ -41,6 +42,7 @@ export const BarraVista: React.FC<Props> = ({ conSpese, vista, onVista, testo, o
         </button>
       ))}
     </div>
-    <CampoRicerca valore={testo} onCambia={onTesto} segnaposto='Cerca veicolo, persona, targa…' className='w-72' />
+    {/* l'Analisi riguarda l'azienda intera: niente da cercare */}
+    {vista !== 'analisi' && <CampoRicerca valore={testo} onCambia={onTesto} segnaposto='Cerca veicolo, persona, targa…' className='w-72' />}
   </div>
 );

@@ -2,7 +2,7 @@
 //
 // Stima dei costi di un servizio (2026-11-17): parametri generali e costi
 // aziendali per anno. Ogni modifica risponde con i parametri aggiornati.
-import type { CalcoloStima, DatiAnno, ParametriStima, RegoleStima, RichiestaCalcolo, StimaRiga, StimaSalvata } from '../types/stima';
+import type { CalcoloStima, DatiAnno, KmSuggeriti, ParametriStima, RegoleStima, RichiestaCalcolo, StimaRiga, StimaSalvata } from '../types/stima';
 import { leggi, leggiTutti, richiesta } from './client';
 
 export const leggiParametriStima = () => leggi<ParametriStima>('/stima/parametri');
@@ -25,9 +25,15 @@ export const salvaStima = async (r: RichiestaCalcolo & { descrizione: string }) 
 export const leggiStima = (uuid: string) => leggi<StimaSalvata>(`/stima/stime/${uuid}`);
 
 /** Il costo reale dopo il servizio; null lo toglie */
+/** Il prezzo applicato al cliente; null lo toglie (2026-11-23) */
+export const registraPrezzo = async (uuid: string, prezzo: number | null) => (await richiesta<StimaSalvata>(`/stima/stime/${uuid}/prezzo`, 'PATCH', { prezzo })).data;
+
 export const registraCostoReale = async (uuid: string, costoReale: number | null, note: string | null) =>
   (await richiesta<StimaSalvata>(`/stima/stime/${uuid}/reale`, 'PATCH', { costoReale, note })).data;
 
 export const eliminaStima = (uuid: string) => richiesta<null>(`/stima/stime/${uuid}`, 'DELETE');
+
+/** I km dei veicoli in un anno dai contatori, da suggerire come km annui */
+export const leggiKmSuggeriti = (anno: number) => leggi<KmSuggeriti>(`/stima/anni/${anno}/km-suggeriti`);
 
 export const eliminaCostiAnno = async (anno: number) => (await richiesta<ParametriStima>(`/stima/anni/${anno}`, 'DELETE')).data;

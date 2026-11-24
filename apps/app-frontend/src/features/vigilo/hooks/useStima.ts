@@ -6,7 +6,8 @@
 // calcolo, quella del servizio). Le risposte arrivate tardi si scartano.
 // Vive nella pagina, non nella scheda: la stima scritta resta cambiando
 // scheda, e "Duplica come nuova" la carica (fase 3). Salva la stima
-// (il servizio la ricalcola dai dati).
+// (il servizio la ricalcola dai dati). I costi del mezzo e orario arrivano
+// proposti da Vigilo (useProposteStima) e si possono correggere.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '@edg/ui';
 
@@ -14,7 +15,9 @@ import { leggiMezziDelTipo, leggiPersone } from '../api/soggetti';
 import { calcolaStima, leggiParametriStima, salvaStima } from '../api/stima';
 import type { RiferimentoSoggetto } from '../types/scadenze';
 import type { CalcoloStima, ParametriStima } from '../types/stima';
-import { MODULO_VUOTO, richiestaDa, type ModuloStima } from '../utils/moduloStima';
+import { MODULO_VUOTO, conProposte, richiestaDa, type ModuloStima } from '../utils/moduloStima';
+import { testoNumero } from '../utils/numeri';
+import { useProposteStima } from './useProposteStima';
 
 /** Attesa dopo l'ultima modifica prima di ricalcolare */
 const ATTESA_MS = 256;
@@ -45,10 +48,16 @@ export function useStima() {
       .catch(e => setErrore((e as Error).message));
   }, []);
 
-  const { richiesta, errori } = useMemo(
-    () => (parametri ? richiestaDa(modulo, parametri.limiti) : { richiesta: null, errori: {} }),
-    [modulo, parametri]
-  );
+  const cambia = (m: Partial<ModuloStima>) => setModulo(x => ({ ...x, ...m }));
+  // i costi proposti da Vigilo (mezzo, persona o costo medio), scritti nei campi e modificabili
+  const proposte = useProposteStima(modulo, parametri, cambia);
+
+  const { richiesta, errori } = useMemo(() => {
+    if (!parametri) return { richiesta: null, errori: {} };
+    const r = richiestaDa(modulo, parametri.limiti);
+    // i costi lasciati come proposti vanno al servizio come "da Vigilo", non come scritti a mano
+    return { ...r, richiesta: r.richiesta ? conProposte(r.richiesta, proposte) : null };
+  }, [modulo, parametri, proposte]);
   const chiave = JSON.stringify(richiesta);
 
   useEffect(() => {
@@ -73,8 +82,11 @@ export function useStima() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chiave]);
 
-  const cambia = (m: Partial<ModuloStima>) => setModulo(x => ({ ...x, ...m }));
-  const azzera = () => setModulo(MODULO_VUOTO);
+  /** Da capo; il costo orario riparte dal costo medio proposto */
+  const azzera = () => {
+    const media = proposte.costoOrario?.fonte === 'media' ? proposte.costoOrario.valore : parametri?.generali.costoOrarioConducente;
+    setModulo({ ...MODULO_VUOTO, costoOrario: media != null ? testoNumero(media, 2) : '' });
+  };
   /** Un modulo già pronto (es. una stima salvata da duplicare) */
   const carica = (m: ModuloStima) => setModulo(m);
 
@@ -94,7 +106,7 @@ export function useStima() {
     }
   };
 
-  return { modulo, cambia, azzera, carica, salva, salvando, parametri, mezzi, persone, errori, richiesta, calcolo, errore, inCorso };
+  return { modulo, cambia, azzera, carica, salva, salvando, parametri, mezzi, persone, proposte, errori, richiesta, calcolo, errore, inCorso };
 }
 
 export type StatoStima = ReturnType<typeof useStima>;

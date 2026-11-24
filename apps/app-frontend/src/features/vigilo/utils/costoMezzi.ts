@@ -7,7 +7,7 @@
 import { BLOCCHI_IN_PAROLE } from '../constants/costoMezzi';
 import { TIPI } from '../constants/tipiSoggetto';
 import type { ConfrontoCosto, CostoMezzo } from '../types/costoMezzi';
-import { consumo, costoUnita, euroBrevi, litri, variazioneTesto } from './resoconti';
+import { consumo, costoUnita, euroBrevi, euroCentesimi, litri, variazioneTesto } from './resoconti';
 
 /** "0,184 €/km" · "12,500 €/h" · "640 €/mese" */
 export function costoPerUnitaTesto(c: Pick<CostoMezzo, 'base' | 'costoPerUnita'>): string | null {
@@ -57,3 +57,16 @@ export const rifornimentiTesto = (c: Pick<CostoMezzo, 'rifornimenti' | 'base'>, 
 
 /** "3 guasti" · "nessun guasto" */
 export const guastiTesto = (n: number): string => (n ? `${n} ${n === 1 ? 'guasto' : 'guasti'}` : 'nessun guasto');
+
+/**
+ * Le due componenti sotto il costo per km (o per ora), una per riga:
+ * ["0,667 €/km in movimento", "+ 8,25 €/h di impiego"]; niente se non ci sono (pura)
+ */
+export function componentiRighe(c: Pick<CostoMezzo, 'componenti' | 'base'>): string[] | undefined {
+  const k = c.componenti;
+  if (!k || c.base === 'mese' || (k.variabile === null && k.fissoOra === null)) return undefined;
+  return [
+    k.variabile !== null && k.unita ? `${costoUnita(k.variabile, k.unita)} ${k.unita === 'km' ? 'in movimento' : 'motore'}` : null,
+    k.fissoOra !== null ? `+ ${euroCentesimi(k.fissoOra)}/h di impiego` : null,
+  ].filter((r): r is string => r !== null);
+}

@@ -30,3 +30,11 @@ export const importo = (testo: string): number | null => numeroScritto(testo, 2)
 
 /** Un costo unitario (€/km, €/h), al millesimo come quelli calcolati da Vigilo */
 export const costoUnitario = (testo: string): number | null => numeroScritto(testo, 3);
+
+/**
+ * Un numero scritto all'italiana, sempre con il punto delle migliaia ("6.400",
+ * "1.024", "0,806"): l'italiano di Intl non raggruppa sotto le 10.000.
+ * `decimali` è il massimo; i decimali a zero non si scrivono.
+ */
+export const testoNumero = (n: number, decimali = 2): string =>
+  n.toLocaleString('it-IT', { maximumFractionDigits: decimali, useGrouping: 'always' } as unknown as Intl.NumberFormatOptions);

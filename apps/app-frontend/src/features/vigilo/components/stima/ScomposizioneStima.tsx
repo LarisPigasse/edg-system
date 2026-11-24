@@ -37,6 +37,13 @@ export const ScomposizioneStima: React.FC<{ calcolo: Pick<CalcoloStima, 'usati' 
         <dt className='text-sm font-semibold'>Totale</dt>
         <span className='text-sm font-bold tabular-nums'>{euroCentesimi(c.risultato.totale)}</span>
       </div>
+      {/* l'altro valore: con i costi aziendali per km invece che per ora */}
+      {c.risultato.totaleConAziendaliPerKm != null && (
+        <div className='flex items-center justify-between py-2 text-text-secondary'>
+          <dt className='text-sm'>Con i costi aziendali per km</dt>
+          <span className='text-sm font-semibold tabular-nums'>{euroCentesimi(c.risultato.totaleConAziendaliPerKm)}</span>
+        </div>
+      )}
     </dl>
 
     {c.risultato.avvisi.length > 0 && (

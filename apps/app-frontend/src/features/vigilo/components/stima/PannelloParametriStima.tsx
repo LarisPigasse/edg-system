@@ -2,13 +2,13 @@
 //
 // I parametri generali della stima dei costi (2026-11-17) nel pannello
 // laterale: costo orario del conducente, velocità media, ore di guida al
-// giorno, diaria e pedaggio per km. Tutti modificabili entro i limiti del
+// giorno, diaria, pedaggio per km e ore di impiego annue di un mezzo. Tutti modificabili entro i limiti del
 // servizio; costo orario, diaria e pedaggio si possono lasciare vuoti.
 import React, { useEffect, useState } from 'react';
 import { Button, Input, Sheet } from '@edg/ui';
 
 import type { Limite, ParametriStima, RegoleStima } from '../../types/stima';
-import { importo } from '../../utils/numeri';
+import { importo, testoNumero } from '../../utils/numeri';
 
 interface Props {
   parametri: ParametriStima;
@@ -21,14 +21,33 @@ interface Props {
 type Chiave = keyof RegoleStima;
 
 const CAMPI: { chiave: Chiave; etichetta: string; aiuto: string; facoltativo: boolean }[] = [
-  { chiave: 'costoOrarioConducente', etichetta: 'Costo orario del conducente (€/h)', aiuto: 'Per il conducente o l’operatore quando nella stima non si sceglie una persona.', facoltativo: true },
+  {
+    chiave: 'costoOrarioConducente',
+    etichetta: 'Costo orario del conducente (€/h)',
+    aiuto: 'Costo aziendale (lordo, contributi, TFR) per ora, per il conducente o l’operatore quando nella stima non si sceglie una persona. Questi costi non vanno nei costi aziendali.',
+    facoltativo: true,
+  },
   { chiave: 'velocitaMedia', etichetta: 'Velocità media (km/h)', aiuto: 'Per le ore di guida di un servizio a km.', facoltativo: false },
   { chiave: 'oreGuidaGiorno', etichetta: 'Ore di guida al giorno', aiuto: 'Oltre, il servizio dura un altro giorno (limite di legge: 9).', facoltativo: false },
-  { chiave: 'diaria', etichetta: 'Diaria per pernottamento (€)', aiuto: 'Per ogni notte fuori sede del conducente.', facoltativo: true },
+  { chiave: 'diaria', etichetta: 'Diaria per notte fuori sede (€)', aiuto: 'Per ogni notte fuori sede del conducente, in cabina o in albergo (l’albergo, se c’è, va negli extra della stima).', facoltativo: true },
+  {
+    chiave: 'indennitaTrasferta',
+    etichetta: 'Indennità di trasferta per giorno (€)',
+    aiuto: 'Per ogni giorno del servizio quando il conducente non rientra in giornata: servizio di più giorni, o ore e km oltre le soglie qui sotto.',
+    facoltativo: true,
+  },
+  { chiave: 'sogliaOreTrasferta', etichetta: 'Trasferta oltre queste ore di servizio', aiuto: 'Un servizio più lungo non permette di rientrare in giornata.', facoltativo: false },
+  { chiave: 'sogliaKmTrasferta', etichetta: 'Trasferta oltre questi km di andata', aiuto: 'Una destinazione più lontana non permette di rientrare in giornata (solo trasporti).', facoltativo: false },
   { chiave: 'pedaggioKm', etichetta: 'Pedaggio per km autostradale (€/km)', aiuto: 'Per stimare i pedaggi dai km in autostrada, es. 0,16.', facoltativo: true },
+  {
+    chiave: 'oreImpiegoAnnue',
+    etichetta: 'Ore di impiego annue di un mezzo',
+    aiuto: 'Dividono possesso, obblighi e manutenzione di un mezzo in un costo per ora di impiego (2.048 = 256 giorni × 8 ore).',
+    facoltativo: false,
+  },
 ];
 
-const testo = (n: number | null) => (n == null ? '' : n.toLocaleString('it-IT'));
+const testo = (n: number | null) => (n == null ? '' : testoNumero(n));
 
 export const PannelloParametriStima: React.FC<Props> = ({ parametri, aperto, inCorso, onChiudi, onSalva }) => {
   const [valori, setValori] = useState<Record<Chiave, string>>({} as Record<Chiave, string>);

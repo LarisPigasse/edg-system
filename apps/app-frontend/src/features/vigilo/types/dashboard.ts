@@ -34,4 +34,4 @@ export interface Dashboard {
 }
 
 /** Le due viste della dashboard */
-export type VistaDashboard = 'fare' | 'spese';
+export type VistaDashboard = 'fare' | 'spese' | 'analisi';

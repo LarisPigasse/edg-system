@@ -13,9 +13,14 @@
 // lo Storico della libreria di un controllo si apre dal menu della sua riga.
 // Esporta (report, 2026-11-12): il Piano dei controlli e "Controlli non
 // seguiti", in corso o con lo storico.
+// Con vigilo.config, Disattiva / Riattiva di controlli e categorie dal menu
+// della riga (2026-11-19); "Mostra disattivati" sulla riga delle schede.
+// Modifica, Duplica e Nuovo controllo nel suo pannello (passi 2-3, PannelloControllo);
+// Modifica e Nuova categoria nel loro (passo 4, PannelloCategoria). Elimina
+// (passo 5): definitivo per le voci senza storico, altrimenti porta a Disattiva.
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Alert, Button, PageHeader, Skeleton, Tabs, type TabItem } from '@edg/ui';
+import { Alert, Button, ConfirmModal, PageHeader, Skeleton, Switch, Tabs, type TabItem } from '@edg/ui';
 
 import { PARAMETRO_AGGIORNAMENTI } from '../constants/aggiornamenti';
 import { TIPI } from '../constants/tipiSoggetto';
@@ -23,18 +28,45 @@ import { PannelloAggiornamenti } from '../components/aggiornamenti/PannelloAggio
 import { PannelloStoricoLibreria } from '../components/aggiornamenti/PannelloStoricoLibreria';
 import { RiquadroAggiornamenti } from '../components/aggiornamenti/RiquadroAggiornamenti';
 import { Impostazioni } from '../components/configurazione/Impostazioni';
+import { PannelloCategoria } from '../components/configurazione/PannelloCategoria';
+import { PannelloControllo } from '../components/configurazione/PannelloControllo';
 import { PannelloDestinatariControllo } from '../components/configurazione/PannelloDestinatariControllo';
 import { PannelloInterventi } from '../components/configurazione/PannelloInterventi';
 import { PannelloRegoleAvvisi } from '../components/configurazione/PannelloRegoleAvvisi';
 import { SchedaTipo } from '../components/configurazione/SchedaTipo';
 import { MenuEsporta } from '../components/MenuEsporta';
 import { useAggiornamenti } from '../hooks/useAggiornamenti';
+import { useAttivazione, type VoceDaAttivare } from '../hooks/useAttivazione';
+import { useEliminazione } from '../hooks/useEliminazione';
+import type { SchedaCategoria } from '../hooks/useModificaCategoria';
+import { tipoDellaScheda, type SchedaControllo } from '../hooks/useModificaControllo';
 import { useConfigurazione } from '../hooks/useConfigurazione';
 import { useEsportaConfigurazione } from '../hooks/useEsportaConfigurazione';
 import { useInterventi } from '../hooks/useInterventi';
+import { useProfiloVigilo } from '../hooks/useProfiloVigilo';
 import { useRegoleAvvisi } from '../hooks/useRegoleAvvisi';
 import type { EntitaAggiornamento } from '../types/aggiornamenti';
 import type { Controllo } from '../types/configurazione';
+
+/** Perché "Elimina" diventa "Disattiva": la voce ha uno storico */
+function perchéNonSiElimina(v: VoceDaAttivare): string {
+  return v.entita === 'controllo'
+    ? 'Ha uno storico di scadenze, quindi non si elimina: si può disattivare. '
+    : 'Ha dei soggetti (anche archiviati) o dei controlli che valgono solo per lei, quindi non si elimina: si può disattivare. ';
+}
+
+/** Che cosa succede disattivando, detto prima di farlo */
+function messaggioDisattiva(v: VoceDaAttivare | null): string {
+  if (!v) return '';
+  if (v.entita === 'controllo') {
+    const n = v.voce.scadenzeAperte ?? 0;
+    const chiuse = !n ? 'Non ha scadenze aperte.' : n === 1 ? 'Si chiude la sua scadenza aperta.' : `Si chiudono le sue ${n} scadenze aperte.`;
+    return `${chiuse} Riattivandolo si riaprono con le loro date; le scadenze già registrate restano nello storico.`;
+  }
+  const n = v.voce.soggetti ?? 0;
+  const restano = !n ? '' : n === 1 ? ' Il soggetto che c’è resta com’è, con i suoi controlli.' : ` I ${n} soggetti che ci sono restano come sono, con i loro controlli.`;
+  return `Non si potrà più scegliere per i soggetti nuovi.${restano} Si può riattivare quando vuoi.`;
+}
 
 const ConfigurazionePage: React.FC = () => {
   const navigate = useNavigate();
@@ -47,6 +79,25 @@ const ConfigurazionePage: React.FC = () => {
   // il controllo resta impostato durante la chiusura del pannello
   const [destinatari, setDestinatari] = useState<{ c: Controllo | null; aperto: boolean }>({ c: null, aperto: false });
   const aggiornamenti = useAggiornamenti(() => void ricarica());
+  const { profilo } = useProfiloVigilo();
+  const puoConfigurare = !!profilo?.capacita.config;
+  const attivazione = useAttivazione(() => void ricarica());
+  const eliminazione = useEliminazione(() => void ricarica());
+  /** Disattiva chiesto da "Elimina" su una voce con uno storico: la conferma spiega perché */
+  const [perStorico, setPerStorico] = useState(false);
+  const elimina = (v: VoceDaAttivare) => {
+    if (v.voce.eliminabile) eliminazione.chiedi(v);
+    else {
+      setPerStorico(true);
+      attivazione.chiedi(v);
+    }
+  };
+  const [mostraDisattivati, setMostraDisattivati] = useState(false);
+  // modifica, nuovo o duplica: la scheda resta impostata durante la chiusura del pannello
+  const [pannello, setPannello] = useState<{ scheda: SchedaControllo | null; aperto: boolean }>({ scheda: null, aperto: false });
+  const apriPannello = (scheda: SchedaControllo) => setPannello({ scheda, aperto: true });
+  const [pannelloCategoria, setPannelloCategoria] = useState<{ scheda: SchedaCategoria | null; aperto: boolean }>({ scheda: null, aperto: false });
+  const disattivati = gruppi.reduce((n, g) => n + g.categorie.filter(c => !c.attiva).length + g.controlli.filter(c => !c.attivo).length, 0);
   const [parametri, setParametri] = useSearchParams();
   const parametro = parametri.get(PARAMETRO_AGGIORNAMENTI);
   const aggiornamentiAperti = !!parametro && !!aggiornamenti.elenco;
@@ -88,6 +139,14 @@ const ConfigurazionePage: React.FC = () => {
         gruppo={g}
         onDestinatari={c => setDestinatari({ c, aperto: true })}
         onStorico={(entita, voce) => setStorico({ entita, voce, aperto: true })}
+        onAttiva={puoConfigurare ? attivazione.chiedi : undefined}
+        onModifica={puoConfigurare ? controllo => apriPannello({ modo: 'modifica', controllo }) : undefined}
+        onDuplica={puoConfigurare ? controllo => apriPannello({ modo: 'duplica', controllo }) : undefined}
+        onNuovo={puoConfigurare ? () => apriPannello({ modo: 'nuovo', tipo: g.tipo, predefiniti: stato?.predefiniti ?? null }) : undefined}
+        onModificaCategoria={puoConfigurare ? categoria => setPannelloCategoria({ scheda: { modo: 'modifica', categoria }, aperto: true }) : undefined}
+        onNuovaCategoria={puoConfigurare ? () => setPannelloCategoria({ scheda: { modo: 'nuova', tipo: g.tipo }, aperto: true }) : undefined}
+        onElimina={puoConfigurare ? elimina : undefined}
+        mostraDisattivati={mostraDisattivati}
         attesa={attesa.voci.size ? attesa : undefined}
       />
     ),
@@ -183,6 +242,32 @@ const ConfigurazionePage: React.FC = () => {
         />
       )}
 
+      <ConfirmModal
+        isOpen={!!eliminazione.daConfermare}
+        onClose={eliminazione.annulla}
+        onConfirm={() => void eliminazione.conferma()}
+        title={eliminazione.daConfermare ? `Eliminare ${eliminazione.daConfermare.entita === 'controllo' ? 'il controllo' : 'la categoria'} "${eliminazione.daConfermare.voce.nome}"?` : ''}
+        message='Non ha uno storico, quindi si elimina per sempre: non si potrà riattivare.'
+        confirmText='Elimina'
+        variant='danger'
+        isLoading={eliminazione.inCorso}
+      />
+
+      <PannelloControllo
+        scheda={pannello.scheda}
+        categorie={pannello.scheda ? (gruppi.find(g => g.tipo === tipoDellaScheda(pannello.scheda!))?.categorie ?? []) : []}
+        aperto={pannello.aperto}
+        onChiudi={() => setPannello(x => ({ ...x, aperto: false }))}
+        onSalvato={() => void ricarica()}
+      />
+
+      <PannelloCategoria
+        scheda={pannelloCategoria.scheda}
+        aperto={pannelloCategoria.aperto}
+        onChiudi={() => setPannelloCategoria(x => ({ ...x, aperto: false }))}
+        onSalvato={() => void ricarica()}
+      />
+
       <PannelloDestinatariControllo
         controllo={destinatari.c}
         aperto={destinatari.aperto}
@@ -199,7 +284,31 @@ const ConfigurazionePage: React.FC = () => {
         </div>
       )}
 
-      {schede.length > 0 && <Tabs items={schede} defaultTab={schede[0].id} />}
+      {schede.length > 0 && (
+        <Tabs
+          items={schede}
+          defaultTab={schede[0].id}
+          actions={
+            disattivati > 0 ? (
+              <Switch size='sm' label={`Mostra disattivati (${disattivati})`} checked={mostraDisattivati} onCheckedChange={setMostraDisattivati} />
+            ) : undefined
+          }
+        />
+      )}
+
+      <ConfirmModal
+        isOpen={!!attivazione.daConfermare}
+        onClose={() => {
+          attivazione.annulla();
+          setPerStorico(false);
+        }}
+        onConfirm={() => void attivazione.conferma().then(() => setPerStorico(false))}
+        title={attivazione.daConfermare ? `Disattivare ${attivazione.daConfermare.entita === 'controllo' ? 'il controllo' : 'la categoria'} "${attivazione.daConfermare.voce.nome}"?` : ''}
+        message={`${perStorico && attivazione.daConfermare ? perchéNonSiElimina(attivazione.daConfermare) : ''}${messaggioDisattiva(attivazione.daConfermare)}`}
+        confirmText='Disattiva'
+        variant='danger'
+        isLoading={attivazione.inCorso}
+      />
     </div>
   );
 };

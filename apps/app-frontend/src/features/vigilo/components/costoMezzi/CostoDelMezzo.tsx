@@ -8,7 +8,8 @@
 // possesso lo dice: il costo è parziale.
 // Le tre spese in colonna a sinistra, sopra il totale; a destra il costo
 // mensile di possesso (era un riquadro della scheda, 2026-11-16) e, sotto,
-// il costo per unità: entrambi nel colore del modulo. Etichette in ciano,
+// il costo per unità (con le sue due componenti: in movimento e per ora di
+// impiego, 2026-11-18): entrambi nel colore del modulo. Etichette in ciano,
 // note grigie una voce per riga ("quote" e "obblighi", litri e consumo).
 // A destra del titolo il pulsante "Andamento dei costi" apre il grafico nel
 // tempo dei tre blocchi (AndamentoCosti, 2026-11-16).
@@ -18,7 +19,7 @@ import { Button, ChartLine, Skeleton, Tooltip, cn } from '@edg/ui';
 import { COLORE_CIFRA_CHIAVE, COLORE_ETICHETTA_COSTO, COLORE_SOPRA_MEDIA, MODO_IN_PAROLE } from '../../constants/costoMezzi';
 import { useCostoMezzi } from '../../hooks/useCostoMezzi';
 import type { Soggetto } from '../../types/soggetti';
-import { confrontoTesto, costoPerUnitaTesto, guastiTesto, rifornimentiRighe } from '../../utils/costoMezzi';
+import { componentiRighe, confrontoTesto, costoPerUnitaTesto, guastiTesto, rifornimentiRighe } from '../../utils/costoMezzi';
 import { euroBrevi, uso } from '../../utils/resoconti';
 import { Riquadro } from '../Riquadro';
 import { AndamentoCosti } from './AndamentoCosti';
@@ -97,6 +98,7 @@ export const CostoDelMezzo: React.FC<Props> = ({ uuid, nome, chiave, possesso })
               etichetta={c.base === 'mese' ? 'Costo al mese' : `Costo per ${c.base === 'km' ? 'km' : 'ora'}`}
               cifra={costoPerUnitaTesto(c) ?? '—'}
               className={c.confronto.segnalato ? COLORE_SOPRA_MEDIA : COLORE_CIFRA_CHIAVE}
+              sotto={componentiRighe(c)}
             />
           </div>
           <p className={cn('text-sm', c.confronto.segnalato ? cn('font-semibold', COLORE_SOPRA_MEDIA) : 'text-text-secondary')}>

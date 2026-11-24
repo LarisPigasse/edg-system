@@ -1,5 +1,5 @@
 // src/features/vigilo/types/cadenza.ts — la cadenza come la descrive vigilo-service (regole/tipi.ts)
-// Per ora solo letta: l'editor della cadenza arriverà con la Configurazione modificabile.
+// Si modifica con EditorCadenza nel pannello del controllo (2026-11-19, passo 2b).
 
 export interface Durata {
   valore: number;

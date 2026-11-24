@@ -11,20 +11,25 @@ import { Alert, Button, ConfirmModal, Plus, Skeleton, Table, type TableColumn } 
 import { useParametriStima } from '../../hooks/useParametriStima';
 import type { CostiAnno, RegoleStima } from '../../types/stima';
 import { aGiorno, giornoBreve } from '../../utils/giorni';
-import { euroCentesimi } from '../../utils/resoconti';
+import { costoUnita, euroCentesimi } from '../../utils/resoconti';
 import { Riquadro } from '../Riquadro';
 import { PannelloCostiAnno } from './PannelloCostiAnno';
 import { PannelloParametriStima } from './PannelloParametriStima';
+import { testoNumero } from '../../utils/numeri';
 
-const numero = (n: number) => n.toLocaleString('it-IT');
+const numero = (n: number) => testoNumero(n);
 
 /** I parametri generali in parole: "28,50 €/h", "non impostato" */
 const VOCI_GENERALI: { chiave: keyof RegoleStima; etichetta: string; testo: (n: number) => string }[] = [
   { chiave: 'costoOrarioConducente', etichetta: 'Costo orario del conducente', testo: n => `${euroCentesimi(n)}/h` },
   { chiave: 'velocitaMedia', etichetta: 'Velocità media', testo: n => `${numero(n)} km/h` },
   { chiave: 'oreGuidaGiorno', etichetta: 'Ore di guida al giorno', testo: n => `${numero(n)} h` },
-  { chiave: 'diaria', etichetta: 'Diaria per pernottamento', testo: n => euroCentesimi(n) },
+  { chiave: 'diaria', etichetta: 'Diaria per notte fuori sede', testo: n => euroCentesimi(n) },
+  { chiave: 'indennitaTrasferta', etichetta: 'Indennità di trasferta per giorno', testo: n => euroCentesimi(n) },
+  { chiave: 'sogliaOreTrasferta', etichetta: 'Trasferta: soglia di durata', testo: n => `oltre ${numero(n)} ore di servizio` },
+  { chiave: 'sogliaKmTrasferta', etichetta: 'Trasferta: soglia di distanza', testo: n => `oltre ${numero(n)} km di andata` },
   { chiave: 'pedaggioKm', etichetta: 'Pedaggio per km autostradale', testo: n => `${euroCentesimi(n)}/km` },
+  { chiave: 'oreImpiegoAnnue', etichetta: 'Ore di impiego annue di un mezzo', testo: n => `${numero(n)} h` },
 ];
 
 export const ParametriStima: React.FC = () => {
@@ -54,12 +59,25 @@ export const ParametriStima: React.FC = () => {
     },
     { header: 'Cifre', accessor: a => (a.stato === 'consuntivo' ? 'Consuntivo' : 'Preventivo') },
     { header: 'Costi aziendali', accessor: a => <span className='tabular-nums'>{euroCentesimi(a.totale)}</span>, align: 'right' },
+    {
+      header: 'Ai mezzi',
+      accessor: a => (
+        <span className='tabular-nums'>
+          {euroCentesimi(a.attribuiti)}
+          <span className='block text-xs text-text-secondary'>{testoNumero(a.quotaMezzi)}%</span>
+        </span>
+      ),
+      align: 'right',
+    },
     { header: 'Ore di servizio', accessor: a => <span className='tabular-nums'>{a.oreServizio == null ? '—' : numero(a.oreServizio)}</span>, align: 'right' },
     {
       header: 'Per ora di servizio',
       accessor: a => <span className='font-semibold tabular-nums text-action-primary'>{a.costoPerOra == null ? '—' : `${euroCentesimi(a.costoPerOra)}/h`}</span>,
       align: 'right',
     },
+    { header: 'Km annui', accessor: a => <span className='tabular-nums'>{a.kmAnnui == null ? '—' : numero(a.kmAnnui)}</span>, align: 'right', className: 'hidden lg:table-cell' },
+    { header: 'Per km', accessor: a => <span className='tabular-nums'>{a.costoPerKm == null ? '—' : costoUnita(a.costoPerKm, 'km')}</span>, align: 'right' },
+    { header: 'Ricavi', accessor: a => <span className='tabular-nums'>{a.ricavi == null ? '—' : euroCentesimi(a.ricavi)}</span>, align: 'right', className: 'hidden lg:table-cell' },
     {
       header: 'Aggiornato',
       accessor: a => <span className='text-text-secondary'>{[giornoBreve(aGiorno(new Date(a.aggiornatoIl))), a.aggiornatoDa && `da ${a.aggiornatoDa}`].filter(Boolean).join(' · ')}</span>,
@@ -104,8 +122,8 @@ export const ParametriStima: React.FC = () => {
         }
       >
         <p className='mb-3 text-sm text-text-secondary'>
-          Personale indiretto, struttura, servizi, consulenze e oneri, a consuntivo per gli anni chiusi e a preventivo per l’anno in corso. Divisi per le
-          ore di servizio danno il costo aziendale per ora che la stima carica su ogni servizio.
+          Personale indiretto, struttura, servizi, consulenze e oneri, a consuntivo per gli anni chiusi e a preventivo per l’anno in corso. La quota che spetta ai servizi con i mezzi
+          (trasporti e lavori), divisa per le loro ore di servizio, dà il costo aziendale per ora che la stima carica su ogni servizio; con i km annui anche quello per km, mostrato accanto.
         </p>
         <Table
           data={d.anni}
