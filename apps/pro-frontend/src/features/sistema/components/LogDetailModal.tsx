@@ -27,7 +27,11 @@ interface LogDetailModalProps {
   log: AzioneLog | null;
   /** Apre un altro evento (dalla sezione "Stessa richiesta") al posto di quello corrente */
   onOpenLog?: (log: AzioneLog) => void;
+  /** Nome del modulo dalla chiave (useModuleOptions della pagina); senza, la chiave */
+  getModuleName?: (key: string | null | undefined) => string;
 }
+
+const nomeModuloGrezzo = (key: string | null | undefined): string => key ?? 'Piattaforma';
 
 /** Blocco JSON grezzo per i campi che non si prestano a una singola riga (dettagli, stato, metadata). */
 const JsonBlock: React.FC<{ value: unknown }> = ({ value }) => {
@@ -47,7 +51,13 @@ const JsonBlock: React.FC<{ value: unknown }> = ({ value }) => {
  * (vedi types/index.ts); Stato, Metadata e Tag compaiono solo se il log
  * porta davvero quel dato, per non riempire la scheda di sezioni vuote.
  */
-const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log, onOpenLog }) => {
+const LogDetailModal: React.FC<LogDetailModalProps> = ({
+  isOpen,
+  onClose,
+  log,
+  onOpenLog,
+  getModuleName = nomeModuloGrezzo,
+}) => {
   // Chiamati prima dell'early return sotto: le regole degli hook impongono lo
   // stesso ordine ad ogni render, anche quando log è null.
   const { getTenantName } = useTenantDirectory();
@@ -69,6 +79,8 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log, o
       title: 'Evento',
       fields: [
         { label: 'Quando', value: formatDateTime(log.timestamp) },
+        // Gli eventi scritti prima del campo modulo non lo hanno finché non si assegna
+        ...(log.modulo !== undefined ? [{ label: 'Modulo', value: getModuleName(log.modulo) }] : []),
         { label: 'Categoria', value: <Badge variant='default'>{categoriaLabel(log.categoria)}</Badge> },
         {
           label: 'Criticità',

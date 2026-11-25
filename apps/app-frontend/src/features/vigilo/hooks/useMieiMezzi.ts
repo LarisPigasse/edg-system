@@ -5,6 +5,7 @@
 // contatori. Sono pochi per natura.
 import { useCallback, useEffect, useState } from 'react';
 
+import { INTESTAZIONE_SFONDO } from '../../../core/notifications/constants';
 import { leggiSoggetti, leggiSoggetto } from '../api/soggetti';
 import type { Soggetto } from '../types/soggetti';
 
@@ -16,7 +17,8 @@ export function useMieiMezzi(attivo: boolean) {
     if (!attivo) return;
     try {
       const { righe } = await leggiSoggetti({ ordina: 'nome', pagina: 1, righe: 128, stato: 'attivi' });
-      setMezzi(await Promise.all(righe.filter(s => s.tipo !== 'persona').map(s => leggiSoggetto(s.uuid))));
+      // in sottofondo: i contatori dei mezzi assegnati, non schede aperte (ADR117)
+      setMezzi(await Promise.all(righe.filter(s => s.tipo !== 'persona').map(s => leggiSoggetto(s.uuid, INTESTAZIONE_SFONDO))));
       setErrore(null);
     } catch (e) {
       setErrore((e as Error).message);

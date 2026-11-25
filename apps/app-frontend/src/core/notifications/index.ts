@@ -9,7 +9,7 @@ export type {
   ActiveNotificationSource,
   PlatformNotification,
 } from './types';
-export { NOTIFICATIONS_PATH } from './constants';
+export { NOTIFICATIONS_PATH, INTESTAZIONE_SFONDO } from './constants';
 export { useModuleNotifications } from './hooks/useModuleNotifications';
 export { useNotificationSources } from './hooks/useNotificationSources';
 export { NotificationSourcesProvider } from './components/NotificationSourcesProvider';

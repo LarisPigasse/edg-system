@@ -182,6 +182,8 @@ export const EVENT_CATEGORY_OPTIONS = [
   { value: 'SYSTEM', label: 'Sistema' },
   { value: 'AUDIT', label: 'Audit' },
   { value: 'SECURITY', label: 'Sicurezza' },
+  // Uso dei moduli: accessi e consultazioni (fase 1 log, ADR117)
+  { value: 'USO', label: 'Uso' },
 ] as const;
 
 export type EventCategory = (typeof EVENT_CATEGORY_OPTIONS)[number]['value'];
@@ -216,6 +218,8 @@ export interface AzioneLog {
   sottoCategoria?: string;
   criticita?: EventSeverity;
   metadata?: Record<string, unknown>;
+  /** Modulo della piattaforma (es. 'vigilo'); null o assente = piattaforma */
+  modulo?: string | null;
   origine: {
     tipo: 'utente' | 'sistema';
     id: string;
@@ -254,6 +258,8 @@ export interface AzioneLog {
 
 /** Filtri per GET /api/log/azioni — vedi buildQuery in logController.ts. */
 export interface LogSearchParams {
+  /** Chiave del modulo, o 'piattaforma' per gli eventi senza modulo */
+  modulo?: string;
   categoria?: EventCategory;
   criticita?: EventSeverity;
   userId?: string;

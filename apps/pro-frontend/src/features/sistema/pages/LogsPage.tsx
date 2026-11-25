@@ -1,7 +1,7 @@
 // src/features/sistema/pages/LogsPage.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PageHeader, Table, Badge, StatTile, useToast, type TableColumn, type SelectOption } from '@edg/ui';
+import { PageHeader, Table, Badge, StatTile, useMediaQuery, useToast, type TableColumn, type SelectOption } from '@edg/ui';
 
 import { cercaLogs, getLogStatistiche, getLogUtenti } from '../api/logsApi';
 import LogFilters, { EMPTY_LOG_FILTERS, type LogFiltersValue } from '../components/LogFilters';
@@ -23,21 +23,34 @@ import { useDebouncedValue } from '../../../shared/hooks/useDebouncedValue';
 import { useTenantDirectory } from '../../base/api/useTenantDirectory';
 import { useAccountDirectory } from '../../base/api/useAccountDirectory';
 import { useEntityDirectory } from '../api/useEntityDirectory';
+import { useModuleOptions } from '../hooks/useModuleOptions';
 
 /** 64, non 50 (il default del backend se `limit` fosse omesso): qui è sempre esplicito. */
 const PAGE_SIZE = 64;
+
+/**
+ * Sotto questa larghezza la colonna Account si nasconde (l'email resta nel
+ * dettaglio) e Utente/Tenant si stringono: altrimenti le colonne a larghezza
+ * fissa occupano tutto e Azione, la più importante, sparisce (a 1024 px).
+ */
+const TABELLA_LARGA = '(min-width: 1280px)';
 
 const LogsPage: React.FC = () => {
   const toast = useToast();
   const { tenants, getTenantName } = useTenantDirectory();
   const { getAccount } = useAccountDirectory();
   const { getShortLabel: getEntityLabel } = useEntityDirectory();
+  const { options: moduloFilterOptions, getModuleName } = useModuleOptions();
+  const tabellaLarga = useMediaQuery(TABELLA_LARGA);
 
-  // Filtro Utente iniziale dall'URL (?userId=...): "Vedi attività" della pagina Account (ADR039)
+  // Filtri iniziali dall'URL: ?userId=... ("Vedi attività" della pagina Account,
+  // ADR039), ?tenantId=... e ?modulo=... (attività di un tenant, di un modulo)
   const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<LogFiltersValue>(() => ({
     ...EMPTY_LOG_FILTERS,
     userId: searchParams.get('userId') ?? '',
+    tenantId: searchParams.get('tenantId') ?? '',
+    modulo: searchParams.get('modulo') ?? '',
   }));
   const debouncedSearch = useDebouncedValue(filters.search);
   const [page, setPage] = useState(0);
@@ -74,6 +87,7 @@ const LogsPage: React.FC = () => {
   const buildParams = useCallback(
     (): Omit<LogSearchParams, 'page' | 'limit'> => ({
       search: debouncedSearch || undefined,
+      modulo: filters.modulo || undefined,
       categoria: filters.categoria || undefined,
       criticita: filters.criticita || undefined,
       esito: filters.esito || undefined,
@@ -84,6 +98,7 @@ const LogsPage: React.FC = () => {
     }),
     [
       debouncedSearch,
+      filters.modulo,
       filters.categoria,
       filters.criticita,
       filters.esito,
@@ -194,7 +209,7 @@ const LogsPage: React.FC = () => {
       // (es. account di sistema) o se il log è troppo vecchio per avere
       // origine.id come account valido.
       header: 'Utente',
-      className: 'w-48',
+      className: tabellaLarga ? 'w-48' : 'w-36',
       accessor: item => {
         const account = getAccount(originAccountId(item) ?? null);
         const nome = account ? getEntityLabel(account.accountType, account.entityId) : null;
@@ -203,17 +218,21 @@ const LogsPage: React.FC = () => {
     },
     {
       header: 'Tenant',
-      className: 'w-44',
+      className: tabellaLarga ? 'w-44' : 'w-32',
       accessor: item => getTenantName(originTenantId(item) ?? null) ?? '—',
     },
-    {
-      // L'email dell'account, così com'era al momento dell'evento — quella
-      // effettivamente usata per il login, non quella corrente se nel
-      // frattempo è cambiata.
-      header: 'Account',
-      className: 'w-48',
-      accessor: item => originEmail(item) ?? item.origine.id,
-    },
+    // L'email dell'account, così com'era al momento dell'evento — quella
+    // effettivamente usata per il login, non quella corrente se nel
+    // frattempo è cambiata. Solo a tabella larga (TABELLA_LARGA).
+    ...(tabellaLarga
+      ? [
+          {
+            header: 'Account',
+            className: 'w-48',
+            accessor: (item: AzioneLog) => originEmail(item) ?? item.origine.id,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -240,6 +259,7 @@ const LogsPage: React.FC = () => {
         onReset={handleReset}
         utenteOptions={utenteFilterOptions}
         tenantOptions={tenantFilterOptions}
+        moduloOptions={moduloFilterOptions}
       />
 
       <Table
@@ -268,6 +288,7 @@ const LogsPage: React.FC = () => {
         onClose={() => setSelectedLog(null)}
         log={selectedLog}
         onOpenLog={setSelectedLog}
+        getModuleName={getModuleName}
       />
     </div>
   );

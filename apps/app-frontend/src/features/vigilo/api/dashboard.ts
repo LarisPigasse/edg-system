@@ -4,4 +4,6 @@ import type { FiltriScadenze } from '../types/scadenze';
 import { leggi } from './client';
 import { query } from './scadenze';
 
-export const leggiDashboard = (f: FiltriScadenze) => leggi<Dashboard>(`/dashboard${query({ ...f })}`);
+/** `intestazioni`: INTESTAZIONE_SFONDO quando la legge un'altra pagina (es. i conteggi di Soggetti, ADR117) */
+export const leggiDashboard = (f: FiltriScadenze, intestazioni?: Readonly<Record<string, string>>) =>
+  leggi<Dashboard>(`/dashboard${query({ ...f })}`, intestazioni);

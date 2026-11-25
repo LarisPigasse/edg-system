@@ -63,8 +63,9 @@ export function getModules(can: PermissionCheck = () => false): EdgModuleConfig[
     },
 
     // SISTEMA: account, ruoli, tenant e piattaforma — sempre l'ultima voce.
-    // ADR050: l'admin EDG vede solo Account e Tenant (permessi delegabili
-    // 'sistema.account' e 'sistema.tenant'); tutto il resto resta a root.
+    // ADR050: l'admin EDG vede Account e Tenant (permessi delegabili
+    // 'sistema.account' e 'sistema.tenant'), poi Assistenze (ADR085) e Logs
+    // (fase 1, 'sistema.logs'); tutto il resto resta a root.
     // Le attivazioni dei moduli dell'admin stanno dentro la pagina Tenant.
     ...withVisibleChildren(
       {
@@ -81,9 +82,8 @@ export function getModules(can: PermissionCheck = () => false): EdgModuleConfig[
           { id: 'sessioni', label: 'Sessioni', href: ROUTES.SISTEMA_SESSIONI, permission: ROOT_ONLY },
           // Accesso assistito (ADR085): chi ha 'sistema.assistenza' vede e chiude gli accessi
           { id: 'assistenze', label: 'Assistenze', href: ROUTES.SISTEMA_ASSISTENZE, permission: 'sistema.assistenza' },
-          // 'sistema.logs' e' gia' un permesso assegnabile (permissionCatalog.ts), ma la
-          // voce resta a root finche' non si decide di delegarla
-          { id: 'logs', label: 'Logs', href: ROUTES.SISTEMA_LOGS, permission: ROOT_ONLY },
+          // Log delle attivita' (fase 1): root e admin EDG, che li vede tutti
+          { id: 'logs', label: 'Logs', href: ROUTES.SISTEMA_LOGS, permission: 'sistema.logs' },
           // Salute della piattaforma e allarmi (ADR038) — sempre l'ultima voce
           { id: 'info', label: 'Info', href: ROUTES.SISTEMA_INFO, permission: ROOT_ONLY },
         ],

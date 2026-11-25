@@ -1,5 +1,6 @@
 // src/features/sistema/pages/TenantPage.tsx
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   PageHeader,
   Table,
@@ -10,19 +11,24 @@ import {
   Badge,
   Puzzle,
   ExternalLink,
+  Clock,
+  ChartLine,
+  relativeTime,
   exportTableToPdf,
   type TableColumn,
 } from '@edg/ui';
 import { useAuth } from '@edg/auth';
 
 import { authApi } from '../api/authApi';
-import { TenantModulesModal } from '../components/tenant';
+import { TenantModulesModal, UsoTenantModal } from '../components/tenant';
+import { useUltimoUso } from '../hooks/useUltimoUso';
 import TenantFormModal from '../components/TenantFormModal';
 import AssistenzaModal from '../components/AssistenzaModal';
 import { useEdgClienti } from '../api/useEdgClienti';
 import { useEntityCrud, type StatusFilter } from '../../../shared/hooks/useEntityCrud';
 import { STATUS_FILTER_OPTIONS } from '../../../shared/constants';
 import { TENANT_LOCALE_OPTIONS } from '../types';
+import { ROUTES } from '../../../config';
 import type { Tenant, TenantInput } from '../types';
 
 const TenantPage: React.FC = () => {
@@ -32,6 +38,11 @@ const TenantPage: React.FC = () => {
   const canManageModules = hasPermission('sistema.moduli');
   // ADR085: accesso assistito nei tenant dei clienti (attivi, mai quello di sistema)
   const canAssist = hasPermission('sistema.assistenza');
+  // Attività del tenant (fase 2 dei log, ADR117): la pagina Logs già filtrata
+  const canLogs = hasPermission('sistema.logs');
+  const navigate = useNavigate();
+  const [usoOf, setUsoOf] = useState<Tenant | null>(null);
+  const { ultimoUsoDi, ricarica: ricaricaUltimoUso } = useUltimoUso(canLogs);
   const [assistOf, setAssistOf] = useState<Tenant | null>(null);
   // Moduli del tenant (ADR048): finestra larga sopra la lista
   const [modulesOf, setModulesOf] = useState<Tenant | null>(null);
@@ -94,6 +105,22 @@ const TenantPage: React.FC = () => {
       header: 'Sistema',
       accessor: item => (item.isSystem ? <Badge variant='info'>Sistema</Badge> : null),
     },
+    // Ultimo uso (fase 2 dei log): accesso, consultazione, modifica o login delle persone del tenant
+    ...(canLogs
+      ? ([
+          {
+            header: 'Ultimo uso',
+            accessor: item => {
+              const u = ultimoUsoDi(item.id);
+              return u?.ultimoUso ? (
+                <span title={new Date(u.ultimoUso).toLocaleString('it-IT')}>{relativeTime(u.ultimoUso)}</span>
+              ) : (
+                <span className='text-text-secondary'>mai</span>
+              );
+            },
+          },
+        ] as TableColumn<Tenant>[])
+      : []),
   ];
 
   const handleExportPdf = () => {
@@ -114,7 +141,15 @@ const TenantPage: React.FC = () => {
 
   return (
     <div className='space-y-6'>
-      <PageHeader title='Tenant' subtitle='Aziende ospitate sulla piattaforma' onRefresh={refetch} isLoading={isLoading} />
+      <PageHeader
+        title='Tenant'
+        subtitle='Aziende ospitate sulla piattaforma'
+        onRefresh={() => {
+          refetch();
+          void ricaricaUltimoUso();
+        }}
+        isLoading={isLoading}
+      />
 
       <div className='flex items-end justify-between gap-4'>
         <div className='w-48'>
@@ -157,6 +192,12 @@ const TenantPage: React.FC = () => {
             ...(canAssist && item.isActive && !item.isSystem
               ? [{ id: 'assistenza', label: 'Accesso assistito', icon: <ExternalLink className='w-4 h-4' />, onClick: () => setAssistOf(item) }]
               : []),
+            ...(canLogs
+              ? [
+                  { id: 'uso', label: 'Uso', icon: <ChartLine className='w-4 h-4' />, onClick: () => setUsoOf(item) },
+                  { id: 'attivita', label: 'Attività', icon: <Clock className='w-4 h-4' />, onClick: () => navigate(`${ROUTES.SISTEMA_LOGS}?tenantId=${item.id}`) },
+                ]
+              : []),
           ],
         }}
       />
@@ -170,6 +211,8 @@ const TenantPage: React.FC = () => {
       />
 
       <AssistenzaModal tenant={assistOf} onClose={() => setAssistOf(null)} />
+
+      <UsoTenantModal tenant={usoOf} onClose={() => setUsoOf(null)} />
 
       <TenantFormModal
         isOpen={isModalOpen}

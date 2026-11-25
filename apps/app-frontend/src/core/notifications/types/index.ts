@@ -45,7 +45,10 @@ export interface ModuleNotificationList extends ModuleNotificationPage {
 
 /** La sorgente degli avvisi di un modulo */
 export interface ModuleNotificationSource {
-  /** Le più recenti, per la campanella */
+  /**
+   * Le più recenti, per la campanella: è una lettura in sottofondo, da fare con
+   * INTESTAZIONE_SFONDO (constants), così non conta come accesso al modulo (ADR117)
+   */
   read: (limit: number) => Promise<ModuleNotificationPage>;
   /** A pagine e con filtro, per la pagina /avvisi; assente = il modulo non compare nell'elenco */
   list?: (query: ModuleNotificationQuery) => Promise<ModuleNotificationList>;

@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { leggiCategorie } from '../api/configurazione';
+import { INTESTAZIONE_SFONDO } from '../../../core/notifications/constants';
 import { leggiDashboard } from '../api/dashboard';
 import { leggiSedi, leggiSoggetti } from '../api/soggetti';
 import type { Categoria } from '../types/configurazione';
@@ -84,8 +85,9 @@ export function useSoggetti(tipoIniziale: TipoSoggetto | null) {
   }, [pagina, richiesta]);
 
   // conteggi per tipo, categorie e sedi: una volta, e a ogni "ricarica"
+  // (in sottofondo: non è una consultazione della Dashboard, ADR117)
   const caricaContorno = useCallback(() => {
-    leggiDashboard({})
+    leggiDashboard({}, INTESTAZIONE_SFONDO)
       .then(d => setConteggi(d.soggetti))
       .catch(() => setConteggi([]));
     leggiCategorie()

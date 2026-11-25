@@ -248,9 +248,8 @@ const App: React.FC = () => {
                                   }
                                 />
 
-                                {/* Permesso granulare 'sistema.logs' (non root-only, a differenza delle
-                                    altre voci SISTEMA sopra) — vedi permissionCatalog.ts. La voce di menu
-                                    resta comunque root-only per ora, vedi navigation.config.ts. */}
+                                {/* Permesso 'sistema.logs': root e admin EDG (fase 1), stesso
+                                    permesso del menu e di log-service. */}
                                 <Route
                                   path={ROUTES.SISTEMA_LOGS}
                                   element={

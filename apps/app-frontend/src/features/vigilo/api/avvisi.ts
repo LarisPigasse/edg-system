@@ -1,16 +1,18 @@
 // src/features/vigilo/api/avvisi.ts — gli avvisi dell'utente, le sue preferenze e la sorgente della campanella e della pagina /avvisi (ADR090-ADR091, B8d-1)
 import type { ModuleNotificationSource, NotificationFilter } from '../../../core/notifications';
+// Dal file delle costanti, non dall'indice: niente giri di import con il nucleo degli avvisi
+import { INTESTAZIONE_SFONDO } from '../../../core/notifications/constants';
 import type { ElencoAvvisi, FiltriAvvisi, PreferenzeAvvisi, SchedaPreferenzeAvvisi, StatoElencoAvvisi } from '../types/avvisi';
 import { notificaDi } from '../utils/avvisi';
 import { leggi, richiesta } from './client';
 
-/** I miei avvisi, dal più recente; senza filtri come nella campanella */
-export const leggiAvvisi = (limit: number, f?: Partial<FiltriAvvisi> & { offset?: number }) => {
+/** I miei avvisi, dal più recente; senza filtri come nella campanella (che legge in sottofondo) */
+export const leggiAvvisi = (limit: number, f?: Partial<FiltriAvvisi> & { offset?: number }, intestazioni?: Readonly<Record<string, string>>) => {
   const q = new URLSearchParams({ limit: String(limit) });
   if (f?.offset) q.set('offset', String(f.offset));
   if (f?.stato && f.stato !== 'tutti') q.set('stato', f.stato);
   if (f?.tipo) q.set('tipo', f.tipo);
-  return leggi<ElencoAvvisi>(`/avvisi?${q}`);
+  return leggi<ElencoAvvisi>(`/avvisi?${q}`, intestazioni);
 };
 export const segnaAvvisoLetto = (uuid: string) => richiesta<{ letto: boolean }>(`/avvisi/${uuid}/letto`, 'POST');
 export const segnaAvvisiLetti = () => richiesta<{ letti: number }>('/avvisi/letti', 'POST');
@@ -28,8 +30,9 @@ const STATO_DI: Record<NotificationFilter, StatoElencoAvvisi> = { all: 'tutti', 
  * manifest, che le carica solo quando servono.
  */
 export const sorgenteAvvisi = (base: string): Omit<ModuleNotificationSource, 'settings'> => ({
+  // La campanella: in sottofondo, non è un accesso a Vigilo (ADR117)
   read: async limit => {
-    const e = await leggiAvvisi(limit);
+    const e = await leggiAvvisi(limit, undefined, INTESTAZIONE_SFONDO);
     return { unread: e.nonLetti, items: e.voci.map(v => notificaDi(v, base)) };
   },
   list: async ({ offset, limit, filter }) => {

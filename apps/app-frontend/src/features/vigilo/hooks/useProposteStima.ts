@@ -10,6 +10,7 @@
 // un €/km scritto a mano non vale come €/h).
 import { useEffect, useRef, useState } from 'react';
 
+import { INTESTAZIONE_SFONDO } from '../../../core/notifications/constants';
 import { leggiCostoMezzi } from '../api/resoconti';
 import { leggiSoggetto } from '../api/soggetti';
 import type { ParametriStima } from '../types/stima';
@@ -72,7 +73,8 @@ export function useProposteStima(modulo: ModuloStima, parametri: ParametriStima 
     let attivo = true;
     const media = parametri.generali.costoOrarioConducente;
     const leggi = modulo.persona
-      ? leggiSoggetto(modulo.persona).then(s =>
+      ? // in sottofondo: il costo orario della persona scelta, non la sua scheda (ADR117)
+        leggiSoggetto(modulo.persona, INTESTAZIONE_SFONDO).then(s =>
           s.costoOrario != null ? { valore: s.costoOrario, fonte: 'persona' as const, nome: s.nome } : { valore: media, fonte: 'media' as const, nome: s.nome }
         )
       : Promise.resolve({ valore: media, fonte: 'media' as const });

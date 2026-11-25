@@ -27,7 +27,8 @@ export const leggiTuttiSoggetti = (r: Omit<RichiestaSoggetti, 'pagina' | 'righe'
 
 // --- Un soggetto ------------------------------------------------------------
 
-export const leggiSoggetto = (uuid: string) => leggi<Soggetto>(`/soggetti/${uuid}`);
+/** `intestazioni`: INTESTAZIONE_SFONDO quando non è la scheda aperta dalla persona (ADR117) */
+export const leggiSoggetto = (uuid: string, intestazioni?: Readonly<Record<string, string>>) => leggi<Soggetto>(`/soggetti/${uuid}`, intestazioni);
 
 /** Gli account del cliente da collegare a una persona (B9b) */
 export const leggiAccount = () => leggi<AccountCollegabile[]>('/account');

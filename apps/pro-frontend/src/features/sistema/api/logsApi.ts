@@ -14,6 +14,7 @@
 import { apiFetch } from '@edg/auth';
 
 import type { AzioneLog, LogSearchParams, LogSearchResult, LogStatistiche } from '../types';
+import type { UltimoUsoTenant, UsoTenant } from '../types/uso';
 
 const BASE_PATH = '/api/log';
 
@@ -52,4 +53,14 @@ export function getLogStatistiche(
 /** GET /api/log/utenti — utenti distinti presenti nei log, per popolare il filtro. */
 export function getLogUtenti(): Promise<string[]> {
   return apiFetch<string[]>(`${BASE_PATH}/utenti`);
+}
+
+/** GET /api/log/uso — uso di un tenant per modulo e per persona (fase 2, ADR117); giorni da 1 a 256 */
+export function getUsoTenant(tenantId: number, giorni?: number): Promise<UsoTenant> {
+  return apiFetch<UsoTenant>(`${BASE_PATH}/uso${buildQuery({ tenantId, giorni })}`);
+}
+
+/** GET /api/log/uso/tenant — ultimo uso di ogni tenant e attività nel periodo (colonna Ultimo uso) */
+export function getUltimoUsoTenant(giorni?: number): Promise<{ giorni: number; tenant: UltimoUsoTenant[] }> {
+  return apiFetch<{ giorni: number; tenant: UltimoUsoTenant[] }>(`${BASE_PATH}/uso/tenant${buildQuery({ giorni })}`);
 }

@@ -2,3 +2,5 @@
 export { default as TenantModulesModal } from './TenantModulesModal';
 export { default as ModuleActivationRow } from './ModuleActivationRow';
 export { default as ActivationFormModal } from './ActivationFormModal';
+// Uso del tenant (fase 2 dei log, ADR117)
+export { default as UsoTenantModal } from './UsoTenantModal';

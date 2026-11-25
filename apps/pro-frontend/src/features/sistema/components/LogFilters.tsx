@@ -8,6 +8,8 @@ import type { EventCategory, EventSeverity, LogOutcome } from '../types';
 /** '' = nessun filtro su quel campo (opzione "Tutti/e"), non fa parte dei valori dell'enum. */
 export interface LogFiltersValue {
   search: string;
+  /** Chiave del modulo o 'piattaforma' (useModuleOptions) */
+  modulo: string;
   categoria: EventCategory | '';
   criticita: EventSeverity | '';
   esito: LogOutcome | '';
@@ -19,6 +21,7 @@ export interface LogFiltersValue {
 
 export const EMPTY_LOG_FILTERS: LogFiltersValue = {
   search: '',
+  modulo: '',
   categoria: '',
   criticita: '',
   esito: '',
@@ -45,6 +48,8 @@ interface LogFiltersProps {
   utenteOptions: SelectOption[];
   /** Tenant attivi (da useTenantDirectory) — "Tutti i tenant" viene aggiunto qui. */
   tenantOptions: SelectOption[];
+  /** Piattaforma e moduli del catalogo (useModuleOptions) — "Tutti i moduli" viene aggiunto qui. */
+  moduloOptions: SelectOption[];
 }
 
 /**
@@ -53,7 +58,8 @@ interface LogFiltersProps {
  * quei componenti) — il debounce della ricerca testuale e il fetch restano
  * a LogsPage, stesso schema di AccountPage con useDebouncedValue.
  */
-const LogFilters: React.FC<LogFiltersProps> = ({ value, onChange, onReset, utenteOptions, tenantOptions }) => {
+const LogFilters: React.FC<LogFiltersProps> = ({ value, onChange, onReset, utenteOptions, tenantOptions, moduloOptions }) => {
+  const moduloSelectOptions: SelectOption[] = [{ value: '', label: 'Tutti i moduli' }, ...moduloOptions];
   const utenteSelectOptions: SelectOption[] = [{ value: '', label: 'Tutti gli utenti' }, ...utenteOptions];
   const tenantSelectOptions: SelectOption[] = [{ value: '', label: 'Tutti i tenant' }, ...tenantOptions];
 
@@ -61,6 +67,15 @@ const LogFilters: React.FC<LogFiltersProps> = ({ value, onChange, onReset, utent
     <div className='flex flex-wrap items-end gap-4'>
       <div className='w-64'>
         <Input label='Cerca' value={value.search} onChange={e => onChange({ search: e.target.value })} />
+      </div>
+      <div className='w-44'>
+        <Select
+          label='Modulo'
+          options={moduloSelectOptions}
+          value={value.modulo}
+          onValueChange={v => onChange({ modulo: v })}
+          optionSize='sm'
+        />
       </div>
       <div className='w-48'>
         <Select

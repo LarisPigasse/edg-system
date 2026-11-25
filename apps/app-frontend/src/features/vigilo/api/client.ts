@@ -15,15 +15,18 @@ export interface Risposta<T> {
   meta?: { total: number; page: number; limit: number; totalPages: number; hasNext: boolean };
 }
 
-export function richiesta<T>(percorso: string, metodo = 'GET', corpo?: unknown): Promise<Risposta<T>> {
+/** `intestazioni`: in più a quelle di apiFetch (es. INTESTAZIONE_SFONDO per le letture in sottofondo, ADR117) */
+export function richiesta<T>(percorso: string, metodo = 'GET', corpo?: unknown, intestazioni?: Readonly<Record<string, string>>): Promise<Risposta<T>> {
   return apiFetch<Risposta<T>>(`${BASE}${percorso}`, {
     method: metodo,
     ...(corpo !== undefined ? { body: JSON.stringify(corpo) } : {}),
+    ...(intestazioni ? { headers: { ...intestazioni } } : {}),
   });
 }
 
 /** Solo i dati della risposta */
-export const leggi = async <T>(percorso: string): Promise<T> => (await richiesta<T>(percorso)).data;
+export const leggi = async <T>(percorso: string, intestazioni?: Readonly<Record<string, string>>): Promise<T> =>
+  (await richiesta<T>(percorso, 'GET', undefined, intestazioni)).data;
 
 const RIGHE = 128;
 const PAGINE_MASSIME = 16;
