@@ -130,6 +130,7 @@ const TenantModulesModal: React.FC<TenantModulesModalProps> = ({ isOpen, onClose
                   view={v}
                   missingDependencies={missing.get(v.module.key) ?? []}
                   onIntent={onIntent}
+                  tenant={tenant ? { id: tenant.id, name: tenant.name } : null}
                 />
               ))}
             </div>

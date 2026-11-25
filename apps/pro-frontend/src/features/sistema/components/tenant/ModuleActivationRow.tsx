@@ -12,6 +12,7 @@ import type { TenantModuleView } from '../../types/modules';
 import { ACTIVATION_STATUS, MODULE_STATUS } from '../../utils/moduleFormat';
 import { formatDate, relativeDays } from '../../utils/activationDates';
 import { moduleConfigDef } from './config';
+import { DatiModulo, moduleDatiDef } from '../module-data';
 
 export type ModuleIntent = 'trial' | 'activate' | 'reactivate' | 'edit' | 'suspend';
 
@@ -20,6 +21,8 @@ interface ModuleActivationRowProps {
   /** Nomi delle dipendenze non in vigore per questo tenant ([] = tutte presenti) */
   missingDependencies: string[];
   onIntent: (intent: ModuleIntent, view: TenantModuleView) => void;
+  /** Il tenant della finestra: serve ai dati del modulo (fase 3), se il modulo li espone */
+  tenant?: { id: number; name: string } | null;
 }
 
 /** Riga di stato: periodo e conseguenze, in parole */
@@ -54,7 +57,7 @@ function notInForceReason(view: TenantModuleView, missing: string[]): string | n
   return 'Non in vigore';
 }
 
-const ModuleActivationRow: React.FC<ModuleActivationRowProps> = ({ view, missingDependencies, onIntent }) => {
+const ModuleActivationRow: React.FC<ModuleActivationRowProps> = ({ view, missingDependencies, onIntent, tenant }) => {
   const { module, activation } = view;
   // Ai clienti solo moduli disponibili (ADR062): né dismessi né in sviluppo
   const blockedBy =
@@ -102,6 +105,12 @@ const ModuleActivationRow: React.FC<ModuleActivationRowProps> = ({ view, missing
           </p>
         )}
         {activation?.notes && <p className='text-xs italic text-text-secondary'>{activation.notes}</p>}
+        {/* Dati del tenant nel modulo (fase 3, ADR117): anche senza attivazione, possono esserci */}
+        {tenant && moduleDatiDef(module.key) && (
+          <div className='pt-1'>
+            <DatiModulo modulo={module.key} nomeModulo={module.name} tenant={tenant} />
+          </div>
+        )}
       </div>
 
       <div className='flex flex-wrap gap-2 border-t border-border-default pt-3'>

@@ -23,7 +23,8 @@ const TIPI = 'fornitori/tipi';
 const tipo = (chiave: string) => `/api/vigilo/${TIPI}/${encodeURIComponent(chiave)}`;
 
 export const vigiloApi = {
-  modelli: () => api.listResource<ModelloLibreria>('libreria/modelli'),
+  /** Fra le rotte della piattaforma: il gateway non la conta come uso di Vigilo */
+  modelli: () => api.listResource<ModelloLibreria>('piattaforma/libreria/modelli'),
 
   /** Per root tutti i tipi, anche disattivati, con quanti fornitori li usano in tutti i tenant */
   tipiFornitore: () => api.listResource<TipoFornitore>(TIPI),
